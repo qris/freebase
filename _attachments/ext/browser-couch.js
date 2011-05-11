@@ -95,17 +95,29 @@ Object.prototype.isArray = function Object_isArray()
 // This is ideal for calling functions that take callbacks as arguments.
 //
 // Only one argument is formal, the rest (the scriptlets) are accessed through
-// the arguments variable
+// the arguments variable.
+//
+// You can control which object becomes "this" during the callbacks to the
+// scriptlets (except array scriptlets), by calling a Nest object using the
+// call() builtin rather than just (). For example:
+//
+// var n = Nest({}, function(p, i) { alert(this); });
+// n(); // alerts "null"
+// n.call(this); // alerts whatever this currently is
+// n.call("foo"); // alerts "foo"
+//
+// This is possible because the Nest makes an effort to preserve "this"
+// when it calls your scriptlets.
 
 function Nest(param)
 {
-	var that = this;
-	that.list = arguments;
+	var nest = this;
+	nest.list = arguments;
 	
 	var exec = function Nest_exec(index)
 	{
-		that.lastIndex = index;
-		var scriptlet = that.list[index];
+		nest.lastIndex = index;
+		var scriptlet = nest.list[index];
 		
 		if (scriptlet.isArray())
 		{
@@ -119,10 +131,11 @@ function Nest(param)
 			{
 				if (args[i] == Nest)
 				{
-					args[i] = that.callback;
+					args[i] = nest.callback;
 				}
 			}
 			
+			// "this" is set by the array, not by the invocation of Nest()().
 			var object = scriptlet[0];
 			var method = scriptlet[1];
 			
@@ -130,16 +143,17 @@ function Nest(param)
 		}
 		else
 		{
-			scriptlet(param, that);
+			// "this" was set by the caller, so preserve it.
+			scriptlet.call(this, param, nest);
 		}
 	};
 
-	this.callback = function Nest_callback()
+	nest.callback = function Nest_callback()
 	{
 		// save the parameters passed to the callback
 		param.callbackArgs = arguments;
 		// invoke the next scriptlet
-		that.next();
+		nest.next();
 	};
 	
 	// === next() ===
@@ -147,7 +161,7 @@ function Nest(param)
 	// execute the next scriptlet.
 	//
 	// TODO fixme this implementation is O(n^2)
-	this.next = function Nest_next()
+	nest.next = function Nest_next()
 	{
 		/*
 		var foundLastIndex = false;
@@ -177,8 +191,8 @@ function Nest(param)
 		}
 		*/
 		
-		var nextIndex = that.lastIndex + 1;
-		if (nextIndex < that.list.length)
+		var nextIndex = nest.lastIndex + 1;
+		if (nextIndex < nest.list.length)
 		{
 			exec(nextIndex);
 		}
@@ -188,7 +202,9 @@ function Nest(param)
 	// as a function (e.g. a $.document.ready() callback)
 	return function Nest_executor()
 	{
-		exec(1); // skip the param object
+		// call the first scriptlet, preserving "this", skipping the
+		// param object
+		exec.call(this, 1);
 	}
 }
 
@@ -210,7 +226,11 @@ function Apply(values, func, finished)
 		else
 		{
 			this.lastIndex = nextIndex;
-			this.func(values[nextIndex], function(){this.callback()});
+			this.func(values[nextIndex],
+				function()
+				{
+					this.callback();
+				});
 		}
 	};
 	
@@ -973,24 +993,24 @@ var BrowserCouch = function(opts){
 		};
   };
   
-  // === Remote Database ===
-  // A constructor for a database wrapper for the REST interface 
-  // for a remote CouchDB server. Mainly for use in the syncing.
-  // 
-  //
-  bc.SameDomainDB = function SameDomainDB(options, cb) {
-  	var rs = {
-      url: options.url,
-      seq: 0,
-      functionReplacer: new bc.FunctionReplacer().f,
+	// === Remote Database ===
+	// A constructor for a database wrapper for the REST interface 
+	// for a remote CouchDB server. Mainly for use in the syncing.
+	// 
+	//
+	bc.SameDomainDB = function SameDomainDB(options, cb) {
+		var rs = {
+			url: options.url,
+			seq: 0,
+			functionReplacer: new bc.FunctionReplacer().f,
+
+			get : function SameDomainDB_get(id, cb)
+			{
+				$.getJSON(this.url + "/" + id, {}, cb || function(){}); 
+			},
       
-      get : function SameDomainDB_get(id, cb)
-      {
-        $.getJSON(this.url + "/" + id, {}, cb || function(){}); 
-      },
-      
-      _put_or_post: function(method, doc, cb)
-      {
+			_put_or_post: function(method, doc, cb)
+			{
 				jQuery.ajax({
 					url : this.url + "/" + (doc._id || ""), 
 					data : JSON.stringify(doc, this.functionReplacer),
@@ -1007,49 +1027,88 @@ var BrowserCouch = function(opts){
 				});
 			},
       
-      post : function SameDomainDB_post(docs, cb, options)
-      {
-				var that = this;
-
+			post : function SameDomainDB_post(docs, cb_after_all_posted,
+				options)
+			{
 				if (!docs.isArray())
 				{
 					docs = [docs];
 				}
 
-				var _options_closure = options || {};
-
-				for (var i in docs)
-				{
-					var doc = docs[i];
-					var url = this.url + "/" + doc._id;
-	
-					new Nest({},
-						function(p, i)
-						{
-							if (_options_closure.replace_existing)
+				var _options_closure = {};
+				jQuery.extend(_options_closure, options);
+				_options_closure.database = this;
+				
+				docs.apply(
+					// function to apply to each element
+					function SameDomainDB_post_each_doc(doc, cb_after_each_posted)
+					{
+						_options_closure.current_doc = doc;
+					
+						new Nest(
+							_options_closure, // our context variable, p
+							function SameDomainDB_identify(p, i)
 							{
-								jQuery.getJSON(url,
-									function SameDomainDB_post_get_cb(result)
+								// p.doc must be set to the current document
+								p.doc_url = p.database.url + "/" + p.current_doc._id;
+								p.nest = i;
+						
+								if (p.replace_existing)
+								{
+									jQuery.ajax(
 									{
-										doc._rev = result._rev;
-										i.next();
+										url: p.doc_url,
+										dataType: 'ajax',
+										success: function SameDomainDB_post_id_success_cb(data, textStatus, jqXHR)
+										{
+											// save the current revision in the document,
+											// to allow its replacement.
+											p.current_doc._rev = data._rev;
+										},
+										error: function SameDomainDB_post_id_error_cb(jqXHR, textStatus, errorThrown)
+										{
+											if (jqXHR.status == 404)
+											{
+												// doesn't exist, so continue
+												// without a _rev to allow it
+												// to be created.
+											}
+											else
+											{
+												// TODO subclass Error for this
+												throw Error("Server responded with " +
+													"error " + jqXHR.status +
+													"while uploading document " +
+													p.current_doc + ": " +
+													errorThrown);
+											}
+										},
+										complete: function SameDomainDB_post_id_complete_cb(jqXHR, textStatus)
+										{
+											// move on to POST or PUT the document
+											p.nest.next();
+										}
 									});
-							}
-							else
+								}
+								else
+								{
+									p.nest.next();
+								}
+							},
+							function SameDomainDB_post_one(p, i)
 							{
-								i.next();
+								p.database._put_or_post('PUT',
+									p.current_doc, cb_after_each_posted);
 							}
-						},
-						function(p, i)
-						{
-							that._put_or_post('POST', doc, cb);
-						}
-					)(); // end definition of iterator and execute it
-				} // end for docs
-      }, // end post() method
+							// end definition of iterator
+						).call(this);
+					},
+					// function to call after last element
+					cb_after_all_posted);
+			}, // end post() method
 
-      put : function SameDomainDB_put(docs, cb, options)
-      {
+			put : function SameDomainDB_put(docs, cb, options)
+			{
 				if (!docs.isArray())
 				{
 					docs = [docs];
@@ -1064,34 +1123,37 @@ var BrowserCouch = function(opts){
 						that._put_or_post('PUT', doc, i);
 					},
 					cb);
-      },
-      
-      // ==== Get Changes ====
-      // We poll the {{{_changes}}} endpoint to get the most
-      // recent documents. At the moment, we're not storing the
-      // sequence numbers for each server, however this is on 
-      // the TODO list.
-      
-      getChanges : function(cb){
-        var url = this.url + "/_changes";
-        $.getJSON(url, {since : rs.seq}, function(data){
-          cb(data);               
-         });
-      },
+			},
+
+			// ==== Get Changes ====
+			// We poll the {{{_changes}}} endpoint to get the most
+			// recent documents. At the moment, we're not storing the
+			// sequence numbers for each server, however this is on 
+			// the TODO list.
+
+			getChanges : function(cb)
+			{
+				var url = this.url + "/_changes";
+				$.getJSON(url, {since : rs.seq},
+					function(data)
+					{
+						cb(data);
+	 				});
+			},
       
 			// ==== View ====
-      // Similar to calling view() on a local database, but you should
-      // specify a {{{design_doc}}} and a {{{view_name}}} in the 
-      // {{{options}}}, to allow the view to be cached.
-      //
-      // If you do, the design document will be fetched and the map and
-      // reduce functions compared with the ones that you passed to see
-      // if they match, and if not the design document will be updated
-      // to cache the query for future use.
-      //
-      // If no {{{design_doc}}} or {{{view_name}}} is specified, a
-      // temporary view is created, which is expensive but good for
-      // development according to the CouchDB documentation.
+			// Similar to calling view() on a local database, but you should
+			// specify a {{{design_doc}}} and a {{{view_name}}} in the 
+			// {{{options}}}, to allow the view to be cached.
+			//
+			// If you do, the design document will be fetched and the map and
+			// reduce functions compared with the ones that you passed to see
+			// if they match, and if not the design document will be updated
+			// to cache the query for future use.
+			//
+			// If no {{{design_doc}}} or {{{view_name}}} is specified, a
+			// temporary view is created, which is expensive but good for
+			// development according to the CouchDB documentation.
       
 			view : function(options)
 			{
