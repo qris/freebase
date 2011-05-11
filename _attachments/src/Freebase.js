@@ -27,64 +27,65 @@ var Freebase_Prototype = {
 	
 	require: function(libs, callback)
 	{
-    var self = this,
-        i = 0,
-        lastLib = "";
+		var self = this,
+			i = 0,
+			lastLib = "";
 
-    if (!libs.isArray())
-    {
-      libs = [libs];
-    }
+		if (!libs.isArray())
+		{
+			libs = [libs];
+		}
 
-    function loadNextLib()
-    {
-      if (lastLib && !window[lastLib])
-      {
-        throw new Error("Failed to load library: " + lastLib);
-      }
-      
-      if (i == libs.length)
-      {
-      	// all done, now call the callback
-        callback();
-      }
-      else
-      {
-        var libName = libs[i];
-        i += 1;
-        
-        if (window[libName])
-        {
-          loadNextLib();
-        }
-        else
-        {
-          var libUrl = libName + ".js";
-          lastLib = libName;
-          self._loadScript(libName, libUrl, window, loadNextLib);
-        }
-      }
-    }
+		function loadNextLib()
+		{
+			if (lastLib && !window[lastLib])
+			{
+				throw new Error("Failed to load library: " + lastLib);
+			}
 
-    loadNextLib();
-  },
+			if (i == libs.length)
+			{
+				// all done, now call the callback
+				callback();
+			}
+			else
+			{
+				var libName = libs[i];
+				i += 1;
 
-  _loadScript: function (libName, url, window, cb)
-  {
-    var doc = window.document;
-    var script = doc.createElement("script");
-    script.setAttribute("src", url);
-    script.addEventListener(
-      "load",
-      function onLoad() {
-      	window[libName] = url;
-        script.removeEventListener("load", onLoad, false);
-        cb();
-      },
-      false
-    );
-    doc.body.appendChild(script);
-  },
+				if (window[libName])
+				{
+					loadNextLib();
+				}
+				else
+				{
+					var libUrl = libName + ".js";
+					lastLib = libName;
+					self._loadScript(libName, libUrl, window, loadNextLib);
+				}
+			}
+		}
+
+		loadNextLib();
+	},
+
+	_loadScript: function (libName, url, window, cb)
+	{
+		var doc = window.document;
+		var script = doc.createElement("script");
+		script.setAttribute("src", url);
+		script.addEventListener(
+			"load",
+			function onLoad()
+			{
+				window[libName] = url;
+				script.removeEventListener("load", onLoad, false);
+				cb();
+			},
+			false
+		);
+		doc.body.appendChild(script);
+	},
 
 	// ** {{{ Freebase.loadCss() }}} **
 	//
@@ -93,39 +94,22 @@ var Freebase_Prototype = {
 	loadCss: function(sheets)
 	{
 		var self = this;
-		
-    if (!sheets.isArray())
-    {
-      sheets = [sheets];
-    }
-    
-    jQuery.each(sheets, function(i, sheet)
-    {
-    	if (! window[sheet])
-    	{
-		  	sheetUrl = sheet + ".css";
-		  	$('<link>').attr({rel:"stylesheet", href: sheetUrl}).appendTo("head");
-		  	window[sheet] = sheetUrl;
-		  }
-    });
-  },
 
-  _loadScript: function (libName, url, window, cb)
-  {
-    var doc = window.document;
-    var script = doc.createElement("script");
-    script.setAttribute("src", url);
-    script.addEventListener(
-      "load",
-      function onLoad() {
-      	window[libName] = url;
-        script.removeEventListener("load", onLoad, false);
-        cb();
-      },
-      false
-    );
-    doc.body.appendChild(script);
-  },
+		if (!sheets.isArray())
+		{
+		  sheets = [sheets];
+		}
+
+		jQuery.each(sheets, function(i, sheet)
+		{
+			if (! window[sheet])
+			{
+				sheetUrl = sheet + ".css";
+				$('<link>').attr({rel:"stylesheet", href: sheetUrl}).appendTo("head");
+				window[sheet] = sheetUrl;
+			}
+		});
+	},
 
 	// == {{{ Freebase.run() }}} ==
 	//

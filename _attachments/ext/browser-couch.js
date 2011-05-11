@@ -93,6 +93,9 @@ Object.prototype.isArray = function Object_isArray()
 // function, and the remaining elements are its arguments. You should pass
 // Nest as one of the arguments, and it will be replaced by i.callback.
 // This is ideal for calling functions that take callbacks as arguments.
+//
+// Only one argument is formal, the rest (the scriptlets) are accessed through
+// the arguments variable
 
 function Nest(param)
 {
@@ -181,7 +184,12 @@ function Nest(param)
 		}
 	};
 	
-	exec(1); // skip the param object
+	// we don't want to execute immediately, but only when the Nest is called
+	// as a function (e.g. a $.document.ready() callback)
+	return function Nest_executor()
+	{
+		exec(1); // skip the param object
+	}
 }
 
 function Apply(values, func, finished)
@@ -1036,7 +1044,7 @@ var BrowserCouch = function(opts){
 						{
 							that._put_or_post('POST', doc, cb);
 						}
-					); // end iterator
+					)(); // end definition of iterator and execute it
 				} // end for docs
       }, // end post() method
 
