@@ -31,7 +31,7 @@ var Freebase_Prototype = {
 			i = 0,
 			lastLib = "";
 
-		if (!libs.isArray())
+		if (!jQuery.isArray(libs))
 		{
 			libs = [libs];
 		}
@@ -95,7 +95,7 @@ var Freebase_Prototype = {
 	{
 		var self = this;
 
-		if (!sheets.isArray())
+		if (!jQuery.isArray(sheets))
 		{
 		  sheets = [sheets];
 		}
@@ -105,7 +105,8 @@ var Freebase_Prototype = {
 			if (! window[sheet])
 			{
 				sheetUrl = sheet + ".css";
-				$('<link>').attr({rel:"stylesheet", href: sheetUrl}).appendTo("head");
+				link = $('<link>').attr('rel', 'stylesheet');
+				link.attr('href', 'sheetUrl').appendTo("head");
 				window[sheet] = sheetUrl;
 			}
 		});
@@ -156,8 +157,8 @@ var Freebase_Prototype = {
 	construct: function()
 	{
 		var win = this.window.empty();
-		this.nav = jQuery('<div />').attr({'class':'fb-nav'}).appendTo(win);
-		this.list = jQuery('<div />').attr({'class':'fb-list'}).appendTo(win);
+		this.nav = jQuery('<div />').attr('class', 'fb-nav').appendTo(win);
+		this.list = jQuery('<div />').attr('class', 'fb-list').appendTo(win);
 	},
 	
 	refresh: function()
@@ -175,8 +176,8 @@ var Freebase_Prototype = {
 				jQuery.each(results.rows,
 					function(i, result)
 					{
-						var div = jQuery('<div />').attr({'class':'fb-list-item'});
-						var link = jQuery('<a />').attr({href:'#' + result._id});
+						var div = jQuery('<div />').attr('class', 'fb-list-item');
+						var link = jQuery('<a />').attr('href', '#' + result._id);
 						link.click(function(e)
 							{
 								self.show(result._id);

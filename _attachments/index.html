@@ -1,36 +1,43 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Freebase</title>
-    <link rel="stylesheet" href="style/main.css" type="text/css">
-  </head>
-  <body>
-    <div id="account"></div>
+	<head>
+		<title>Freebase</title>
+		<link rel="stylesheet" href="style/main.css" type="text/css">
+	</head>
+	<body>
+		<div id="account"></div>
 
-    <h1>Freebase</h1>
+		<h1>Freebase</h1>
 
-    <div id="profile"></div>
-    <div id="items"></div>
+		<div id="profile"></div>
+		<div id="items"></div>
 
-    <div id="sidebar">
-      <p>Edit welcome message.</p>
-      <p>Ideas: You could easily turn this into a photo sharing app, or a grocery list, or a chat room.</p>
-    </div>
-    
-    <div id="freebase" style="clear: both; border: 3px solid #ecc;"></div>
-  </body>
+		<div id="sidebar">
+		  <p>Edit welcome message.</p>
+		  <p>Ideas: You could easily turn this into a photo sharing app, or a grocery list, or a chat room.</p>
+		</div>
 
-  <script src="vendor/couchapp/loader.js"></script>
-  <script type="text/javascript" charset="utf-8">
-  	/*
-    $.couch.app(function(app) {
-      $("#account").evently("account", app);
-      $("#profile").evently("profile", app);
-      $.evently.connect("#account","#profile", ["loggedIn","loggedOut"]);
-      $("#items").evently("items", app);
-    });
-    */
-  </script>
+		<div id="freebase" style="clear: both; border: 3px solid #ecc;"></div>
+	</body>
+
+	<!--
+	Skip vendor/couchapp/loader.js for now, because it loads an old version
+	of jQuery (1.4.2) which has some bugs that stop us doing nice things
+	like adding the isArray() method to Object's prototype.
+	-->
+	<!--<script src="vendor/couchapp/loader.js"></script>-->
+	<script src="ext/jquery-1.5.2.js"></script>
+	
+	<script type="text/javascript" charset="utf-8">
+		/*
+		$.couch.app(function(app) {
+		  $("#account").evently("account", app);
+		  $("#profile").evently("profile", app);
+		  $.evently.connect("#account","#profile", ["loggedIn","loggedOut"]);
+		  $("#items").evently("items", app);
+		});
+		*/
+	</script>
 
 	<script src="ext/browser-couch.js"></script>
 	<script src="src/Freebase.js"></script>

@@ -35,16 +35,6 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-// === {{{Object.isArray()}}} ===
-//
-// A helper function to determine whether an object is an Array or not.
-// Taken from jQuery via BrowserCouch.
-
-Object.prototype.isArray = function Object_isArray()
-{
-  return Object.prototype.toString.call(this) === "[object Array]";
-};
-
 // = Nest =
 //
 // This is a utility class that helps to write procedural-style code
@@ -119,7 +109,7 @@ function Nest(param)
 		nest.lastIndex = index;
 		var scriptlet = nest.list[index];
 		
-		if (scriptlet.isArray())
+		if (jQuery.isArray(scriptlet))
 		{
 			// First element is the function, remaining ones are args, except
 			// the one which uses Nest that we replace with i.next
@@ -210,26 +200,27 @@ function Nest(param)
 
 function Apply(values, func, finished)
 {
-	this.func = func;
-	this.values = values;
-	this.finished = finished;
-	this.lastIndex = -1;
+	var targetList = this;
+	targetList.func = func;
+	targetList.values = values;
+	targetList.finished = finished;
+	targetList.lastIndex = -1;
 	
-	this.callback = function Apply_callback()
+	targetList.callback = function Apply_callback()
 	{
-		var nextIndex = this.lastIndex + 1;
+		var nextIndex = targetList.lastIndex + 1;
 		
-		if (this.values.length == nextIndex)
+		if (targetList.values.length == nextIndex)
 		{
-			finished.call(this);
+			finished.call(targetList);
 		}
 		else
 		{
-			this.lastIndex = nextIndex;
-			this.func(values[nextIndex],
+			targetList.lastIndex = nextIndex;
+			targetList.func(values[nextIndex],
 				function()
 				{
-					this.callback();
+					targetList.callback();
 				});
 		}
 	};
@@ -267,7 +258,7 @@ var BrowserCouch = function(opts){
           i = 0,
           lastLib = "";
   
-      if (!libs.isArray()){
+      if (!jQuery.isArray(libs)){
         libs = [libs];
       }
   
@@ -613,7 +604,7 @@ var BrowserCouch = function(opts){
       if (typeof(obj) == "object") {
         var copy;
   
-        if (obj.isArray())
+        if (jQuery.isArray(obj))
           copy = new Array();
         else
           copy = new Object();
@@ -820,7 +811,7 @@ var BrowserCouch = function(opts){
           
       }
     
-      if (document.isArray()) {
+      if (jQuery.isArray(document)) {
         for (var i = 0; i < document.length; i++){
           putObj(document[i]);
         }
@@ -976,7 +967,7 @@ var BrowserCouch = function(opts){
 				var v = value.toString();
 				return v;
 			}
-			else if (jQuery.isPlainObject(value) || value.isArray())
+			else if (jQuery.isPlainObject(value) || jQuery.isArray(value))
 			{
 				var newObject = {};
 				jQuery.each(value,
@@ -1011,6 +1002,8 @@ var BrowserCouch = function(opts){
       
 			_put_or_post: function(method, doc, cb)
 			{
+				var database = this;
+				
 				jQuery.ajax({
 					url : this.url + "/" + (doc._id || ""), 
 					data : JSON.stringify(doc, this.functionReplacer),
@@ -1021,7 +1014,7 @@ var BrowserCouch = function(opts){
 					{
 						if (cb)
 						{
-							cb(data);
+							cb.call(database, data);
 						}
 					}
 				});
@@ -1030,7 +1023,7 @@ var BrowserCouch = function(opts){
 			post : function SameDomainDB_post(docs, cb_after_all_posted,
 				options)
 			{
-				if (!docs.isArray())
+				if (!jQuery.isArray(docs))
 				{
 					docs = [docs];
 				}
@@ -1058,7 +1051,7 @@ var BrowserCouch = function(opts){
 									jQuery.ajax(
 									{
 										url: p.doc_url,
-										dataType: 'ajax',
+										dataType: 'json',
 										success: function SameDomainDB_post_id_success_cb(data, textStatus, jqXHR)
 										{
 											// save the current revision in the document,
@@ -1109,7 +1102,7 @@ var BrowserCouch = function(opts){
 
 			put : function SameDomainDB_put(docs, cb, options)
 			{
-				if (!docs.isArray())
+				if (!jQuery.isArray(docs))
 				{
 					docs = [docs];
 				}
