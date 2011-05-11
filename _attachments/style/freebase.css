@@ -1,0 +1,46 @@
+.fb-nav
+{
+	float: left;
+	height: 100%;
+	background: #448;
+}
+
+.fb-list
+{
+}
+
+table.fb-doc-auto
+{
+	border-collapse: collapse;
+}
+
+table.fb-doc-auto th, table.fb-doc-auto td
+{
+	padding: 0.1em 0.2em;
+}
+
+table.fb-doc-auto th
+{
+	border: 1px solid #ccc;
+	border-style: solid none;
+	background: #eee;
+	text-align: left;
+	font-weight: bold;
+}
+
+table.fb-doc-auto td
+{
+	border: 1px solid #ddd;
+	border-style: solid none;
+	background: #fff;
+	text-align: left;
+	font-weight: bold;
+}
+
+div.fb-success
+{
+	margin: 0 0 1em;
+	border: 2px solid #cfc;
+	background: #dfd;
+	padding: 0.5em;
+}

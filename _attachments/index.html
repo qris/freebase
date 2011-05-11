@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Freebase</title>
+    <link rel="stylesheet" href="style/main.css" type="text/css">
+  </head>
+  <body>
+    <div id="account"></div>
+
+    <h1>Freebase</h1>
+
+    <div id="profile"></div>
+    <div id="items"></div>
+
+    <div id="sidebar">
+      <p>Edit welcome message.</p>
+      <p>Ideas: You could easily turn this into a photo sharing app, or a grocery list, or a chat room.</p>
+    </div>
+    
+    <div id="freebase" style="clear: both; border: 3px solid #ecc;"></div>
+  </body>
+
+  <script src="vendor/couchapp/loader.js"></script>
+  <script type="text/javascript" charset="utf-8">
+  	/*
+    $.couch.app(function(app) {
+      $("#account").evently("account", app);
+      $("#profile").evently("profile", app);
+      $.evently.connect("#account","#profile", ["loggedIn","loggedOut"]);
+      $("#items").evently("items", app);
+    });
+    */
+  </script>
+
+	<script src="ext/browser-couch.js"></script>
+	<script src="src/Freebase.js"></script>
+	<script type="text/javascript" charset="utf-8">
+		$(document).ready(new Nest({},
+			function(p, i)
+			{
+				p.testDbContents = [
+					{_id: "monkey", content: "hello there dude"},
+					{_id: "chunky", content: "hello there dogen"}
+				];
+				
+				p.baseUrl = window.location.protocol + "//" + window.location.host;
+		
+				jQuery.getJSON(p.baseUrl + "/", undefined, i.callback);
+			},
+			function(p, i)
+			{
+				var data = p.callbackArgs[0];
+				var options = {};
+
+				if ('couchdb' in data)
+				{
+					var dbname = window.location.pathname.substring(1,
+						window.location.pathname.indexOf("/", 1));
+					options.db_class = BrowserCouch.SameDomainDB;
+					options.url = p.baseUrl + "/" + dbname;
+				}
+
+				p.db = BrowserCouch("blarg", options);
+				p.db.post(p.testDbContents, i.callback, {replace_existing: true});
+			},
+			function(p, i)
+			{
+				BrowserCouch.ModuleLoader.require("JSON", i.callback);
+			},
+			function(p, i)
+			{
+				var fb = new Freebase(p.db);
+				fb.themeDir = "ext/jquery-ui-themes/base";
+				fb.run($("#freebase"), $);
+			}
+		));  // end iterator and document.ready()
+	</script>
+</html>
