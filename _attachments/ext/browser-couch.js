@@ -103,39 +103,45 @@ function Nest(param)
 {
 	var nest = this;
 	nest.list = arguments;
-	
-	var exec = function Nest_exec(index)
+	nest.lastIndex = 0; // skip the first argument
+
+	// === next() ===
+	// Call this function on the Nest passed to your scriptlet to
+	// execute the next scriptlet.
+	nest.next = function Nest_next()
 	{
-		nest.lastIndex = index;
-		var scriptlet = nest.list[index];
+		var index = nest.lastIndex + 1;
+		if (index < nest.list.length)
+		{
+			var scriptlet = nest.list[index];
 		
-		if (jQuery.isArray(scriptlet))
-		{
-			// First element is the function, remaining ones are args, except
-			// the one which uses Nest that we replace with i.next
-			
-			// There is no slice() method in the Arguments object, unfortunately
-			var args = scriptlet.slice(2);
-			
-			for (var i = 1; i < args.length; i++)
+			if (jQuery.isArray(scriptlet))
 			{
-				if (args[i] == Nest)
+				// First element is the function, remaining ones are args, except
+				// the one which uses Nest that we replace with i.next
+			
+				// There is no slice() method in the Arguments object, unfortunately
+				var args = scriptlet.slice(2);
+			
+				for (var i = 1; i < args.length; i++)
 				{
-					args[i] = nest.callback;
+					if (args[i] == Nest)
+					{
+						args[i] = nest.callback;
+					}
 				}
+			
+				// "this" is set by the array, not by the invocation of Nest()().
+				var object = scriptlet[0];
+				var method = scriptlet[1];
+			
+				method.apply(object, args);
 			}
-			
-			// "this" is set by the array, not by the invocation of Nest()().
-			var object = scriptlet[0];
-			var method = scriptlet[1];
-			
-			method.apply(object, args);
-		}
-		else
-		{
-			// "this" was set by the caller, so preserve it.
-			scriptlet.call(this, param, nest);
-		}
+			else
+			{
+				// "this" was set by the caller, so preserve it.
+				scriptlet.call(this, param, nest);
+			}
 	};
 
 	nest.callback = function Nest_callback()
@@ -144,48 +150,6 @@ function Nest(param)
 		param.callbackArgs = arguments;
 		// invoke the next scriptlet
 		nest.next();
-	};
-	
-	// === next() ===
-	// Call this function on the Nest passed to your scriptlet to
-	// execute the next scriptlet.
-	//
-	// TODO fixme this implementation is O(n^2)
-	nest.next = function Nest_next()
-	{
-		/*
-		var foundLastIndex = false;
-		var foundNextIndex = false;
-		var nextIndex;
-		
-		for (var i in list)
-		{
-			if (foundLastIndex)
-			{
-				nextIndex = i;
-				foundNextIndex = true;
-				break;
-			}
-			
-			if (i == this.lastIndex)
-			{
-				foundLastIndex = true;
-			}
-			
-			continue;
-		}
-		
-		if (foundNextIndex)
-		{
-			exec(nextIndex);
-		}
-		*/
-		
-		var nextIndex = nest.lastIndex + 1;
-		if (nextIndex < nest.list.length)
-		{
-			exec(nextIndex);
-		}
 	};
 	
 	// we don't want to execute immediately, but only when the Nest is called
