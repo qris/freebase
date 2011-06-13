@@ -1192,9 +1192,7 @@ var BrowserCouch = function(opts){
 					else
 					{
 						// POST a temporary view, returns the results
-						self._put_or_post('POST',
-							design_doc.views.temp,
-							options.finished,
+						self.post(design_doc.views.temp, options.finished,
 							{uri: "_temp_view"});
 					}
 				}
