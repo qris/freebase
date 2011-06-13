@@ -195,8 +195,6 @@ var Freebase_Prototype = {
 	
 	show: function(docid)
 	{
-		alert(docid);
-		
 		function appendRow(table, title, input_controls)
 		{
 			var row = jQuery('<tr />');
@@ -247,21 +245,42 @@ var Freebase_Prototype = {
 					var row = jQuery('<tr />');
 					jQuery('<th />').appendTo(row);
 					
+					var rev = doc._rev;
+					
 					var td = jQuery('<td />');
 					var submit = jQuery('<input />');
 					submit.attr({type: 'button', value: 'Save'});
 					submit.click(function(e)
 						{
-							var newdoc = {_id: docid};
+							var newdoc = {_id: docid, _rev: rev};
 							dialog.find('input').each(function(index)
 								{
-									newdoc[this.name] = this.value;
+									if (this.name)
+									{
+										newdoc[this.name] = this.value;
+									}
 								});
-							self.database.put(newdoc, function()
+							self.database.put(newdoc, function(updated_doc)
 								{
-									flash.addClass('fb-success');
-									flash.text('Document saved.');
-									flash.show();
+									if (updated_doc) // otherwise the PUT failed
+									{
+										flash.removeClass('fb-error-flash');
+										flash.addClass('fb-success-flash');
+										flash.text('Document saved.');
+										flash.show();
+										doc._rev = updated_doc._rev;
+									}
+								},
+								{
+									ajaxErrorHandler: function(jqXHR,
+										textStatus, errorThrown)
+									{
+										flash.removeClass('fb-success-flash');
+										flash.addClass('fb-error-flash');
+										flash.text('Failed to save document: ' +
+											textStatus + ' (' + errorThrown + ')');
+										flash.show();
+									}
 								});
 						});
 					td.append(submit);
@@ -272,6 +291,16 @@ var Freebase_Prototype = {
 					dialog.dialog();
 				}
 			});
+	},
+	
+	errorHandler: function(exception)
+	{
+		alert(exception);
+	},
+	
+	withErrorHandlers: function(handlers, protectedCode)
+	{
+		
 	}
 };
 

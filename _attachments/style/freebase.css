@@ -37,10 +37,18 @@ table.fb-doc-auto td
 	font-weight: bold;
 }
 
-div.fb-success
+div.fb-success-flash
 {
 	margin: 0 0 1em;
-	border: 2px solid #cfc;
+	border: 2px solid #bfb;
 	background: #dfd;
+	padding: 0.5em;
+}
+
+div.fb-error-flash
+{
+	margin: 0 0 1em;
+	border: 2px solid #fbb;
+	background: #fdd;
 	padding: 0.5em;
 }

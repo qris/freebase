@@ -967,7 +967,33 @@ var BrowserCouch = function(opts){
 
 			get : function SameDomainDB_get(id, cb)
 			{
+				var database = this;
 				$.getJSON(this.url + "/" + id, {}, cb || function(){}); 
+			},
+			
+			_callback_with_exception_handling: function(options, cb, data)
+			{
+				if (options.exceptionHandler)
+				{
+					try
+					{
+						if (cb)
+						{
+							cb.call(this, data);
+						}
+					}
+					catch (ex)
+					{
+						options.exceptionHandler(ex);
+					}
+				}
+				else
+				{
+					if (cb)
+					{
+						cb.call(this, data);
+					}						
+				}
 			},
       
 			_put_or_post: function(method, doc, cb, options)
@@ -991,14 +1017,20 @@ var BrowserCouch = function(opts){
 					error: function SameDomainDB_put_or_post_error_cb(jqXHR,
 						textStatus, errorThrown)
 					{
-						throw new Error(textStatus + ": " + errorThrown);
+						if (options.ajaxErrorHandler)
+						{
+							options.ajaxErrorHandler(jqXHR,
+								textStatus, errorThrown);
+						}
+						else
+						{
+							throw new Error(textStatus + ": " + errorThrown);
+						}
 					},
 					complete: function SameDomainDB_put_or_post_complete_cb(data)
 					{
-						if (cb)
-						{
-							cb.call(database, ajax_result_data);
-						}
+						database._callback_with_exception_handling(options,
+							cb, ajax_result_data);
 					}
 				});
 			},
@@ -1084,6 +1116,15 @@ var BrowserCouch = function(opts){
 									}
 									
 									nest.next();
+								},
+								error: function(jqXHR, textStatus, errorThrown)
+								{
+									if (p.ajaxErrorHandler)
+									{
+										p.ajaxErrorHandler(jqXHR,
+											textStatus, errorThrown);
+									}
+									// else ignore it, as jQuery does by default
 								}
 							});
 						}
@@ -1105,6 +1146,15 @@ var BrowserCouch = function(opts){
 							{
 								cb_after_all_posted.call(p.database,
 									p.documents);
+							},
+							error: function(jqXHR, textStatus, errorThrown)
+							{
+								if (p.ajaxErrorHandler)
+								{
+									p.ajaxErrorHandler(jqXHR, textStatus,
+										errorThrown);
+								}
+								// else ignore it, as jQuery does by default
 							}
 						});
 					} /* SameDomainDB_post_multiple_send */
