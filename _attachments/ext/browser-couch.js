@@ -111,37 +111,41 @@ function Nest(param)
 	nest.next = function Nest_next()
 	{
 		var index = nest.lastIndex + 1;
-		if (index < nest.list.length)
+		if (index >= nest.list.length)
 		{
-			var scriptlet = nest.list[index];
+			return;
+		}
 		
-			if (jQuery.isArray(scriptlet))
+		nest.lastIndex = index;
+		var scriptlet = nest.list[index];
+	
+		if (jQuery.isArray(scriptlet))
+		{
+			// First element is the function, remaining ones are args, except
+			// the one which uses Nest that we replace with i.next
+		
+			// There is no slice() method in the Arguments object, unfortunately
+			var args = scriptlet.slice(2);
+		
+			for (var i = 1; i < args.length; i++)
 			{
-				// First element is the function, remaining ones are args, except
-				// the one which uses Nest that we replace with i.next
-			
-				// There is no slice() method in the Arguments object, unfortunately
-				var args = scriptlet.slice(2);
-			
-				for (var i = 1; i < args.length; i++)
+				if (args[i] == Nest)
 				{
-					if (args[i] == Nest)
-					{
-						args[i] = nest.callback;
-					}
+					args[i] = nest.callback;
 				}
-			
-				// "this" is set by the array, not by the invocation of Nest()().
-				var object = scriptlet[0];
-				var method = scriptlet[1];
-			
-				method.apply(object, args);
 			}
-			else
-			{
-				// "this" was set by the caller, so preserve it.
-				scriptlet.call(this, param, nest);
-			}
+		
+			// "this" is set by the array, not by the invocation of Nest()().
+			var object = scriptlet[0];
+			var method = scriptlet[1];
+		
+			method.apply(object, args);
+		}
+		else
+		{
+			// "this" was set by the caller, so preserve it.
+			scriptlet.call(this, param, nest);
+		}
 	};
 
 	nest.callback = function Nest_callback()
@@ -158,7 +162,7 @@ function Nest(param)
 	{
 		// call the first scriptlet, preserving "this", skipping the
 		// param object
-		exec.call(this, 1);
+		nest.next.call(this);
 	}
 }
 
@@ -176,16 +180,18 @@ function Apply(values, func, finished)
 		
 		if (targetList.values.length == nextIndex)
 		{
-			finished.call(targetList);
+			finished.call(targetList, targetList);
 		}
 		else
 		{
 			targetList.lastIndex = nextIndex;
-			targetList.func(values[nextIndex],
-				function()
-				{
-					targetList.callback();
-				});
+			targetList.func(values[nextIndex], targetList.callback);
+			/*
+			function()
+			{
+				targetList.callback();
+			});
+			*/
 		}
 	};
 	
@@ -964,123 +970,146 @@ var BrowserCouch = function(opts){
 				$.getJSON(this.url + "/" + id, {}, cb || function(){}); 
 			},
       
-			_put_or_post: function(method, doc, cb)
+			_put_or_post: function(method, doc, cb, options)
 			{
 				var database = this;
+				var ajax_result_data;
+				var default_options = {uri: (doc._id || "")};
+				options = jQuery.extend(default_options, options);
 				
 				jQuery.ajax({
-					url : this.url + "/" + (doc._id || ""), 
-					data : JSON.stringify(doc, this.functionReplacer),
-					type : method,
-					processData : false,
-					contentType : 'application/json',
-					complete: function SameDomainDB_put_or_post_cb(data)
+					url: this.url + "/" + options.uri, 
+					type: method,
+					data: JSON.stringify(doc, this.functionReplacer),
+					processData: false,
+					contentType: 'application/json',
+					dataType: 'json',
+					success: function SameDomainDB_put_or_post_success_cb(data)
+					{
+						ajax_result_data = data;
+					},
+					error: function SameDomainDB_put_or_post_error_cb(jqXHR,
+						textStatus, errorThrown)
+					{
+						throw new Error(textStatus + ": " + errorThrown);
+					},
+					complete: function SameDomainDB_put_or_post_complete_cb(data)
 					{
 						if (cb)
 						{
-							cb.call(database, data);
+							cb.call(database, ajax_result_data);
 						}
 					}
 				});
 			},
-      
-			post : function SameDomainDB_post(docs, cb_after_all_posted,
-				options)
-			{
-				if (!jQuery.isArray(docs))
-				{
-					docs = [docs];
-				}
 
+			// ==== Post one new document ====
+			// POST one document to the server, with the URI in doc._id
+			// for consistency, even though it doesn't exist yet. The
+			// callback is called with the response of the POST, which
+			// in the case of a _temp_view is the query results.
+      
+			post : function SameDomainDB_post(doc, callback, options)
+			{
+				this._put_or_post('POST', doc, callback, options);
+			},
+
+			// ==== Put one modified document ====
+			// PUT one document to the server, with the URI in doc._id
+			// (because this document already exists, and we're
+			// updating it). doc._rev is required by CouchDB.
+
+			put : function SameDomainDB_put(doc, callback, options)
+			{
+				this._put_or_post('PUT', doc, callback, options);
+			},
+
+			// ==== Post multiple new documents ====
+			// POST multiple documents to the server, with the URI
+			// optionally stored in each doc._id. Documents without a
+			// pre-assigned _id will be assigned one. Can optionally
+			// replace any existing documents, even if their _rev is
+			// not known, by executing a GET request for them first
+			// to find their current rev. Uses the bulk document
+			// API, http://wiki.apache.org/couchdb/HTTP_Bulk_Document_API
+						
+			post_multiple : function SameDomainDB_post(docs,
+				cb_after_all_posted, options)
+			{
 				var _options_closure = {};
 				jQuery.extend(_options_closure, options);
 				_options_closure.database = this;
+				_options_closure.documents = docs;
 				
-				docs.apply(
-					// function to apply to each element
-					function SameDomainDB_post_each_doc(doc, cb_after_each_posted)
+				new Nest(
+					_options_closure, // our context variable, p
+					function SameDomainDB_post_multiple_identify(p, nest)
 					{
-						_options_closure.current_doc = doc;
+						if (p.replace_existing)
+						{
+							// for documents with no _rev, need to check
+							// whether they exist first, and if so get
+							// their existing _rev, in order to replace them.
 					
-						new Nest(
-							_options_closure, // our context variable, p
-							function SameDomainDB_identify(p, i)
+							request = {keys: []};
+							index = {};
+					
+							for (var i in docs)
 							{
-								// p.doc must be set to the current document
-								p.doc_url = p.database.url + "/" + p.current_doc._id;
-								p.nest = i;
-						
-								if (p.replace_existing)
+								doc = docs[i];
+								if (doc._id && !doc._rev)
 								{
-									jQuery.ajax(
-									{
-										url: p.doc_url,
-										dataType: 'json',
-										success: function SameDomainDB_post_id_success_cb(data, textStatus, jqXHR)
-										{
-											// save the current revision in the document,
-											// to allow its replacement.
-											p.current_doc._rev = data._rev;
-										},
-										error: function SameDomainDB_post_id_error_cb(jqXHR, textStatus, errorThrown)
-										{
-											if (jqXHR.status == 404)
-											{
-												// doesn't exist, so continue
-												// without a _rev to allow it
-												// to be created.
-											}
-											else
-											{
-												// TODO subclass Error for this
-												throw Error("Server responded with " +
-													"error " + jqXHR.status +
-													"while uploading document " +
-													p.current_doc + ": " +
-													errorThrown);
-											}
-										},
-										complete: function SameDomainDB_post_id_complete_cb(jqXHR, textStatus)
-										{
-											// move on to POST or PUT the document
-											p.nest.next();
-										}
-									});
+									request.keys.push(doc._id);
+									index[doc._id] = doc;
 								}
-								else
-								{
-									p.nest.next();
-								}
-							},
-							function SameDomainDB_post_one(p, i)
-							{
-								p.database._put_or_post('PUT',
-									p.current_doc, cb_after_each_posted);
 							}
-							// end definition of iterator
-						).call(this);
-					},
-					// function to call after last element
-					cb_after_all_posted);
-			}, // end post() method
-
-			put : function SameDomainDB_put(docs, cb, options)
-			{
-				if (!jQuery.isArray(docs))
-				{
-					docs = [docs];
-				}
-
-				var that = this;
-				var _options_closure = options || {};
-
-				docs.apply(
-					function SameDomainDB_put_doc(doc, i)
+							
+							jQuery.ajax({
+								type: 'POST',
+								url: p.database.url + "/_all_docs",
+								dataType: 'json',
+								data: JSON.stringify(request),
+								success: function SameDomainDB_post_multiple_id_ok(data,
+									textStatus, jqXHR)
+								{
+									for (var i in data.rows)
+									{
+										var result = data.rows[i];
+										if (!result.error && result.value &&
+											result.value.rev)
+										{
+											var found_doc = index[result.id];
+											found_doc._rev = result.value.rev;
+										}
+									}
+									
+									nest.next();
+								}
+							});
+						}
+						else
+						{
+							nest.next();
+						}
+					}, /* SameDomainDB_post_multiple_identify */
+					function SameDomainDB_post_multiple_send(p, i)
 					{
-						that._put_or_post('PUT', doc, i);
-					},
-					cb);
-			},
+						jQuery.ajax({
+							type: 'POST',
+							url: p.database.url + "/_bulk_docs",
+							contentType: 'application/json',
+							dataType: 'json',
+							data: JSON.stringify({docs: p.documents}),
+							success: function SameDomainDB_post_multiple_id_ok(data,
+								textStatus, jqXHR)
+							{
+								cb_after_all_posted.call(p.database,
+									p.documents);
+							}
+						});
+					} /* SameDomainDB_post_multiple_send */
+				) /* Nest */ .call(this);
+			}, // end post() method
 
 			// ==== Get Changes ====
 			// We poll the {{{_changes}}} endpoint to get the most
@@ -1140,9 +1169,8 @@ var BrowserCouch = function(opts){
 
 				function run_view()
 				{
-					self.get(design_doc_id + "/" + view_name, function(results){
-						options.finished(results);
-					});
+					self.get(design_doc_id + "/" + view_name,
+						options.finished /* callback */);
 				}
 				
 				if (update_doc)
@@ -1158,16 +1186,21 @@ var BrowserCouch = function(opts){
 					
 					if (design_doc_id)
 					{
+						// PUT the new view and then execute the query
 						self.put(design_doc, run_view);
 					}
 					else
 					{
-						self.post(design_doc.views.temp, options.finished,
+						// POST a temporary view, returns the results
+						self._put_or_post('POST',
+							design_doc.views.temp,
+							options.finished,
 							{uri: "_temp_view"});
 					}
 				}
 				else
 				{
+					// GET existing view results
 					run_view();
 				}
 			}
