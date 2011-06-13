@@ -167,7 +167,7 @@ var Freebase_Prototype = {
 		self.list.empty();
 		
 		self.database.view({
-			map: function(doc, emit)
+			map: function(doc)
 			{
 				emit(doc._id, null);
 			},
@@ -176,14 +176,16 @@ var Freebase_Prototype = {
 				jQuery.each(results.rows,
 					function(i, result)
 					{
+						var result_id = result.id;
 						var div = jQuery('<div />').attr('class', 'fb-list-item');
-						var link = jQuery('<a />').attr('href', '#' + result._id);
+						var link = jQuery('<a />').attr('href', '#' + result_id);
 						link.click(function(e)
 							{
-								self.show(result._id);
+								self.show(result_id);
 								return false;
 							});
-						link.append(result._id);
+						// give the link a label:
+						link.append(document.createTextNode(result_id));
 						div.append(link);
 						self.list.append(div);
 					});
@@ -193,6 +195,8 @@ var Freebase_Prototype = {
 	
 	show: function(docid)
 	{
+		alert(docid);
+		
 		function appendRow(table, title, input_controls)
 		{
 			var row = jQuery('<tr />');
