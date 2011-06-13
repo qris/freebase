@@ -97,7 +97,7 @@ var Freebase_Prototype = {
 
 		if (!jQuery.isArray(sheets))
 		{
-		  sheets = [sheets];
+			sheets = [sheets];
 		}
 
 		jQuery.each(sheets, function(i, sheet)
@@ -106,7 +106,7 @@ var Freebase_Prototype = {
 			{
 				sheetUrl = sheet + ".css";
 				link = $('<link>').attr('rel', 'stylesheet');
-				link.attr('href', 'sheetUrl').appendTo("head");
+				link.attr('href', sheetUrl).appendTo("head");
 				window[sheet] = sheetUrl;
 			}
 		});
