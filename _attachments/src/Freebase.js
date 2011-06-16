@@ -195,6 +195,8 @@ var Freebase_Prototype = {
 	
 	show: function(docid)
 	{
+		var dialog_id = docid;
+		
 		function appendRow(table, title, input_controls)
 		{
 			var row = jQuery('<tr />');
@@ -204,10 +206,18 @@ var Freebase_Prototype = {
 		}
 		
 		var self = this;
-		var dialog = jQuery('<div />').attr({'class':'fb-show'});
+		var dialog = jQuery('<div />').attr({'id':dialog_id, 'class':'fb-show'});
 		var flash = jQuery('<div />').attr({'class':'fb-flash'});
 		flash.hide();
 		dialog.append(flash);
+		
+		function control_id(dialog_id, field_name)
+		{
+			var id = dialog_id + "_" + field_name;
+			// jQuery only allows these characters in IDs, and fails to
+			// find the node otherwise.
+			return id.replace(/[^\w-]/g, '-');
+		}
 		
 		self.database.get(docid,
 			function(doc)
@@ -224,21 +234,30 @@ var Freebase_Prototype = {
 					jQuery.each(doc,
 						function(key, val)
 						{
+							var input = jQuery('<input />');
+							
+							input.attr({
+								id: control_id(dialog_id, key),
+								name: key,
+								value: val,
+							});
+							
 							if (key.indexOf('_') != 0)
 							{
+								input.attr('type', 'text');
+
 								var row = jQuery('<tr />');
 								jQuery('<th />').text(key).appendTo(row);
 							
 								var td = jQuery('<td />');
-								var input = jQuery('<input />');
-								input.attr({
-									name: key,
-									value: val,
-									type: 'text'
-								});
 								td.append(input);
 								row.append(td);
 								table.append(row);
+							}
+							else
+							{
+								input.attr('type', 'hidden');
+								dialog.append(input);
 							}
 						});
 						
@@ -252,7 +271,8 @@ var Freebase_Prototype = {
 					submit.attr({type: 'button', value: 'Save'});
 					submit.click(function(e)
 						{
-							var newdoc = {_id: docid, _rev: rev};
+							var newdoc = {};
+							
 							dialog.find('input').each(function(index)
 								{
 									if (this.name)
@@ -268,7 +288,9 @@ var Freebase_Prototype = {
 										flash.addClass('fb-success-flash');
 										flash.text('Document saved.');
 										flash.show();
-										doc._rev = updated_doc._rev;
+										var control = document.getElementById(
+											control_id(dialog_id, '_rev'));
+										control.value = updated_doc.rev;
 									}
 								},
 								{
