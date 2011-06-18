@@ -1,9 +1,20 @@
+.fb-table
+{
+	height: 100%;
+	width: 100%;
+}
+
 .fb-nav
 {
-	float: left;
-	height: 100%;
-	background: #448;
+	width: 20em;
+	background: #ddf;
+	vertical-align: top;
 }
+
+.fb-nav a
+{
+	color: black;
+}	
 
 .fb-list
 {

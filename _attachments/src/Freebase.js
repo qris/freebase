@@ -122,6 +122,7 @@ var Freebase_Prototype = {
 	run: function(container)
 	{
 		self = this;
+		this.open_editors = [];
 		
 		this.loadCss([self.themeDir + "/jquery.ui.all", "style/freebase"]);
 				
@@ -135,36 +136,45 @@ var Freebase_Prototype = {
 				self.extLibDir + "/jquery.ui.draggable",
 				self.extLibDir + "/jquery.ui.position",
 				self.extLibDir + "/jquery.ui.resizable",
-				self.extLibDir + "/jquery.ui.dialog"
+				self.extLibDir + "/jquery.ui.dialog",
+				self.extLibDir + "/jquery.ui.tabs"
 			],
 			function()
 			{
-				if (!self.window)
-				{
-					self.window = jQuery('<div />');
-					self.construct();
-				}
-
-				container.empty();
-				self.window.appendTo(container);
-				self.window.dialog({autoOpen: false});
-				self.window.dialog('open');
-				
+				self.window = container;
+				self.construct();
 				self.refresh();
 			});
 	},
 	
 	construct: function()
 	{
+		var self = this;
 		var win = this.window.empty();
-		this.nav = jQuery('<div />').attr('class', 'fb-nav').appendTo(win);
-		this.list = jQuery('<div />').attr('class', 'fb-list').appendTo(win);
+		var table = jQuery('<table />').attr('class', 'fb-table').appendTo(win);
+		var tr = jQuery('<tr />').appendTo(table);
+		this.nav = jQuery('<td />').attr('class', 'fb-nav').appendTo(tr);
+		this.edit_area = jQuery('<td />').attr('class', 'fb-edit-area').appendTo(tr);
+		// jquery.ui.tabs requires a UL inside the area to be tabbed
+		jQuery('<ul />').appendTo(this.edit_area);
+		this.tabset = this.edit_area.tabs(
+		{
+			tabTemplate: "<li><a href='#{href}'>#{label}</a> " +
+				"<span class='ui-icon ui-icon-close'>Remove Tab</span></li>",
+			add: function(event, ui)
+			{
+				self.open_editors[ui.panel.id] = {
+					tab_index: ui.index,
+					panel: ui.panel
+				};
+			}
+		});
 	},
 	
 	refresh: function()
 	{
 		var self = this;
-		self.list.empty();
+		self.nav.empty();
 		
 		self.database.view({
 			map: function(doc)
@@ -187,37 +197,50 @@ var Freebase_Prototype = {
 						// give the link a label:
 						link.append(document.createTextNode(result_id));
 						div.append(link);
-						self.list.append(div);
+						self.nav.append(div);
 					});
 			}
 		});
 	},
 	
+	generate_id: function(/* varargs */)
+	{
+		var generated_id = "";
+		
+		for (var i = 0; i < arguments.length; i++)
+		{
+			if (i > 0) 
+			{
+				generated_id += "-";
+			}
+			
+			generated_id += arguments[i];
+		}
+		
+		// jQuery only allows these characters in IDs, and fails to
+		// find the node otherwise.
+		return generated_id.replace(/[^\w-]/g, '-');
+	},
+
 	show: function(docid)
 	{
-		var dialog_id = docid;
-		
-		function appendRow(table, title, input_controls)
+		var self = this;
+		var dialog_id = this.generate_id("fb-editor", docid);
+		if (dialog_id in this.open_editors)
 		{
-			var row = jQuery('<tr />');
-			jQuery('<th />').text(title).appendTo(row);
-			jQuery('<td />').append(input_controls).appendTo(row);
-			row.appendTo(table);
+			this.tabset.tabs('option', 'selected',
+				this.open_editors[dialog_id].tab_index);
+			return;
 		}
 		
-		var self = this;
-		var dialog = jQuery('<div />').attr({'id':dialog_id, 'class':'fb-show'});
+		var editor = jQuery('<div />');
+		editor[0].id = dialog_id;
+		this.edit_area.append(editor);
+		this.tabset.tabs('add', '#' + dialog_id, docid);
+		
 		var flash = jQuery('<div />').attr({'class':'fb-flash'});
 		flash.hide();
-		dialog.append(flash);
-		
-		function control_id(dialog_id, field_name)
-		{
-			var id = dialog_id + "_" + field_name;
-			// jQuery only allows these characters in IDs, and fails to
-			// find the node otherwise.
-			return id.replace(/[^\w-]/g, '-');
-		}
+		editor.append(flash);
 		
 		self.database.get(docid,
 			function(doc)
@@ -237,7 +260,7 @@ var Freebase_Prototype = {
 							var input = jQuery('<input />');
 							
 							input.attr({
-								id: control_id(dialog_id, key),
+								id: self.generate_id(dialog_id, key),
 								name: key,
 								value: val,
 							});
@@ -257,7 +280,7 @@ var Freebase_Prototype = {
 							else
 							{
 								input.attr('type', 'hidden');
-								dialog.append(input);
+								editor.append(input);
 							}
 						});
 						
@@ -273,7 +296,8 @@ var Freebase_Prototype = {
 						{
 							var newdoc = {};
 							
-							dialog.find('input').each(function(index)
+							editor.find('input').each(
+								function(index)
 								{
 									if (this.name)
 									{
@@ -289,7 +313,7 @@ var Freebase_Prototype = {
 										flash.text('Document saved.');
 										flash.show();
 										var control = document.getElementById(
-											control_id(dialog_id, '_rev'));
+											self.generate_id(dialog_id, '_rev'));
 										control.value = updated_doc.rev;
 									}
 								},
@@ -309,8 +333,7 @@ var Freebase_Prototype = {
 					row.append(td);
 					table.append(row);
 					
-					dialog.append(table);
-					dialog.dialog();
+					editor.append(table);
 				}
 			});
 	},
