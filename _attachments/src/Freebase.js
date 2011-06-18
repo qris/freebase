@@ -163,10 +163,24 @@ var Freebase_Prototype = {
 				"<span class='ui-icon ui-icon-close'>Remove Tab</span></li>",
 			add: function(event, ui)
 			{
+				// select the newly added tab
+				self.tabset.tabs('select', '#' + ui.panel.id);
+				
 				self.open_editors[ui.panel.id] = {
 					tab_index: ui.index,
 					panel: ui.panel
 				};
+			
+				// http://jqueryui.com/demos/tabs/#manipulation	
+				// close icon: removing the tab on click
+				// note: closable tabs gonna be an option in the future - see http://dev.jqueryui.com/ticket/3924
+				jQuery("span.ui-icon-close", ui.tab.parentNode).live("click",
+					function()
+					{
+						var index = $("li", self.tabset).index($(this).parent());
+						self.tabset.tabs("remove", index);
+						delete self.open_editors[ui.panel.id];
+					});
 			}
 		});
 	},

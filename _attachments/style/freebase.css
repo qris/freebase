@@ -16,8 +16,9 @@
 	color: black;
 }	
 
-.fb-list
+.fb-edit-area
 {
+	vertical-align: top;
 }
 
 table.fb-doc-auto
