@@ -4,7 +4,72 @@
 //
 // jQuery is required for everything. Load it first.
 
-var Freebase_Prototype = {
+function Freebase(database)
+{
+	this.database = database;
+};
+
+jQuery.extend(Freebase, // static methods
+{
+	table_id: function(table_name)
+	{
+		return '_design/' + table_name;
+	},
+	
+	is_table: function(object_id)
+	{
+		return object_id.indexOf('_design/') == 0;
+	},
+	
+	TABLE_FIELD: "$fb_table",
+	
+	/*
+	This is the constructor for a Table document, which stores the structure
+	(columns) and built-in views of a table. A table in Freebase is the
+	subset of our documents which have their "table" property set to the name
+	of this table. Tables documents are design documents, so they contain
+	views. All documents in the table are returned by the "all" view in its
+	design document.
+	*/
+	TableDocument: function(name, columns)
+	{
+		// return a function, not an object, so we can use it to create
+		// records with e.g. new Message(...)
+		var table_doc = function(attributes)
+		{
+			jQuery.extend(this, attributes);
+			this[Freebase.TABLE_FIELD] = name;
+		}
+		
+		table_doc._id = Freebase.table_id(name);
+		table_doc.name = name;
+		table_doc.columns = columns;
+		
+		// the only required view in a table is "all"
+		table_doc.views = {
+			all: {
+				map: "function(doc) " +
+					"{ " +
+					"if (doc." + Freebase.TABLE_FIELD + " == '" + name + "') { " +
+					"emit(doc._id, doc);" +
+					"} " +
+					"}"
+			}
+		};
+		
+		table_doc.toDocument = function()
+		{
+			var document = {};
+			jQuery.extend(document, this);
+			return document;
+		};
+		
+		return table_doc;
+	}
+});
+
+jQuery.extend(Freebase.prototype, // class methods
+{
 	// === {{{ Freebase.libDir }}} ===
 	// === {{{ Freebase.extLibDir }}} ===
 	// === {{{ Freebase.themeDir }}} ===
@@ -259,13 +324,40 @@ var Freebase_Prototype = {
 		self.database.get(docid,
 			function(doc)
 			{
-				if ('controls' in doc)
+				if (Freebase.is_table(docid))
 				{
-					// TODO render controls
+					// show all records in the table
+					editor.attr({'class':'fb-datagrid-editor'});
+					
+					var table_tag = jQuery('<table />').attr({'class':'fb-datagrid'});
+					var columns = doc.columns;
+					var tr = jQuery('<tr />').append(table_tag);
+					
+					for (var i in columns)
+					{
+						var th = jQuery('<th />').text(columns[i].name).append(tr);
+					}
+					
+					var all_results = self.database.get(docid + "/view/all");
+					for (var r in all_results.rows)
+					{
+						var tr = jQuery('<tr />').append(table_tag);
+						var result = all_results.rows[r];
+						
+						for (var c in columns)
+						{
+							var column_name = columns[c];
+							var content = result.value[column_name];
+							var td = jQuery('<td />').text(content).append(tr);
+						}
+					}
+					
+					table_tag.append(editor);
 				}
 				else
 				{
 					// auto-render something usable
+					editor.attr({'class':'fb-doc-editor'});
 
 					var table = jQuery('<table />').attr({'class':'fb-doc-auto'});
 					jQuery.each(doc,
@@ -360,13 +452,5 @@ var Freebase_Prototype = {
 	withErrorHandlers: function(handlers, protectedCode)
 	{
 		
-	}
-};
-
-function Freebase(database)
-{
-	this.database = database;
-};
-
-Freebase.prototype = Freebase_Prototype;
-
+	},
+});

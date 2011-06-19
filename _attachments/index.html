@@ -44,9 +44,12 @@
 		$(document).ready(new Nest({},
 			function(p, i)
 			{
+				Message = new Freebase.TableDocument('messages',
+					[{name: "body", type: String}]);
 				p.testDbContents = [
-					{_id: "monkey", content: "hello there dude"},
-					{_id: "chunky", content: "hello there dogen"}
+					Message.toDocument(),
+					new Message({_id: "monkey", body: "hello there dude"}),
+					new Message({_id: "chunky", body: "hello there dogen"})
 				];
 				
 				p.baseUrl = window.location.protocol + "//" + window.location.host;
