@@ -255,12 +255,8 @@ jQuery.extend(Freebase.prototype, // class methods
 		var self = this;
 		self.nav.empty();
 		
-		self.database.view({
-			map: function(doc)
-			{
-				emit(doc._id, null);
-			},
-			finished: function(results)
+		self.database.get('_all_docs',
+			function(results)
 			{
 				jQuery.each(results.rows,
 					function(i, result)
@@ -278,27 +274,21 @@ jQuery.extend(Freebase.prototype, // class methods
 						div.append(link);
 						self.nav.append(div);
 					});
-			}
-		});
+			});
 	},
 	
 	generate_id: function(/* varargs */)
 	{
-		var generated_id = "";
+		var parts = [];
 		
 		for (var i = 0; i < arguments.length; i++)
 		{
-			if (i > 0) 
-			{
-				generated_id += "-";
-			}
-			
-			generated_id += arguments[i];
+			// jQuery only allows these characters in IDs, and fails to
+			// find the node otherwise.
+			parts[i] = arguments[i].replace(/[^\w-]/g, '-');
 		}
 		
-		// jQuery only allows these characters in IDs, and fails to
-		// find the node otherwise.
-		return generated_id.replace(/[^\w-]/g, '-');
+		return parts.join("-");	
 	},
 
 	show: function(docid)
@@ -330,29 +320,37 @@ jQuery.extend(Freebase.prototype, // class methods
 					editor.attr({'class':'fb-datagrid-editor'});
 					
 					var table_tag = jQuery('<table />').attr({'class':'fb-datagrid'});
+					table_tag.appendTo(editor);
+					
 					var columns = doc.columns;
-					var tr = jQuery('<tr />').append(table_tag);
+					var tr = jQuery('<tr />').appendTo(table_tag);
+					var num_columns = columns.length;
 					
-					for (var i in columns)
+					for (var c = 0; c < num_columns; c++)
 					{
-						var th = jQuery('<th />').text(columns[i].name).append(tr);
+						var th = jQuery('<th />').text(columns[c].name).appendTo(tr);
 					}
 					
-					var all_results = self.database.get(docid + "/view/all");
-					for (var r in all_results.rows)
-					{
-						var tr = jQuery('<tr />').append(table_tag);
-						var result = all_results.rows[r];
-						
-						for (var c in columns)
+					self.database.get(docid + "/_view/all",
+						function(all_results)
 						{
-							var column_name = columns[c];
-							var content = result.value[column_name];
-							var td = jQuery('<td />').text(content).append(tr);
-						}
-					}
-					
-					table_tag.append(editor);
+							var num_rows = all_results.rows.length;
+							
+							for (var r = 0; r < num_rows; r++)
+							{
+								var result = all_results.rows[r];
+								var tr = jQuery('<tr />').appendTo(table_tag);
+						
+								for (var c = 0; c < num_columns; c++)
+								{
+									var column = columns[c];
+									var content = result.value[column.name];
+									var td = jQuery('<td />');
+									td.text(content);
+									td.appendTo(tr);
+								}
+							}
+						});
 				}
 				else
 				{
