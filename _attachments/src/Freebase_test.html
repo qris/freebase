@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+<!--
+Based on goog.array.array_test.html from Google Closure
+-->
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>Freebase Unit Tests - com.qwirx.freebase.Freebase</title>
+<script src="../ext/closure-library/closure/goog/base.js"></script>
+<script src="Freebase.deps.js"></script>
+<script src="Freebase.js"></script>
+<script>
+  goog.require('com.qwirx.freebase.Freebase');
+  goog.require('com.qwirx.freebase.TableDocument');
+  goog.require('goog.dom.NodeIterator');
+  goog.require('goog.testing.PropertyReplacer');
+  goog.require('goog.testing.jsunit');
+  goog.require('goog.testing.recordFunction');
+</script>
+</head>
+<body>
+<script>
+
+// import Freebase, TableDocument and other classes
+com.qwirx.freebase.import(this, com.qwirx.freebase);
+
+function testFreebaseConstructor()
+{
+	var fb = new Freebase();
+	assertEquals(fb.constructor, Freebase);
+}
+
+function testFreebaseTableId()
+{
+	var expected = '_design/Foobar';
+	assertEquals(Freebase.getTableId('Foobar'), expected);
+	assertEquals(Freebase.isTableId(expected), true);
+}
+
+function testTableDocumentConstructor()
+{
+	var name = 'Foobar';
+	var cols = [{name: "foo", type: String},
+		{name: "bar", type: Number}];
+	var td = new TableDocument(name, cols);
+	assertEquals(td.constructor, TableDocument);
+	assertEquals(td._id, Freebase.getTableId(name));
+	assertEquals(td.name, name);
+	assertEquals(td.columns, cols);
+	
+	var all_view = "function(doc) " +
+		"{ " +
+		"if (doc." + Freebase.TABLE_FIELD + " == '" + td.name + "') { " +
+		"emit(doc._id, doc);" +
+		"} " +
+		"}";
+	assertObjectEquals(td.views.all, {map: all_view});
+}
+
+function MockFreebase()
+{
+	this.objectStore = {};
+	this.app = {models: {}};
+}
+
+goog.inherits(MockFreebase, goog.events.EventTarget);
+
+MockFreebase.prototype.deepCopy =  function(object)
+{
+	return JSON.parse(JSON.stringify(object));
+};
+
+MockFreebase.prototype.get = function(documentId, onSuccess, onError)
+{
+	return this._get(documentId, onSuccess, onError);
+};
+
+MockFreebase.prototype.findAll =  function(designName, onSuccess, onError)
+{
+	return this._get('_design/' + designName + '/_view/all', onSuccess,
+		onError);
+};
+
+MockFreebase.prototype.listAll = function(onSuccess, onError)
+{
+	return this._get('_all_docs', onSuccess, onError);
+};
+
+MockFreebase.prototype._get = function(uri, onSuccess, onError)
+{
+	var selector;
+	
+	if (uri == "_design/Foobar/_view/all")
+	{
+		selector = function(o)
+		{
+			return (o[Freebase.TABLE_FIELD] == 'Foobar');
+		}
+	}
+	else if (uri == '_all_docs')
+	{
+		selector = function(o)
+		{
+			return true;
+		}
+	}
+	else if (uri in this.objectStore)
+	{
+		onSuccess(this.objectStore[uri]);
+		return;
+	}
+	else
+	{
+		throw new Error("unexpected URI: " + uri);
+	}
+	
+	var foundRows = [];
+	
+	for (var i in this.objectStore)
+	{
+		var o = this.objectStore[i];
+		
+		if (selector(o))
+		{
+			foundRows.push(this.deepCopy(o));
+		}
+	}
+	
+	onSuccess({rows: foundRows});
+};
+
+MockFreebase.prototype.save = function(object, onSuccess, onError)
+{
+	if (object._id && object._id.indexOf('_design/') == 0)
+	{
+		this.app.models[object.modelName] = com.qwirx.freebase.Model(
+			object.modelName, this, object.columns);
+	}
+	
+	if (!object._id)
+	{
+		object._id = "mock_" + (Math.random() + "").substring(2);
+	}
+	
+	this.objectStore[object._id] = this.deepCopy(object);
+	this.dispatchEvent(new DocumentSaved(object));
+	onSuccess(object._id);
+};
+
+MockFreebase.prototype.create$ = function(object, onSuccess, onError)
+{
+	if (object._id && this.objectStore[object._id])
+	{
+		onError(this, document, new Error("Failed to create document: " +
+			"already exists: " + object._id));
+	}
+	else
+	{
+		this.save(object, onSuccess, onError);
+	}
+}
+
+MockFreebase.prototype.attachEvent = function()
+{
+	// appears to be required by events.js line 232, but is
+	// undocumented, and I don't think we need it anyway.
+}
+
+var mockFreebase = new MockFreebase();
+
+function testModelBuilder()
+{
+	var name = 'Foobar';
+	var cols = [{name: "foo", type: 'String'},
+		{name: "bar", type: 'Number'}];
+	
+	var Foobar = Model(name, mockFreebase, cols);
+	assertEquals(mockFreebase, Foobar.freebase);
+	assertEquals(name, Foobar.modelName);
+	assertObjectEquals(com.qwirx.freebase.ModelClass.findAll,
+		Foobar.findAll);
+
+	var results;
+	function collectResults(r)
+	{
+		results = r;
+	};
+	
+	Foobar.findAll({}, collectResults);
+	assertObjectEquals([], results);
+	
+	var frob = new Foobar();
+	assertEquals(undefined, frob._id);
+	Foobar.findAll({}, collectResults);
+	assertObjectEquals([], results);
+
+	mockFreebase.save(frob, function(){});
+	assertNotNull(frob._id);
+	assertEquals("Foobar", frob[Freebase.TABLE_FIELD]);
+	// assertEquals("fb.Record", frob[Freebase.CLASS_FIELD]);
+	
+	Foobar.findAll({}, collectResults);
+	assertObjectEquals([frob], results);
+
+	mockFreebase.findAll(Foobar.modelName, collectResults);
+	assertObjectEquals([frob.toDocument()], results.rows);
+
+	var e = assertThrows('Database should reject saving a second copy ' +
+		'of the model document', function()
+		{
+			mockFreebase.create$(Model(name, mockFreebase, cols),
+				function(){});
+		});
+	
+	/*
+	Foobar.findFirst({}, collectResults);
+	assertObjectEquals(frob, results);
+	*/
+}
+
+function assertMessage(optional_comment, internal_details)
+{
+	if (optional_comment)
+	{
+		return optional_comment + " (" + internal_details + ")";
+	}
+	else
+	{
+		return internal_details;
+	}
+}
+
+function assertTreeContents(tree, freebase, optional_comment)
+{
+	var ids = goog.object.getKeys(freebase.objectStore).sort();
+	var len = ids.length;
+	var objects = freebase.objectStore;
+	var node;
+	
+	for (var i = 0; i < len; i++)
+	{
+		var id = ids[i];
+		var object = objects[id];
+		var node = tree.getChildAt(i);
+		assertNotNull(assertMessage(optional_comment,
+			"Item with ID " + id + " (index " + i + ") " +
+			"missing from tree"), node);
+		assertEquals(assertMessage(optional_comment,
+			"Wrong label or different item in tree at index " + i),
+			id, node.getText());
+	}
+	
+	if (tree.hasChildren())
+	{
+		assertObjectEquals(assertMessage(optional_comment,
+			"Unexpected children in tree from number " + len),
+			[], tree.children_.slice(len));
+	}
+}
+
+function testFreebaseGuiRun()
+{
+	var mockDocument = goog.dom.createDom(goog.dom.TagName.DIV,
+		{'style': 'background-color: #eee;'});
+	goog.dom.appendChild(document.body, mockDocument);
+	var gui = new Freebase.Gui(mockFreebase);
+	gui.run(mockDocument);
+	
+	var i = new goog.dom.NodeIterator(mockDocument);
+	assertEquals(mockDocument, i.next());
+	assertEquals(gui.splitter_.getElement(), i.next());
+	assertEquals(goog.ui.SplitPane.FIRST_CONTAINER_CLASS_NAME_,
+		i.next().className);
+	assertEquals(gui.navigator_.getElement(), i.next());
+	i.skipTag();
+	assertEquals(goog.ui.SplitPane.SECOND_CONTAINER_CLASS_NAME_,
+		i.next().className);
+	assertEquals(gui.editArea_.getElement(), i.next());
+	i.skipTag();
+	var e = assertThrows(i.next);
+	assertEquals(goog.iter.StopIteration, e);
+	
+	assertEquals(goog.ui.tree.TreeControl, gui.navigator_.constructor);
+	assertTrue(gui.navigator_ instanceof goog.ui.tree.TreeControl);	
+	assertTreeContents(gui.navigator_, mockFreebase, "Tree should " +
+		"have been initialised at construction to show the initial " +
+		"database contents");
+	
+	var Cat = Model('Cat', mockFreebase, [{name: 'name', type: 'String'},
+		{name: 'age', type: 'Number'}]);
+	assertObjectEquals({}, mockFreebase.objectStore);
+
+	var catDoc = Cat.toDocument();
+	mockFreebase.create$(catDoc, function(){});
+	assertObjectEquals('The Model Document should have been saved in the database',
+		mockFreebase.objectStore[catDoc._id], catDoc);
+	assertObjectEquals('The reconstructed Model class should be ' +
+		'identical to the one that produced the Model Document',
+		Cat, mockFreebase.app.models.Cat);
+	Cat = mockFreebase.app.models.Cat;
+	assertTreeContents(gui.navigator_, mockFreebase, "Tree should have " +
+		"been updated with the new model document");
+		
+	Badger = Model('Badger', mockFreebase, [{name: 'name', type: 'String'},
+		{name: 'set', type: 'Object'}]);
+	mockFreebase.create$(Badger.toDocument(), function(){});
+	assertNotNull('Badger should be in the database after saving it',
+		mockFreebase.objectStore[Badger.toDocument()._id]);
+	assertTreeContents(gui.navigator_, mockFreebase, "Tree should have " +
+		"been updated with nodes in sort order");
+
+	mockFreebase.save(catDoc, function(){});
+	assertTreeContents(gui.navigator_, mockFreebase,
+		'Save should not create a duplicate tree node');
+	
+	var catNode = gui.navigator_.getChildAt(1);
+	assertEquals(Cat.getId(), catNode.getModel().id);
+	assertObjectEquals({}, gui.openDocumentsById_);
+	catNode.select();
+	var editor = gui.openDocumentsById_[Cat.getId()];
+	assertNotNull(editor);
+	assertTrue(goog.style.isElementShown(editor.editorControl_.getElement()));
+	editor.close();
+	assertObjectEquals({}, gui.openDocumentsById_);	
+	assertNull(editor.editorControl_.getElement());
+
+	// open the badger document by selecting it from the tree	
+	var badgerNode = gui.navigator_.getChildAt(0);
+	assertEquals(Badger.getId(), badgerNode.getModel().id);
+	badgerNode.select();
+	var badgerEditor = gui.openDocumentsById_[Badger.getId()];
+	assertEquals(badgerEditor.tab_, gui.editAreaDocTabs_.getSelectedTab());
+	assertTrue(goog.style.isElementShown(badgerEditor.editorControl_.getElement()));
+
+	// open the cat document by selecting it from the tree, check that
+	// the badger tab is no longer active and the document is hidden
+	catNode.select();
+	var catEditor = gui.openDocumentsById_[Cat.getId()];
+	assertEquals(catEditor.tab_, gui.editAreaDocTabs_.getSelectedTab());
+	assertEquals(Cat.getId(), catNode.getModel().id);
+	assertFalse(goog.style.isElementShown(badgerEditor.editorControl_.getElement()));
+	assertTrue(goog.style.isElementShown(catEditor.editorControl_.getElement()));
+	
+	// switch docs by opening badger again
+	badgerNode.select();
+	assertEquals(badgerEditor.tab_, gui.editAreaDocTabs_.getSelectedTab());
+	assertTrue(goog.style.isElementShown(badgerEditor.editorControl_.getElement()));
+	assertFalse(goog.style.isElementShown(catEditor.editorControl_.getElement()));
+	
+	badgerEditor.close(); // close inactive tab
+	catEditor.close(); // close active tab
+	assertObjectEquals({}, gui.openDocumentsById_);	
+}
+
+</script>
+</body>
+</html>
