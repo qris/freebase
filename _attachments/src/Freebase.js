@@ -613,12 +613,14 @@ com.qwirx.freebase.Grid.prototype.createDom = function()
 		var th = column.tableCell = this.dom_.createDom('th', {},
 			column.caption);
 		colHeadingCells.push(th);
-		
 	}
 	
 	var headingRow = this.headingRow_ = this.dom_.createDom('tr', {},
 		colHeadingCells);
 	this.element_.appendChild(headingRow);
+	
+	this.rowCount_ = 0;
+	this.rows_ = [];
 };
 
 com.qwirx.freebase.Grid.prototype.addRow = function(columns)
@@ -634,9 +636,24 @@ com.qwirx.freebase.Grid.prototype.addRow = function(columns)
 		cells.push(td);
 	}
 	
-	var newRow = this.dom_.createDom('tr', {}, cells);
-	this.element_.appendChild(newRow);
+	var newTableRow = this.dom_.createDom('tr', {}, cells);
+	this.element_.appendChild(newTableRow);
+	
+	var newRowIndex = this.rowCount_;
+	this.rowCount_++;
+	this.rows_.push(columns);
+	return newRowIndex;
 };
+
+com.qwirx.freebase.Grid.prototype.getRowCount = function()
+{
+	return this.rowCount_;
+}
+
+com.qwirx.freebase.Grid.prototype.getRow = function(rowIndex)
+{
+	return this.rows_[rowIndex];
+}
 
 com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
 	opt_renderer, opt_tabbar, opt_editarea)
@@ -645,6 +662,7 @@ com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
 	this.freebase_ = freebase;
 	this.document_ = document;
 	this.documentId_ = (document ? document._id : null);
+	var self = this;
 	
 	if (opt_editarea)
 	{
@@ -656,36 +674,38 @@ com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
 		{
 			// show all records in the table
 			
-			var columnsGridInfo = [];
+			var columnsGridInfo = [{caption: 'ID'}];
+			
 			var numCols = document.columns.length;
 			for (var i = 0; i < numCols; i++)
 			{
-				columnsGridInfo[i] = {caption: document.columns[i].name};
+				columnsGridInfo[i + 1] = {caption: document.columns[i].name};
 			}
 			
 			var grid = this.grid_ = new com.qwirx.freebase.Grid(columnsGridInfo);
 			grid.addClassName('fb-datagrid');
 			grid.render(editorControl.getElement());
 			
+			// register a DocumentSaved event listener to update the grid
+			// if a document shown in this grid is modified.
+			goog.events.listen(freebase,
+				com.qwirx.freebase.DocumentSaved.EVENT_TYPE,
+				function(event) { self.onDocumentSaved(event) });
+				
+			var rowMap = this.rowMap_ = {};
+			
 			freebase.view(this.documentId_, 'all',
 				function(all_results)
 				{
-					var num_rows = all_results.rows.length;
+					var numRows = all_results.rows.length;
 					
-					for (var r = 0; r < num_rows; r++)
+					for (var r = 0; r < numRows; r++)
 					{
 						var result = all_results.rows[r];
-						var columnCells = [];
-				
-						for (var c = 0; c < num_columns; c++)
-						{
-							var column = document.columns[c];
-							var content = result.value[column.name];
-							var cell = {value: content};
-							columnCells.push(cell);
-						}
-						
-						grid.addRow(columnCells);
+						var columnCells = this.getGridColumnData(result,
+							numCols);
+						var rowIndex = grid.addRow(columnCells);
+						rowMap[document._id] = rowIndex;
 					}
 				});
 		}
@@ -843,6 +863,102 @@ com.qwirx.freebase.DocumentEditor.prototype.close = function()
 	}
 };
 
+com.qwirx.freebase.DocumentEditor.prototype.getDocumentRowIndex =
+	function(documentId)
+{
+	return this.rowMap_[documentId];
+};
+
+com.qwirx.freebase.DocumentEditor.prototype.getDataGrid = function()
+{
+	return this.grid_;
+};
+
+/**
+ * Converts a document (a model object) into the cell data that should
+ * be displayed in the grid for this document.
+ */
+com.qwirx.freebase.DocumentEditor.prototype.getGridColumnData =
+	function(document, opt_numColumns)
+{
+	var model = this.document_;
+	var numColumns = opt_numColumns || model.columns.length;
+	var columnCells = [{value: document._id}];
+	
+	for (var c = 0; c < numColumns; c++)
+	{
+		var column = model.columns[c];
+		var content = document[column.name];
+		var value;
+		
+		if (column.type == "String")
+		{
+			if (content == undefined)
+			{
+				value = "(undefined)";
+			}
+			else
+			{
+				value = content;
+			}
+		}
+		else if (column.type == "Number")
+		{
+			if (content == undefined)
+			{
+				value = "";
+			}
+			else
+			{
+				value = "" + content;
+			}
+		}
+		else
+		{
+			if (content == undefined)
+			{
+				value = "(undefined " + column.type + ")";
+			}
+			else
+			{
+				value = content.toString();
+			}
+		}
+		
+		var cell = {value: value};
+		columnCells[c + 1] = cell;
+	}
+	
+	return columnCells;
+};
+
+/**
+ * Event handler for DocumentSaved events fired at the database, which
+ * updates the grid if a document is modified or created which the
+ * grid should display.
+ */
+com.qwirx.freebase.DocumentEditor.prototype.onDocumentSaved = function(event)
+{
+	var grid = this.grid_;
+	
+	if (grid)
+	{
+		var document = event.getDocument();
+		var existingRowIndex = this.rowMap_[document._id];
+		
+		if (existingRowIndex)
+		{
+			grid.updateRow(existingRowIndex,
+				this.getGridColumnData(document));
+		}
+		else
+		{
+			var newRowIndex = grid.addRow(this.getGridColumnData(document));
+			this.rowMap_[document._id] = newRowIndex;
+		}
+	}
+};
+
 com.qwirx.freebase.Freebase.Gui.prototype.construct = function()
 {
 	this.loadCss('../ext/closure-library/closure/goog/css/tree');
@@ -852,10 +968,6 @@ com.qwirx.freebase.Freebase.Gui.prototype.construct = function()
 		'goog/images/tree/cleardot.gif';
 	var navigator = this.navigator_ =
 		new goog.ui.tree.TreeControl('localhost', treeConfig);
-	/*	
-    var editor = this.editAreaDocTabs_    = new goog.ui.Textarea('Hi there, ' +
-		'I am a programmatic textarea.');
-	*/
 
 	var editArea = this.editArea_ = new com.qwirx.freebase.DocumentArea();
 	
@@ -868,32 +980,11 @@ com.qwirx.freebase.Freebase.Gui.prototype.construct = function()
 	var editAreaDocTabs = this.editAreaDocTabs_ = new goog.ui.TabBar();
 	editAreaDocTabs.render(editArea.getTabsCell());
 	
-	/*
-	editor.addChild(new goog.ui.Tab('Hello',
-		com.qwirx.freebase.ClosableTabRenderer.getInstance()),
-		true);
-	editor.addChild(new goog.ui.Tab('Test',
-		com.qwirx.freebase.ClosableTabRenderer.getInstance()),
-		true);
-	editAreaDocTabs.addChild(new com.qwirx.freebase.ClosableTab('Hello'), true);
-	editAreaDocTabs.addChild(new com.qwirx.freebase.ClosableTab('Test'),  true);
-	*/
-
 	goog.events.listen(navigator, goog.events.EventType.CHANGE,
 		this.onDocumentOpen, false, this);
-	/*
-	goog.events.listen(editAreaDocTabs, goog.events.EventType.CHANGE,
-		this.onDocumentSwitch, false, this);
-	*/
 	
 	this.editAreaDocDivRenderer = goog.ui.ContainerRenderer.getCustomRenderer(
 		goog.ui.ContainerRenderer, 'fb-edit-area-doc-div');
-	
-	/*
-	var textarea = this.textarea_ = new goog.ui.Textarea('Hi there, ' +
-		'I am a programmatic textarea.');
-	textarea.render(goog.dom.getElement(this.window));
-	*/
 	
 	return;
 	
@@ -1019,25 +1110,32 @@ com.qwirx.freebase.Freebase.Gui.prototype.onDocumentSaved = function(event)
 
 com.qwirx.freebase.Freebase.Gui.prototype.onDocumentOpen = function(event)
 {
-	var selectedNode = this.navigator_.getSelectedItem();
-	var openedId = selectedNode.getModel().id;
+	this.openDocument(this.navigator_.getSelectedItem().getModel().id,
+		function onSuccess(){});
+};
+
+com.qwirx.freebase.Freebase.Gui.prototype.openDocument =
+	function(openedId, onSuccess)
+{
 	var alreadyOpenEditor = this.openDocumentsById_[openedId];
 	
 	if (alreadyOpenEditor)
 	{
 		alreadyOpenEditor.activate();
+		onSuccess(alreadyOpenEditor);
 	}
 	else
 	{
 		var self = this;
-		this.fb_.get(openedId,
-			function onSuccess(document)
+		return this.fb_.get(openedId,
+			function onGetSuccess(document)
 			{
-				self.openDocumentsById_[openedId] =
+				var editor = self.openDocumentsById_[openedId] =
 					new DocumentEditor(self, self.fb_, document,
 						self.editAreaDocDivRenderer,
 						self.editAreaDocTabs_,
 						self.editArea_.getDocCell());
+				onSuccess(editor);
 			},
 			function onError(exception)
 			{

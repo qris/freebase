@@ -490,7 +490,35 @@ function testFreebaseGuiRun()
 	
 	badgerEditor.close(); // close inactive tab
 	catEditor.close(); // close active tab
-	assertObjectEquals({}, gui.openDocumentsById_);	
+	assertObjectEquals({}, gui.openDocumentsById_);
+	
+	// open the Cat document, showing a list of Cats
+	var editor = assertCallback(function(c)
+		{ gui.openDocument(Cat.getId(), c); })[0];
+	
+	// create a few cats
+	old = new Cat({name: "Old Deuteronomy", age: 82});
+	mockFreebase.save(old, function(){});
+	etc = new Cat({name: "Etcetera", age: 0});
+	mockFreebase.save(etc, function(){});
+	
+	// should have been added to the tree automatically
+	assertEquals(etc._id, gui.navigator_.getChildAt(2).getModel().id);
+	assertEquals(old._id, gui.navigator_.getChildAt(3).getModel().id);
+	
+	// data grid should have been updated
+	var grid = editor.getDataGrid();
+	assertEquals(2, grid.getRowCount());
+
+	var row = grid.getRow(editor.getDocumentRowIndex(etc._id));
+	assertEquals(etc._id,  row[0].value);
+	assertEquals(etc.name, row[1].value);
+	assertEquals("" + etc.age, row[2].value);
+
+	row = grid.getRow(editor.getDocumentRowIndex(old._id));
+	assertEquals(old._id,  row[0].value);
+	assertEquals(old.name, row[1].value);
+	assertEquals("" + old.age, row[2].value);
 }
 
 </script>
