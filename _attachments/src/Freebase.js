@@ -645,6 +645,24 @@ com.qwirx.freebase.Grid.prototype.addRow = function(columns)
 	return newRowIndex;
 };
 
+/**
+ * Replace the existing contents of the existing row identified by
+ * rowIndex with the new contents in the array of columns provided.
+ */
+com.qwirx.freebase.Grid.prototype.updateRow = function(rowIndex, columns)
+{
+	var oldRow = this.rows_[rowIndex];
+	var numCols = columns.length;
+	var cells = [];
+	
+	for (var i = 0; i < numCols; i++)
+	{
+		var column = columns[i];
+		var td = oldRow[i].tableCell;
+		td.innerHTML = oldRow[i].value = column.value;
+	}
+};
+
 com.qwirx.freebase.Grid.prototype.getRowCount = function()
 {
 	return this.rowCount_;
