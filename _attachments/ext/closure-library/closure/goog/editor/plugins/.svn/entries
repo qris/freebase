@@ -1,15 +1,15 @@
 10
 
 dir
-1048
+1186
 http://closure-library.googlecode.com/svn/trunk/closure/goog/editor/plugins
 http://closure-library.googlecode.com/svn
 
 
 
-2011-06-01T23:09:53.000000Z
-991
-nicksantos@google.com
+2011-07-21T23:12:40.000000Z
+1143
+bills@google.com
 
 
 
@@ -127,6 +127,43 @@ has-props
 
 
 64284
+
+equation
+dir
+
+equationeditorplugin.js
+file
+
+
+
+
+2011-08-03T23:09:22.339150Z
+30f31b6a351d880205d1934412610423
+2011-07-21T23:12:40.000000Z
+1143
+bills@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+10342
 
 undoredo.js
 file
@@ -570,6 +607,40 @@ has-props
 
 11423
 
+equationeditorplugin_test.html
+file
+
+
+
+
+2011-08-03T23:09:22.339150Z
+5956492e43e39bcb417a5f306cd9fbd5
+2011-07-21T23:12:40.000000Z
+1143
+bills@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4112
+
 headerformatter_test.html
 file
 
@@ -808,40 +879,6 @@ has-props
 
 2643
 
-abstracttabhandler_test.html
-file
-
-
-
-
-2011-06-19T11:10:05.000000Z
-d6f1b22c4a4ba01d81de2724aa515660
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2714
-
 removeformatting_test.html
 file
 
@@ -875,6 +912,40 @@ has-props
 
 
 35136
+
+abstracttabhandler_test.html
+file
+
+
+
+
+2011-06-19T11:10:05.000000Z
+d6f1b22c4a4ba01d81de2724aa515660
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2714
 
 loremipsum_test.html
 file
@@ -978,40 +1049,6 @@ has-props
 
 1761
 
-abstracttabhandler.js
-file
-
-
-
-
-2011-06-19T11:10:05.000000Z
-60bf1d1b46e86ed00d65e6a44f37da41
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2591
-
 removeformatting.js
 file
 
@@ -1045,6 +1082,40 @@ has-props
 
 
 28608
+
+abstracttabhandler.js
+file
+
+
+
+
+2011-06-19T11:10:05.000000Z
+60bf1d1b46e86ed00d65e6a44f37da41
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2591
 
 loremipsum.js
 file

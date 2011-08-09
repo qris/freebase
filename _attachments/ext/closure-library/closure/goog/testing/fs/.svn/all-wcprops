@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
-V 47
-/svn/!svn/ver/850/trunk/closure/goog/testing/fs
+V 48
+/svn/!svn/ver/1065/trunk/closure/goog/testing/fs
 END
 filesystem.js
 K 25
@@ -72,8 +72,8 @@ END
 entry.js
 K 25
 svn:wc:ra_dav:version-url
-V 56
-/svn/!svn/ver/850/trunk/closure/goog/testing/fs/entry.js
+V 57
+/svn/!svn/ver/1065/trunk/closure/goog/testing/fs/entry.js
 END
 filewriter_test.html
 K 25

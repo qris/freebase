@@ -157,6 +157,19 @@ function testSetPropertiesDirectAttributeMap() {
   assertEquals('Should be equal', '#myMap', el.getAttribute('usemap'));
 }
 
+function testSetPropertiesAria() {
+  var attrs = {
+    'aria-hidden': 'true',
+    'aria-label': 'This is a label'
+  };
+  var el = goog.dom.createDom('div');
+
+  goog.dom.setProperties(el, attrs);
+  assertEquals('Should be equal', 'true', el.getAttribute('aria-hidden'));
+  assertEquals('Should be equal',
+      'This is a label', el.getAttribute('aria-label'));
+}
+
 function testSetTableProperties() {
   var attrs = {
     'style': 'padding-left: 10px;',
@@ -546,6 +559,24 @@ function testIsNodeLike() {
 
   assertTrue('custom object should be node like',
              goog.dom.isNodeLike({nodeType: 1}));
+}
+
+function testIsElement() {
+  assertFalse('document is not an element', goog.dom.isElement(document));
+  assertTrue('document.body is an element',
+             goog.dom.isElement(document.body));
+  assertFalse('a text node is not an element', goog.dom.isElement(
+      document.createTextNode('')));
+  assertTrue('an element created with createElement() is an element',
+      goog.dom.isElement(document.createElement('a')));
+
+  assertFalse('null is not an element', goog.dom.isElement(null));
+  assertFalse('a string is not an element', goog.dom.isElement('abcd'));
+
+  assertTrue('custom object is an element',
+             goog.dom.isElement({nodeType: 1}));
+  assertFalse('custom non-element object is a not an element',
+              goog.dom.isElement({someProperty: 'somevalue'}));
 }
 
 function testIsWindow() {

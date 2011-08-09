@@ -1,14 +1,14 @@
 10
 
 dir
-1048
+1186
 http://closure-library.googlecode.com/svn/trunk/closure/goog/dom/browserrange
 http://closure-library.googlecode.com/svn
 
 
 
-2011-06-13T20:18:10.000000Z
-1034
+2011-06-21T16:36:03.000000Z
+1063
 gboyer@google.com
 
 
@@ -66,10 +66,10 @@ file
 
 
 
-2011-06-19T11:09:42.000000Z
-7bbcd4e591e4707b4adbc5f0ad19ce28
-2011-06-13T20:18:10.000000Z
-1034
+2011-08-03T23:09:21.771150Z
+4a9a88346a273235b90033519740e3e5
+2011-06-21T16:36:03.000000Z
+1063
 gboyer@google.com
 has-props
 
@@ -92,7 +92,7 @@ has-props
 
 
 
-23006
+25233
 
 w3crange.js
 file
@@ -134,10 +134,10 @@ file
 
 
 
-2011-06-19T11:09:42.000000Z
-9e953a92e8cc46d8424a6e6b7e4a70ba
-2011-06-13T20:18:10.000000Z
-1034
+2011-08-03T23:09:21.771150Z
+78a75be6d87d16c8107db3dff28fc273
+2011-06-21T16:36:03.000000Z
+1063
 gboyer@google.com
 has-props
 
@@ -160,7 +160,7 @@ has-props
 
 
 
-32596
+32000
 
 abstractrange.js
 file

@@ -1,15 +1,15 @@
 10
 
 dir
-1048
+1186
 http://closure-library.googlecode.com/svn/trunk/closure/goog/proto2
 http://closure-library.googlecode.com/svn
 
 
 
-2011-06-15T08:34:48.000000Z
-1045
-pallosp@google.com
+2011-07-19T18:31:43.000000Z
+1132
+nicksantos@google.com
 
 
 
@@ -60,14 +60,14 @@ has-props
 
 1384
 
-pbliteserializer.js
+serializer.js
 file
 
 
 
 
 2011-06-19T11:09:55.000000Z
-bf09eb1699b628caa3c4db595e0a92de
+a87eae1dc2c0c917394842f56d32603c
 2011-04-12T20:35:47.000000Z
 850
 diegosalas@google.com
@@ -92,7 +92,7 @@ has-props
 
 
 
-4115
+4592
 
 fielddescriptor_test.html
 file
@@ -128,14 +128,14 @@ has-props
 
 3123
 
-serializer.js
+pbliteserializer.js
 file
 
 
 
 
 2011-06-19T11:09:55.000000Z
-a87eae1dc2c0c917394842f56d32603c
+bf09eb1699b628caa3c4db595e0a92de
 2011-04-12T20:35:47.000000Z
 850
 diegosalas@google.com
@@ -160,7 +160,7 @@ has-props
 
 
 
-4592
+4115
 
 message_test.html
 file
@@ -230,40 +230,6 @@ has-props
 
 1652
 
-textformatserializer_test.html
-file
-
-
-
-
-2011-06-19T11:09:55.000000Z
-dd8f96fb4dbfc17c15dc8c0061fab307
-2011-04-21T21:11:05.000000Z
-880
-joonlee@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-15917
-
 descriptor.js
 file
 
@@ -297,6 +263,40 @@ has-props
 
 
 5131
+
+textformatserializer_test.html
+file
+
+
+
+
+2011-06-19T11:09:55.000000Z
+dd8f96fb4dbfc17c15dc8c0061fab307
+2011-04-21T21:11:05.000000Z
+880
+joonlee@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+15917
 
 test.pb.js
 file
@@ -332,40 +332,6 @@ has-props
 
 69586
 
-fielddescriptor.js
-file
-
-
-
-
-2011-06-19T11:09:55.000000Z
-03970b07c94518397776d97de3eca95c
-2011-05-16T16:12:22.000000Z
-933
-nicksantos@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-7491
-
 lazydeserializer.js
 file
 
@@ -400,17 +366,51 @@ has-props
 
 2244
 
+fielddescriptor.js
+file
+
+
+
+
+2011-06-19T11:09:55.000000Z
+03970b07c94518397776d97de3eca95c
+2011-05-16T16:12:22.000000Z
+933
+nicksantos@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+7491
+
 message.js
 file
 
 
 
 
-2011-06-19T11:09:55.000000Z
-8a6d56e0a35cfc0355c424b665b7deb7
-2011-06-15T08:34:48.000000Z
-1045
-pallosp@google.com
+2011-08-03T23:09:21.951150Z
+8d442893cd3cb3a6520a8cc651b127a8
+2011-07-19T18:31:43.000000Z
+1132
+nicksantos@google.com
 has-props
 
 
@@ -432,41 +432,7 @@ has-props
 
 
 
-20858
-
-objectserializer_test.html
-file
-
-
-
-
-2011-06-19T11:09:55.000000Z
-b1559e21a41deb69474545b8d9cdd003
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-13550
+20866
 
 textformatserializer.js
 file
@@ -501,6 +467,40 @@ has-props
 
 
 26591
+
+objectserializer_test.html
+file
+
+
+
+
+2011-06-19T11:09:55.000000Z
+b1559e21a41deb69474545b8d9cdd003
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+13550
 
 package_test.pb.js
 file

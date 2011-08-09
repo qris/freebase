@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
-V 51
-/svn/!svn/ver/991/trunk/closure/goog/editor/plugins
+V 52
+/svn/!svn/ver/1143/trunk/closure/goog/editor/plugins
 END
 undoredostate_test.html
 K 25
@@ -20,6 +20,12 @@ K 25
 svn:wc:ra_dav:version-url
 V 73
 /svn/!svn/ver/850/trunk/closure/goog/editor/plugins/basictextformatter.js
+END
+equationeditorplugin.js
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/!svn/ver/1143/trunk/closure/goog/editor/plugins/equationeditorplugin.js
 END
 undoredo.js
 K 25
@@ -99,6 +105,12 @@ svn:wc:ra_dav:version-url
 V 75
 /svn/!svn/ver/850/trunk/closure/goog/editor/plugins/abstractdialogplugin.js
 END
+equationeditorplugin_test.html
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/!svn/ver/1143/trunk/closure/goog/editor/plugins/equationeditorplugin_test.html
+END
 headerformatter_test.html
 K 25
 svn:wc:ra_dav:version-url
@@ -141,17 +153,17 @@ svn:wc:ra_dav:version-url
 V 70
 /svn/!svn/ver/850/trunk/closure/goog/editor/plugins/headerformatter.js
 END
-abstracttabhandler_test.html
-K 25
-svn:wc:ra_dav:version-url
-V 80
-/svn/!svn/ver/850/trunk/closure/goog/editor/plugins/abstracttabhandler_test.html
-END
 removeformatting_test.html
 K 25
 svn:wc:ra_dav:version-url
 V 78
 /svn/!svn/ver/991/trunk/closure/goog/editor/plugins/removeformatting_test.html
+END
+abstracttabhandler_test.html
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/!svn/ver/850/trunk/closure/goog/editor/plugins/abstracttabhandler_test.html
 END
 loremipsum_test.html
 K 25
@@ -171,17 +183,17 @@ svn:wc:ra_dav:version-url
 V 71
 /svn/!svn/ver/850/trunk/closure/goog/editor/plugins/emoticons_test.html
 END
-abstracttabhandler.js
-K 25
-svn:wc:ra_dav:version-url
-V 73
-/svn/!svn/ver/850/trunk/closure/goog/editor/plugins/abstracttabhandler.js
-END
 removeformatting.js
 K 25
 svn:wc:ra_dav:version-url
 V 71
 /svn/!svn/ver/850/trunk/closure/goog/editor/plugins/removeformatting.js
+END
+abstracttabhandler.js
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/850/trunk/closure/goog/editor/plugins/abstracttabhandler.js
 END
 loremipsum.js
 K 25

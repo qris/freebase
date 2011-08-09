@@ -1,19 +1,19 @@
 K 25
 svn:wc:ra_dav:version-url
 V 37
-/svn/!svn/ver/1048/trunk/closure/goog
+/svn/!svn/ver/1186/trunk/closure/goog
 END
 base.js
 K 25
 svn:wc:ra_dav:version-url
 V 45
-/svn/!svn/ver/1032/trunk/closure/goog/base.js
+/svn/!svn/ver/1064/trunk/closure/goog/base.js
 END
 deps.js
 K 25
 svn:wc:ra_dav:version-url
 V 45
-/svn/!svn/ver/1042/trunk/closure/goog/deps.js
+/svn/!svn/ver/1180/trunk/closure/goog/deps.js
 END
 base_test.html
 K 25

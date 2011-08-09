@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
-V 43
-/svn/!svn/ver/850/trunk/closure/goog/locale
+V 44
+/svn/!svn/ver/1096/trunk/closure/goog/locale
 END
 nativenameconstants.js
 K 25
@@ -54,8 +54,8 @@ END
 locale.js
 K 25
 svn:wc:ra_dav:version-url
-V 53
-/svn/!svn/ver/850/trunk/closure/goog/locale/locale.js
+V 54
+/svn/!svn/ver/1096/trunk/closure/goog/locale/locale.js
 END
 timezonedetection_test.html
 K 25

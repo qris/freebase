@@ -1,15 +1,15 @@
 10
 
 dir
-1048
+1186
 http://closure-library.googlecode.com/svn/trunk/closure/goog/math
 http://closure-library.googlecode.com/svn
 
 
 
-2011-05-27T18:22:49.000000Z
-977
-chernand@google.com
+2011-07-29T15:28:17.000000Z
+1177
+afavaro@google.com
 
 
 
@@ -298,40 +298,6 @@ has-props
 
 8485
 
-math_test.html
-file
-
-
-
-
-2011-06-19T11:08:40.000000Z
-2cb6c090bb2bf62cd5863cc941e21c6b
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-9766
-
 bezier.js
 file
 
@@ -365,6 +331,312 @@ has-props
 
 
 8438
+
+integer_test.html
+file
+
+
+
+
+2011-06-19T11:08:40.000000Z
+f3fb5126464bb85294130cde650d4117
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+108872
+
+long_test.html
+file
+
+
+
+
+2011-06-19T11:08:40.000000Z
+89a8ee892ebf6583dcc58922ccc51d53
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+106266
+
+box.js
+file
+
+
+
+
+2011-06-19T11:08:40.000000Z
+c5cea5bdef866c71c53283e87ca98998
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+7065
+
+exponentialbackoff_test.html
+file
+
+
+
+
+2011-08-03T23:09:20.855151Z
+80d0aa25ff7aebf78f3b3cd78f432433
+2011-07-20T16:21:20.000000Z
+1136
+dominicl@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1600
+
+math.js
+file
+
+
+
+
+2011-06-19T11:08:40.000000Z
+e2dfb5cb63c5f24c2ae2baa07c79a51f
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+11321
+
+rect.js
+file
+
+
+
+
+2011-06-19T11:08:40.000000Z
+ae0401e3898a3f713f84ec434b8f06ac
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9901
+
+vec2.js
+file
+
+
+
+
+2011-06-19T11:08:40.000000Z
+b0409aacc92cfb712bcd06ecd7a6eb2d
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6969
+
+exponentialbackoff.js
+file
+
+
+
+
+2011-08-03T23:09:20.859150Z
+fc467d9044dab131780b45dfb04b8f2a
+2011-07-20T16:21:20.000000Z
+1136
+dominicl@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2509
+
+math_test.html
+file
+
+
+
+
+2011-06-19T11:08:40.000000Z
+2cb6c090bb2bf62cd5863cc941e21c6b
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9766
 
 range_test.html
 file
@@ -434,40 +706,6 @@ has-props
 
 10256
 
-integer_test.html
-file
-
-
-
-
-2011-06-19T11:08:40.000000Z
-f3fb5126464bb85294130cde650d4117
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-108872
-
 vec2_test.html
 file
 
@@ -501,108 +739,6 @@ has-props
 
 
 4083
-
-long_test.html
-file
-
-
-
-
-2011-06-19T11:08:40.000000Z
-89a8ee892ebf6583dcc58922ccc51d53
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-106266
-
-coordinate.js
-file
-
-
-
-
-2011-06-19T11:08:40.000000Z
-50db4807bf39ee355e377409f847aeaf
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3831
-
-vec3_test.html
-file
-
-
-
-
-2011-06-19T11:08:40.000000Z
-07cb964ceb7481c6699d91f0762b2ee8
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4918
 
 line.js
 file
@@ -638,14 +774,14 @@ has-props
 
 5290
 
-box.js
+vec3_test.html
 file
 
 
 
 
 2011-06-19T11:08:40.000000Z
-c5cea5bdef866c71c53283e87ca98998
+07cb964ceb7481c6699d91f0762b2ee8
 2011-04-12T20:35:47.000000Z
 850
 diegosalas@google.com
@@ -670,16 +806,16 @@ has-props
 
 
 
-7065
+4918
 
-math.js
+coordinate.js
 file
 
 
 
 
 2011-06-19T11:08:40.000000Z
-e2dfb5cb63c5f24c2ae2baa07c79a51f
+50db4807bf39ee355e377409f847aeaf
 2011-04-12T20:35:47.000000Z
 850
 diegosalas@google.com
@@ -704,7 +840,7 @@ has-props
 
 
 
-11321
+3831
 
 matrix_test.html
 file
@@ -774,40 +910,6 @@ has-props
 
 3965
 
-rect.js
-file
-
-
-
-
-2011-06-19T11:08:40.000000Z
-ae0401e3898a3f713f84ec434b8f06ac
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-9901
-
 integer.js
 file
 
@@ -841,74 +943,6 @@ has-props
 
 
 22162
-
-rangeset_test.html
-file
-
-
-
-
-2011-06-19T11:08:40.000000Z
-efa43718aedc346f764712c27bc7b601
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-17483
-
-vec2.js
-file
-
-
-
-
-2011-06-19T11:08:40.000000Z
-b0409aacc92cfb712bcd06ecd7a6eb2d
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-6969
 
 long.js
 file
@@ -944,17 +978,51 @@ has-props
 
 23202
 
+rangeset_test.html
+file
+
+
+
+
+2011-06-19T11:08:40.000000Z
+efa43718aedc346f764712c27bc7b601
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+17483
+
 vec3.js
 file
 
 
 
 
-2011-06-19T11:08:40.000000Z
-a438140b0ca04ba30a57b67cedd4f893
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2011-08-03T23:09:20.859150Z
+31e99e0fb7c05becd5b17e95954e4357
+2011-07-29T15:28:17.000000Z
+1177
+afavaro@google.com
 has-props
 
 
@@ -976,41 +1044,7 @@ has-props
 
 
 
-7791
-
-size_test.html
-file
-
-
-
-
-2011-06-19T11:08:40.000000Z
-8fafa877338e19b112acb31c5badf929
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4307
+7787
 
 coordinate3_test.html
 file
@@ -1045,4 +1079,38 @@ has-props
 
 
 5701
+
+size_test.html
+file
+
+
+
+
+2011-06-19T11:08:40.000000Z
+8fafa877338e19b112acb31c5badf929
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4307
 

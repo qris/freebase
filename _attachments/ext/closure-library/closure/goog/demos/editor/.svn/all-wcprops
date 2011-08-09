@@ -1,7 +1,13 @@
 K 25
 svn:wc:ra_dav:version-url
-V 49
-/svn/!svn/ver/850/trunk/closure/goog/demos/editor
+V 50
+/svn/!svn/ver/1143/trunk/closure/goog/demos/editor
+END
+equationeditor.html
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/1143/trunk/closure/goog/demos/editor/equationeditor.html
 END
 seamlessfield.html
 K 25
@@ -30,14 +36,20 @@ END
 deps.js
 K 25
 svn:wc:ra_dav:version-url
-V 57
-/svn/!svn/ver/850/trunk/closure/goog/demos/editor/deps.js
+V 58
+/svn/!svn/ver/1143/trunk/closure/goog/demos/editor/deps.js
 END
 field_basic.html
 K 25
 svn:wc:ra_dav:version-url
 V 66
 /svn/!svn/ver/850/trunk/closure/goog/demos/editor/field_basic.html
+END
+equationeditor.js
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/1143/trunk/closure/goog/demos/editor/equationeditor.js
 END
 editor.html
 K 25

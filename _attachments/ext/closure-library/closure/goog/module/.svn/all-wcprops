@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
 V 44
-/svn/!svn/ver/1024/trunk/closure/goog/module
+/svn/!svn/ver/1113/trunk/closure/goog/module
 END
 module.js
 K 25
@@ -49,7 +49,7 @@ modulemanager.js
 K 25
 svn:wc:ra_dav:version-url
 V 61
-/svn/!svn/ver/1024/trunk/closure/goog/module/modulemanager.js
+/svn/!svn/ver/1113/trunk/closure/goog/module/modulemanager.js
 END
 basemodule.js
 K 25

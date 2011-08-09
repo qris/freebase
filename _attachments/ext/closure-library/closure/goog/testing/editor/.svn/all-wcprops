@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
-V 51
-/svn/!svn/ver/850/trunk/closure/goog/testing/editor
+V 52
+/svn/!svn/ver/1156/trunk/closure/goog/testing/editor
 END
 dom_test.html
 K 25
@@ -12,8 +12,8 @@ END
 testhelper_test.html
 K 25
 svn:wc:ra_dav:version-url
-V 72
-/svn/!svn/ver/850/trunk/closure/goog/testing/editor/testhelper_test.html
+V 73
+/svn/!svn/ver/1156/trunk/closure/goog/testing/editor/testhelper_test.html
 END
 fieldmock.js
 K 25
@@ -24,8 +24,8 @@ END
 testhelper.js
 K 25
 svn:wc:ra_dav:version-url
-V 65
-/svn/!svn/ver/850/trunk/closure/goog/testing/editor/testhelper.js
+V 66
+/svn/!svn/ver/1156/trunk/closure/goog/testing/editor/testhelper.js
 END
 dom.js
 K 25

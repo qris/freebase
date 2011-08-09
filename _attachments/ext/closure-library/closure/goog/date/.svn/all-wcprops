@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
-V 41
-/svn/!svn/ver/944/trunk/closure/goog/date
+V 42
+/svn/!svn/ver/1111/trunk/closure/goog/date
 END
 date_test.html
 K 25
@@ -30,8 +30,8 @@ END
 date.js
 K 25
 svn:wc:ra_dav:version-url
-V 49
-/svn/!svn/ver/944/trunk/closure/goog/date/date.js
+V 50
+/svn/!svn/ver/1111/trunk/closure/goog/date/date.js
 END
 utcdatetime_test.html
 K 25

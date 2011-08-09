@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
-V 45
-/svn/!svn/ver/919/trunk/closure/goog/ui/emoji
+V 46
+/svn/!svn/ver/1142/trunk/closure/goog/ui/emoji
 END
 popupemojipicker.js
 K 25
@@ -54,8 +54,8 @@ END
 emojipalette.js
 K 25
 svn:wc:ra_dav:version-url
-V 61
-/svn/!svn/ver/919/trunk/closure/goog/ui/emoji/emojipalette.js
+V 62
+/svn/!svn/ver/1142/trunk/closure/goog/ui/emoji/emojipalette.js
 END
 spriteinfo.js
 K 25

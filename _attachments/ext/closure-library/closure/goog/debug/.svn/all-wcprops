@@ -1,13 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
-V 42
-/svn/!svn/ver/985/trunk/closure/goog/debug
-END
-entrypointregistry.js
-K 25
-svn:wc:ra_dav:version-url
-V 64
-/svn/!svn/ver/850/trunk/closure/goog/debug/entrypointregistry.js
+V 43
+/svn/!svn/ver/1178/trunk/closure/goog/debug
 END
 divconsole.js
 K 25
@@ -20,18 +14,6 @@ K 25
 svn:wc:ra_dav:version-url
 V 66
 /svn/!svn/ver/850/trunk/closure/goog/debug/relativetimeprovider.js
-END
-logger_test.html
-K 25
-svn:wc:ra_dav:version-url
-V 59
-/svn/!svn/ver/850/trunk/closure/goog/debug/logger_test.html
-END
-tracer_test.html
-K 25
-svn:wc:ra_dav:version-url
-V 59
-/svn/!svn/ver/850/trunk/closure/goog/debug/tracer_test.html
 END
 logbuffer.js
 K 25
@@ -48,20 +30,14 @@ END
 reflect_test.html
 K 25
 svn:wc:ra_dav:version-url
-V 60
-/svn/!svn/ver/850/trunk/closure/goog/debug/reflect_test.html
+V 61
+/svn/!svn/ver/1178/trunk/closure/goog/debug/reflect_test.html
 END
 errorreporter.js
 K 25
 svn:wc:ra_dav:version-url
 V 59
 /svn/!svn/ver/850/trunk/closure/goog/debug/errorreporter.js
-END
-debug_test.html
-K 25
-svn:wc:ra_dav:version-url
-V 58
-/svn/!svn/ver/985/trunk/closure/goog/debug/debug_test.html
 END
 debugwindow.js
 K 25
@@ -78,26 +54,8 @@ END
 logger.js
 K 25
 svn:wc:ra_dav:version-url
-V 52
-/svn/!svn/ver/850/trunk/closure/goog/debug/logger.js
-END
-error_test.html
-K 25
-svn:wc:ra_dav:version-url
-V 58
-/svn/!svn/ver/850/trunk/closure/goog/debug/error_test.html
-END
-tracer.js
-K 25
-svn:wc:ra_dav:version-url
-V 52
-/svn/!svn/ver/850/trunk/closure/goog/debug/tracer.js
-END
-logrecord.js
-K 25
-svn:wc:ra_dav:version-url
-V 55
-/svn/!svn/ver/850/trunk/closure/goog/debug/logrecord.js
+V 53
+/svn/!svn/ver/1130/trunk/closure/goog/debug/logger.js
 END
 gcdiagnostics.js
 K 25
@@ -108,8 +66,104 @@ END
 reflect.js
 K 25
 svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/1178/trunk/closure/goog/debug/reflect.js
+END
+fancywindow.js
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/1099/trunk/closure/goog/debug/fancywindow.js
+END
+errorhandlerweakdep.js
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/!svn/ver/850/trunk/closure/goog/debug/errorhandlerweakdep.js
+END
+error.js
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/850/trunk/closure/goog/debug/error.js
+END
+console_test.html
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/935/trunk/closure/goog/debug/console_test.html
+END
+entrypointregistry_test.html
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/850/trunk/closure/goog/debug/entrypointregistry_test.html
+END
+logrecordserializer_test.html
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svn/!svn/ver/1162/trunk/closure/goog/debug/logrecordserializer_test.html
+END
+console.js
+K 25
+svn:wc:ra_dav:version-url
 V 53
-/svn/!svn/ver/850/trunk/closure/goog/debug/reflect.js
+/svn/!svn/ver/935/trunk/closure/goog/debug/console.js
+END
+logbuffer_test.html
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/850/trunk/closure/goog/debug/logbuffer_test.html
+END
+entrypointregistry.js
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/850/trunk/closure/goog/debug/entrypointregistry.js
+END
+logger_test.html
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/850/trunk/closure/goog/debug/logger_test.html
+END
+tracer_test.html
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/850/trunk/closure/goog/debug/tracer_test.html
+END
+logrecordserializer.js
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/1162/trunk/closure/goog/debug/logrecordserializer.js
+END
+debug_test.html
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/985/trunk/closure/goog/debug/debug_test.html
+END
+logrecord.js
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/850/trunk/closure/goog/debug/logrecord.js
+END
+error_test.html
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/850/trunk/closure/goog/debug/error_test.html
+END
+tracer.js
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/1154/trunk/closure/goog/debug/tracer.js
 END
 debug.js
 K 25
@@ -123,63 +177,21 @@ svn:wc:ra_dav:version-url
 V 58
 /svn/!svn/ver/850/trunk/closure/goog/debug/errorhandler.js
 END
-errorhandlerweakdep.js
-K 25
-svn:wc:ra_dav:version-url
-V 65
-/svn/!svn/ver/850/trunk/closure/goog/debug/errorhandlerweakdep.js
-END
-fancywindow.js
-K 25
-svn:wc:ra_dav:version-url
-V 57
-/svn/!svn/ver/924/trunk/closure/goog/debug/fancywindow.js
-END
-console_test.html
-K 25
-svn:wc:ra_dav:version-url
-V 60
-/svn/!svn/ver/935/trunk/closure/goog/debug/console_test.html
-END
-error.js
-K 25
-svn:wc:ra_dav:version-url
-V 51
-/svn/!svn/ver/850/trunk/closure/goog/debug/error.js
-END
-entrypointregistry_test.html
-K 25
-svn:wc:ra_dav:version-url
-V 71
-/svn/!svn/ver/850/trunk/closure/goog/debug/entrypointregistry_test.html
-END
 enhanceerror_test.html
 K 25
 svn:wc:ra_dav:version-url
 V 65
 /svn/!svn/ver/850/trunk/closure/goog/debug/enhanceerror_test.html
 END
-logbuffer_test.html
+errorreporter_test.html
 K 25
 svn:wc:ra_dav:version-url
-V 62
-/svn/!svn/ver/850/trunk/closure/goog/debug/logbuffer_test.html
-END
-console.js
-K 25
-svn:wc:ra_dav:version-url
-V 53
-/svn/!svn/ver/935/trunk/closure/goog/debug/console.js
+V 66
+/svn/!svn/ver/850/trunk/closure/goog/debug/errorreporter_test.html
 END
 formatter.js
 K 25
 svn:wc:ra_dav:version-url
 V 55
 /svn/!svn/ver/850/trunk/closure/goog/debug/formatter.js
-END
-errorreporter_test.html
-K 25
-svn:wc:ra_dav:version-url
-V 66
-/svn/!svn/ver/850/trunk/closure/goog/debug/errorreporter_test.html
 END

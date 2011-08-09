@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
 V 41
-/svn/!svn/ver/1038/trunk/closure/goog/dom
+/svn/!svn/ver/1179/trunk/closure/goog/dom
 END
 dom_test.html
 K 25
@@ -19,7 +19,7 @@ fontsizemonitor.js
 K 25
 svn:wc:ra_dav:version-url
 V 60
-/svn/!svn/ver/1024/trunk/closure/goog/dom/fontsizemonitor.js
+/svn/!svn/ver/1086/trunk/closure/goog/dom/fontsizemonitor.js
 END
 annotate.js
 K 25
@@ -31,7 +31,7 @@ a11y.js
 K 25
 svn:wc:ra_dav:version-url
 V 49
-/svn/!svn/ver/1009/trunk/closure/goog/dom/a11y.js
+/svn/!svn/ver/1093/trunk/closure/goog/dom/a11y.js
 END
 tagname.js
 K 25
@@ -55,7 +55,7 @@ dom_test.js
 K 25
 svn:wc:ra_dav:version-url
 V 53
-/svn/!svn/ver/1038/trunk/closure/goog/dom/dom_test.js
+/svn/!svn/ver/1179/trunk/closure/goog/dom/dom_test.js
 END
 savedrange.js
 K 25
@@ -102,8 +102,8 @@ END
 xml_test.html
 K 25
 svn:wc:ra_dav:version-url
-V 54
-/svn/!svn/ver/850/trunk/closure/goog/dom/xml_test.html
+V 55
+/svn/!svn/ver/1123/trunk/closure/goog/dom/xml_test.html
 END
 textrange_test.html
 K 25
@@ -111,17 +111,17 @@ svn:wc:ra_dav:version-url
 V 60
 /svn/!svn/ver/850/trunk/closure/goog/dom/textrange_test.html
 END
-iframe_test.html
-K 25
-svn:wc:ra_dav:version-url
-V 57
-/svn/!svn/ver/850/trunk/closure/goog/dom/iframe_test.html
-END
 iter_test.html
 K 25
 svn:wc:ra_dav:version-url
 V 55
 /svn/!svn/ver/850/trunk/closure/goog/dom/iter_test.html
+END
+iframe_test.html
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/850/trunk/closure/goog/dom/iframe_test.html
 END
 nodeoffset.js
 K 25
@@ -135,23 +135,23 @@ svn:wc:ra_dav:version-url
 V 61
 /svn/!svn/ver/850/trunk/closure/goog/dom/multirange_test.html
 END
-nodeiterator.js
-K 25
-svn:wc:ra_dav:version-url
-V 56
-/svn/!svn/ver/850/trunk/closure/goog/dom/nodeiterator.js
-END
 browserfeature.js
 K 25
 svn:wc:ra_dav:version-url
 V 59
 /svn/!svn/ver/1038/trunk/closure/goog/dom/browserfeature.js
 END
-annotate_test.html
+nodeiterator.js
 K 25
 svn:wc:ra_dav:version-url
-V 59
-/svn/!svn/ver/850/trunk/closure/goog/dom/annotate_test.html
+V 56
+/svn/!svn/ver/850/trunk/closure/goog/dom/nodeiterator.js
+END
+xml.js
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/1123/trunk/closure/goog/dom/xml.js
 END
 fontsizemonitor_test.html
 K 25
@@ -159,17 +159,17 @@ svn:wc:ra_dav:version-url
 V 66
 /svn/!svn/ver/850/trunk/closure/goog/dom/fontsizemonitor_test.html
 END
-xml.js
+annotate_test.html
 K 25
 svn:wc:ra_dav:version-url
-V 47
-/svn/!svn/ver/850/trunk/closure/goog/dom/xml.js
+V 59
+/svn/!svn/ver/850/trunk/closure/goog/dom/annotate_test.html
 END
 a11y_test.html
 K 25
 svn:wc:ra_dav:version-url
-V 55
-/svn/!svn/ver/850/trunk/closure/goog/dom/a11y_test.html
+V 56
+/svn/!svn/ver/1093/trunk/closure/goog/dom/a11y_test.html
 END
 dom_quirks_test.html
 K 25
@@ -217,7 +217,7 @@ dom.js
 K 25
 svn:wc:ra_dav:version-url
 V 48
-/svn/!svn/ver/1038/trunk/closure/goog/dom/dom.js
+/svn/!svn/ver/1179/trunk/closure/goog/dom/dom.js
 END
 abstractrange.js
 K 25

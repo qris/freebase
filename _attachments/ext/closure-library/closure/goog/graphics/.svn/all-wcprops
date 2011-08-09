@@ -1,25 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
 V 46
-/svn/!svn/ver/1024/trunk/closure/goog/graphics
-END
-groupelement.js
-K 25
-svn:wc:ra_dav:version-url
-V 61
-/svn/!svn/ver/850/trunk/closure/goog/graphics/groupelement.js
-END
-font.js
-K 25
-svn:wc:ra_dav:version-url
-V 53
-/svn/!svn/ver/850/trunk/closure/goog/graphics/font.js
-END
-paths_test.html
-K 25
-svn:wc:ra_dav:version-url
-V 61
-/svn/!svn/ver/850/trunk/closure/goog/graphics/paths_test.html
+/svn/!svn/ver/1088/trunk/closure/goog/graphics
 END
 pathelement.js
 K 25
@@ -27,11 +9,29 @@ svn:wc:ra_dav:version-url
 V 60
 /svn/!svn/ver/850/trunk/closure/goog/graphics/pathelement.js
 END
-ellipseelement.js
+paths_test.html
 K 25
 svn:wc:ra_dav:version-url
-V 63
-/svn/!svn/ver/850/trunk/closure/goog/graphics/ellipseelement.js
+V 61
+/svn/!svn/ver/850/trunk/closure/goog/graphics/paths_test.html
+END
+font.js
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/850/trunk/closure/goog/graphics/font.js
+END
+groupelement.js
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/850/trunk/closure/goog/graphics/groupelement.js
+END
+stroke.js
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/850/trunk/closure/goog/graphics/stroke.js
 END
 rectelement.js
 K 25
@@ -39,11 +39,11 @@ svn:wc:ra_dav:version-url
 V 60
 /svn/!svn/ver/850/trunk/closure/goog/graphics/rectelement.js
 END
-stroke.js
+ellipseelement.js
 K 25
 svn:wc:ra_dav:version-url
-V 55
-/svn/!svn/ver/850/trunk/closure/goog/graphics/stroke.js
+V 63
+/svn/!svn/ver/850/trunk/closure/goog/graphics/ellipseelement.js
 END
 vmlelement.js
 K 25
@@ -57,29 +57,29 @@ svn:wc:ra_dav:version-url
 V 59
 /svn/!svn/ver/850/trunk/closure/goog/graphics/svgelement.js
 END
-affinetransform_test.html
-K 25
-svn:wc:ra_dav:version-url
-V 71
-/svn/!svn/ver/850/trunk/closure/goog/graphics/affinetransform_test.html
-END
 strokeandfillelement.js
 K 25
 svn:wc:ra_dav:version-url
 V 69
 /svn/!svn/ver/850/trunk/closure/goog/graphics/strokeandfillelement.js
 END
-paths.js
+affinetransform_test.html
 K 25
 svn:wc:ra_dav:version-url
-V 54
-/svn/!svn/ver/850/trunk/closure/goog/graphics/paths.js
+V 71
+/svn/!svn/ver/850/trunk/closure/goog/graphics/affinetransform_test.html
 END
 vmlgraphics.js
 K 25
 svn:wc:ra_dav:version-url
 V 61
 /svn/!svn/ver/1024/trunk/closure/goog/graphics/vmlgraphics.js
+END
+paths.js
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/850/trunk/closure/goog/graphics/paths.js
 END
 svggraphics.js
 K 25
@@ -139,7 +139,7 @@ canvasgraphics.js
 K 25
 svn:wc:ra_dav:version-url
 V 64
-/svn/!svn/ver/1024/trunk/closure/goog/graphics/canvasgraphics.js
+/svn/!svn/ver/1088/trunk/closure/goog/graphics/canvasgraphics.js
 END
 imageelement.js
 K 25

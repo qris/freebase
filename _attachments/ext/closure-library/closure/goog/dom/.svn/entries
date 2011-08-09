@@ -1,15 +1,15 @@
 10
 
 dir
-1048
+1186
 http://closure-library.googlecode.com/svn/trunk/closure/goog/dom
 http://closure-library.googlecode.com/svn
 
 
 
-2011-06-14T04:10:07.000000Z
-1038
-gboyer@google.com
+2011-08-01T18:55:28.000000Z
+1179
+weitzman@google.com
 
 
 
@@ -100,11 +100,11 @@ file
 
 
 
-2011-06-19T11:09:47.000000Z
-fe74bce01697e3dc911f735a26511651
-2011-06-10T12:08:17.000000Z
-1024
-pallosp@google.com
+2011-08-03T23:09:21.891151Z
+0c20619531d37c80d0cf47b95ac4bc48
+2011-06-30T22:59:46.000000Z
+1086
+sbills@google.com
 has-props
 
 
@@ -126,7 +126,7 @@ has-props
 
 
 
-5386
+5306
 
 annotate.js
 file
@@ -168,11 +168,11 @@ file
 
 
 
-2011-06-19T11:09:47.000000Z
-d60b4107f22ec73fcdafc185618f5da4
-2011-06-07T17:35:54.000000Z
-1009
-darrensmith@google.com
+2011-08-03T23:09:21.891151Z
+5fc575af2f163f77356bf5458878ad2b
+2011-07-01T23:40:42.000000Z
+1093
+geoffh@google.com
 has-props
 
 
@@ -194,7 +194,7 @@ has-props
 
 
 
-14033
+16321
 
 tagname.js
 file
@@ -304,11 +304,11 @@ file
 
 
 
-2011-06-19T11:09:47.000000Z
-45e0e0ef780927dc5f63ebce536922d4
-2011-06-14T04:10:07.000000Z
-1038
-gboyer@google.com
+2011-08-03T23:09:21.895151Z
+2730d0c3f06ae0d933ce1cc0bb242227
+2011-08-01T18:55:28.000000Z
+1179
+weitzman@google.com
 has-props
 
 
@@ -330,7 +330,7 @@ has-props
 
 
 
-46447
+47601
 
 savedrange.js
 file
@@ -468,6 +468,9 @@ has-props
 
 7818
 
+browserrange
+dir
+
 dataset.js
 file
 
@@ -536,9 +539,6 @@ has-props
 
 10829
 
-browserrange
-dir
-
 forms.js
 file
 
@@ -579,11 +579,11 @@ file
 
 
 
-2011-06-19T11:09:47.000000Z
-9a73bd3a547558c2aaaecd98932fdf9f
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2011-08-03T23:09:21.895151Z
+0c7ab3ffcf1efcd545094397006c5045
+2011-07-14T15:15:32.000000Z
+1123
+pallosp@google.com
 has-props
 
 
@@ -605,7 +605,7 @@ has-props
 
 
 
-2147
+2993
 
 textrange_test.html
 file
@@ -641,40 +641,6 @@ has-props
 
 4651
 
-iframe_test.html
-file
-
-
-
-
-2011-06-19T11:09:47.000000Z
-4ff1a911376f6578dbaafa503625f4b0
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2459
-
 iter_test.html
 file
 
@@ -708,6 +674,40 @@ has-props
 
 
 2634
+
+iframe_test.html
+file
+
+
+
+
+2011-06-19T11:09:47.000000Z
+4ff1a911376f6578dbaafa503625f4b0
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2459
 
 nodeoffset.js
 file
@@ -777,40 +777,6 @@ has-props
 
 1897
 
-nodeiterator.js
-file
-
-
-
-
-2011-06-19T11:09:47.000000Z
-31d7158470d6117ce5d3f22cdc178b04
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2868
-
 browserfeature.js
 file
 
@@ -845,14 +811,14 @@ has-props
 
 1996
 
-annotate_test.html
+nodeiterator.js
 file
 
 
 
 
 2011-06-19T11:09:47.000000Z
-badc6f550e531cc3e6a86c9913e45939
+31d7158470d6117ce5d3f22cdc178b04
 2011-04-12T20:35:47.000000Z
 850
 diegosalas@google.com
@@ -877,7 +843,41 @@ has-props
 
 
 
-6771
+2868
+
+xml.js
+file
+
+
+
+
+2011-08-03T23:09:21.895151Z
+3736d7c3bf3392908211a4b43056d580
+2011-07-14T15:15:32.000000Z
+1123
+pallosp@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6899
 
 fontsizemonitor_test.html
 file
@@ -913,14 +913,14 @@ has-props
 
 8603
 
-xml.js
+annotate_test.html
 file
 
 
 
 
 2011-06-19T11:09:47.000000Z
-1a9d43967bc5affbdf7030a2f212e8c1
+badc6f550e531cc3e6a86c9913e45939
 2011-04-12T20:35:47.000000Z
 850
 diegosalas@google.com
@@ -945,7 +945,10 @@ has-props
 
 
 
-6249
+6771
+
+pattern
+dir
 
 a11y_test.html
 file
@@ -953,11 +956,11 @@ file
 
 
 
-2011-06-19T11:09:47.000000Z
-02954e0edfe6f4d2faee539e8ecc2fff
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2011-08-03T23:09:21.895151Z
+f7f36c4738842cc06f9374adb54b1a7e
+2011-07-01T23:40:42.000000Z
+1093
+geoffh@google.com
 has-props
 
 
@@ -979,10 +982,7 @@ has-props
 
 
 
-2659
-
-pattern
-dir
+4605
 
 dom_quirks_test.html
 file
@@ -1228,11 +1228,11 @@ file
 
 
 
-2011-06-19T11:09:47.000000Z
-c6d11f643a8fcc073f059a30658b1634
-2011-06-14T04:10:07.000000Z
-1038
-gboyer@google.com
+2011-08-03T23:09:21.899150Z
+220cbcaf0065592932cd233a78ef454a
+2011-08-01T18:55:28.000000Z
+1179
+weitzman@google.com
 has-props
 
 
@@ -1254,7 +1254,7 @@ has-props
 
 
 
-81141
+81554
 
 abstractrange.js
 file

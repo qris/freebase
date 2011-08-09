@@ -1,15 +1,15 @@
 10
 
 dir
-1048
+1186
 http://closure-library.googlecode.com/svn/trunk/closure/goog/module
 http://closure-library.googlecode.com/svn
 
 
 
-2011-06-10T12:08:17.000000Z
-1024
-pallosp@google.com
+2011-07-12T22:32:12.000000Z
+1113
+shingole@google.com
 
 
 
@@ -273,11 +273,11 @@ file
 
 
 
-2011-06-19T11:09:55.000000Z
-c2c723876b123a376afbc98b5ca5d92e
-2011-06-10T12:08:17.000000Z
-1024
-pallosp@google.com
+2011-08-03T23:09:21.943151Z
+30411bf6d39357b020918a535b24225e
+2011-07-12T22:32:12.000000Z
+1113
+shingole@google.com
 has-props
 
 
@@ -299,7 +299,7 @@ has-props
 
 
 
-32295
+32585
 
 basemodule.js
 file

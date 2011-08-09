@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
-V 41
-/svn/!svn/ver/977/trunk/closure/goog/math
+V 42
+/svn/!svn/ver/1177/trunk/closure/goog/math
 END
 matrix.js
 K 25
@@ -51,17 +51,65 @@ svn:wc:ra_dav:version-url
 V 55
 /svn/!svn/ver/850/trunk/closure/goog/math/box_test.html
 END
-math_test.html
-K 25
-svn:wc:ra_dav:version-url
-V 56
-/svn/!svn/ver/850/trunk/closure/goog/math/math_test.html
-END
 bezier.js
 K 25
 svn:wc:ra_dav:version-url
 V 51
 /svn/!svn/ver/850/trunk/closure/goog/math/bezier.js
+END
+integer_test.html
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/850/trunk/closure/goog/math/integer_test.html
+END
+long_test.html
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/850/trunk/closure/goog/math/long_test.html
+END
+box.js
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svn/!svn/ver/850/trunk/closure/goog/math/box.js
+END
+exponentialbackoff_test.html
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/1136/trunk/closure/goog/math/exponentialbackoff_test.html
+END
+math.js
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/850/trunk/closure/goog/math/math.js
+END
+rect.js
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/850/trunk/closure/goog/math/rect.js
+END
+vec2.js
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/850/trunk/closure/goog/math/vec2.js
+END
+exponentialbackoff.js
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/1136/trunk/closure/goog/math/exponentialbackoff.js
+END
+math_test.html
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/850/trunk/closure/goog/math/math_test.html
 END
 range_test.html
 K 25
@@ -75,35 +123,11 @@ svn:wc:ra_dav:version-url
 V 56
 /svn/!svn/ver/850/trunk/closure/goog/math/rect_test.html
 END
-integer_test.html
-K 25
-svn:wc:ra_dav:version-url
-V 59
-/svn/!svn/ver/850/trunk/closure/goog/math/integer_test.html
-END
 vec2_test.html
 K 25
 svn:wc:ra_dav:version-url
 V 56
 /svn/!svn/ver/850/trunk/closure/goog/math/vec2_test.html
-END
-long_test.html
-K 25
-svn:wc:ra_dav:version-url
-V 56
-/svn/!svn/ver/850/trunk/closure/goog/math/long_test.html
-END
-coordinate.js
-K 25
-svn:wc:ra_dav:version-url
-V 55
-/svn/!svn/ver/850/trunk/closure/goog/math/coordinate.js
-END
-vec3_test.html
-K 25
-svn:wc:ra_dav:version-url
-V 56
-/svn/!svn/ver/850/trunk/closure/goog/math/vec3_test.html
 END
 line.js
 K 25
@@ -111,17 +135,17 @@ svn:wc:ra_dav:version-url
 V 49
 /svn/!svn/ver/850/trunk/closure/goog/math/line.js
 END
-box.js
+vec3_test.html
 K 25
 svn:wc:ra_dav:version-url
-V 48
-/svn/!svn/ver/850/trunk/closure/goog/math/box.js
+V 56
+/svn/!svn/ver/850/trunk/closure/goog/math/vec3_test.html
 END
-math.js
+coordinate.js
 K 25
 svn:wc:ra_dav:version-url
-V 49
-/svn/!svn/ver/850/trunk/closure/goog/math/math.js
+V 55
+/svn/!svn/ver/850/trunk/closure/goog/math/coordinate.js
 END
 matrix_test.html
 K 25
@@ -135,29 +159,11 @@ svn:wc:ra_dav:version-url
 V 50
 /svn/!svn/ver/850/trunk/closure/goog/math/range.js
 END
-rect.js
-K 25
-svn:wc:ra_dav:version-url
-V 49
-/svn/!svn/ver/850/trunk/closure/goog/math/rect.js
-END
 integer.js
 K 25
 svn:wc:ra_dav:version-url
 V 52
 /svn/!svn/ver/850/trunk/closure/goog/math/integer.js
-END
-rangeset_test.html
-K 25
-svn:wc:ra_dav:version-url
-V 60
-/svn/!svn/ver/850/trunk/closure/goog/math/rangeset_test.html
-END
-vec2.js
-K 25
-svn:wc:ra_dav:version-url
-V 49
-/svn/!svn/ver/850/trunk/closure/goog/math/vec2.js
 END
 long.js
 K 25
@@ -165,21 +171,27 @@ svn:wc:ra_dav:version-url
 V 49
 /svn/!svn/ver/850/trunk/closure/goog/math/long.js
 END
+rangeset_test.html
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/850/trunk/closure/goog/math/rangeset_test.html
+END
 vec3.js
 K 25
 svn:wc:ra_dav:version-url
-V 49
-/svn/!svn/ver/850/trunk/closure/goog/math/vec3.js
-END
-size_test.html
-K 25
-svn:wc:ra_dav:version-url
-V 56
-/svn/!svn/ver/850/trunk/closure/goog/math/size_test.html
+V 50
+/svn/!svn/ver/1177/trunk/closure/goog/math/vec3.js
 END
 coordinate3_test.html
 K 25
 svn:wc:ra_dav:version-url
 V 63
 /svn/!svn/ver/850/trunk/closure/goog/math/coordinate3_test.html
+END
+size_test.html
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/850/trunk/closure/goog/math/size_test.html
 END
