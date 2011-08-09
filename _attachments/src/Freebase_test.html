@@ -65,7 +65,7 @@ function MockFreebase()
 
 goog.inherits(MockFreebase, goog.events.EventTarget);
 
-MockFreebase.prototype.deepCopy =  function(object)
+MockFreebase.prototype.deepCopy =  function(object, opt_stringifier)
 {
 	return JSON.parse(JSON.stringify(object));
 };
@@ -75,9 +75,24 @@ MockFreebase.prototype.get = function(documentId, onSuccess, onError)
 	return this._get(documentId, onSuccess, onError);
 };
 
+/**
+ * findAll calls the "all" view of the named design, (e.g.
+ * /_design/Foo/view/all), extracts the objects returned from the results
+ * and passes the array of objects (JSON documents) to the onSuccess callback.
+ */
 MockFreebase.prototype.findAll =  function(designName, onSuccess, onError)
 {
-	return this._get('_design/' + designName + '/_view/all', onSuccess,
+	var results = this._get('_design/' + designName + '/_view/all',
+		function(results)
+		{
+			var objects = [];
+			var l = results.rows.length;
+			for (var i = 0; i < l; i++)
+			{
+				objects[i] = results.rows[i].value;
+			}
+			onSuccess(objects);
+		},
 		onError);
 };
 
@@ -86,27 +101,57 @@ MockFreebase.prototype.listAll = function(onSuccess, onError)
 	return this._get('_all_docs', onSuccess, onError);
 };
 
+MockFreebase.prototype.view = function(designId, viewName, onSuccess, onError)
+{
+	return this._get(designId + '/_view/' + viewName, onSuccess, onError);
+};
+
 MockFreebase.prototype._get = function(uri, onSuccess, onError)
 {
 	var selector;
+	var viewIndex = uri.indexOf('/_view/');
 	
-	if (uri == "_design/Foobar/_view/all")
+	if (uri.indexOf('_design/') == 0 && viewIndex > 0)
+	{
+		var designName = uri.substring(0, viewIndex);
+		var designDoc = JSON.parse(this.objectStore[designName]);
+		var viewName = uri.substring(viewIndex +
+			'/_view/'.length);
+		eval("var mapFunction = " +	designDoc.views[viewName].map);
+		var emitted = [];
+		function emit(key, value)
+		{
+			var row = {key: key, value: value};
+			if (value != null)
+			{
+				row.id = value._id;
+			}
+			emitted.push(row);
+		}
+		selector = function(o)
+		{
+			emitted = [];
+			mapFunction(o);
+			return emitted;
+		}
+	}
+	else if (uri == "_design/Foobar/_view/all")
 	{
 		selector = function(o)
 		{
-			return (o[Freebase.TABLE_FIELD] == 'Foobar');
+			return (o[Freebase.TABLE_FIELD] == 'Foobar') ? [o] : [];
 		}
 	}
 	else if (uri == '_all_docs')
 	{
 		selector = function(o)
 		{
-			return true;
+			return [o];
 		}
 	}
 	else if (uri in this.objectStore)
 	{
-		onSuccess(this.objectStore[uri]);
+		onSuccess(JSON.parse(this.objectStore[uri]));
 		return;
 	}
 	else
@@ -118,15 +163,17 @@ MockFreebase.prototype._get = function(uri, onSuccess, onError)
 	
 	for (var i in this.objectStore)
 	{
-		var o = this.objectStore[i];
+		var o = JSON.parse(this.objectStore[i]);
 		
-		if (selector(o))
+		// views don't search design documents for some reason
+		if (o._id.indexOf('_design/') != 0)
 		{
-			foundRows.push(this.deepCopy(o));
+			var emitted = selector(o);
+			foundRows = foundRows.concat(this.deepCopy(emitted));
 		}
 	}
 	
-	onSuccess({rows: foundRows});
+	onSuccess({total_rows: foundRows.length, offset: 0, rows: foundRows});
 };
 
 MockFreebase.prototype.save = function(object, onSuccess, onError)
@@ -142,9 +189,10 @@ MockFreebase.prototype.save = function(object, onSuccess, onError)
 		object._id = "mock_" + (Math.random() + "").substring(2);
 	}
 	
-	this.objectStore[object._id] = this.deepCopy(object);
+	this.objectStore[object._id] = JSON.stringify(goog.object.clone(object));
+	// com.qwirx.freebase.FunctionStringifier);
 	this.dispatchEvent(new DocumentSaved(object));
-	onSuccess(object._id);
+	onSuccess(object);
 };
 
 MockFreebase.prototype.create$ = function(object, onSuccess, onError)
@@ -166,7 +214,94 @@ MockFreebase.prototype.attachEvent = function()
 	// undocumented, and I don't think we need it anyway.
 }
 
-var mockFreebase = new MockFreebase();
+var mockFreebase;
+
+function setUp()
+{
+	mockFreebase = new MockFreebase();
+}
+
+/**
+ * Pass a block of code that takes a callback function c as its only
+ * parameter, and passes that to the async method. If c is not called,
+ * the assertion fails. Note that it assumes that the async method
+ * will call the callback synchronously, in the same thread, e.g.
+ * because it has been mocked to do so! So it's not a fully async test.
+ */
+function assertCallback(f)
+{
+	var calledBack = false;
+	var result;
+	
+	function c()
+	{
+		calledBack = true;
+		result = arguments;
+	}
+	
+	f(c);
+	
+	assertTrue(calledBack);
+	return result;
+}
+
+function testMockFreebaseApi()
+{
+	var foo = {_id: 'foo', name: 'Foo'};
+	var bar = {name: 'Bar'};
+	var baz = {name: 'Basil'};
+	var jobs = {
+		_id: '_design/Jobs',
+		views: {
+			all:  {map: function(o) { emit(o._id, o); }.toString()},
+			name: {map: function(o) { emit(o.name, o); }.toString()},
+			foo:  {map: function(o) { if (o.name == 'Foo') { emit(null, o); } }.toString()},
+			bar:  {map: function(o) { if (o.name == 'Bar') { emit(o._id, null); } }.toString()}
+		}
+	};
+	
+	assertCallback(function(c) { mockFreebase.create$(foo, c); });
+	assertThrows('Database should reject saving a second copy ' +
+		'of the document', function()
+		{
+			mockFreebase.create$(foo, function(){});
+		});
+
+	bar = assertCallback(function(c) { mockFreebase.create$(bar, c); })[0];
+	baz = assertCallback(function(c) { mockFreebase.create$(baz, c); })[0];
+	assertCallback(function(c) { mockFreebase.create$(jobs, c); });
+	assertObjectEquals(foo, 
+		assertCallback(function(c) { mockFreebase.get(foo._id, c) })[0]);
+	
+	// returns all three objects, because jobs.views.map.all doesn't discriminate
+	assertObjectEquals([foo, bar, baz], 
+		assertCallback(function(c) { mockFreebase.findAll('Jobs', c); })[0]);
+	
+	assertObjectEquals({
+		total_rows: 3, offset: 0, rows: [
+			{id: foo._id, key: foo._id, value: foo},
+			{id: bar._id, key: bar._id, value: bar},
+			{id: baz._id, key: baz._id, value: baz}
+		]},
+		assertCallback(function(c) { mockFreebase.view(jobs._id, 'all', c); })[0]);
+	assertObjectEquals({
+		total_rows: 3, offset: 0, rows: [
+			{id: foo._id, key: foo.name, value: foo},
+			{id: bar._id, key: bar.name, value: bar},
+			{id: baz._id, key: baz.name, value: baz}
+		]},
+		assertCallback(function(c) { mockFreebase.view(jobs._id, 'name', c); })[0]);
+	assertObjectEquals({
+		total_rows: 1, offset: 0, rows: [
+			{id: foo._id, key: null, value: foo},
+		]},
+		assertCallback(function(c) { mockFreebase.view(jobs._id, 'foo', c); })[0]);
+	assertObjectEquals({
+		total_rows: 1, offset: 0, rows: [
+			{/* no ID without an object */ key: bar._id, value: null},
+		]},
+		assertCallback(function(c) { mockFreebase.view(jobs._id, 'bar', c); })[0]);
+}
 
 function testModelBuilder()
 {
@@ -186,6 +321,8 @@ function testModelBuilder()
 		results = r;
 	};
 	
+	// must save the model before calling findAll
+	mockFreebase.create$(Foobar.toDocument(), function(){});
 	Foobar.findAll({}, collectResults);
 	assertObjectEquals([], results);
 	
@@ -199,16 +336,20 @@ function testModelBuilder()
 	assertEquals("Foobar", frob[Freebase.TABLE_FIELD]);
 	// assertEquals("fb.Record", frob[Freebase.CLASS_FIELD]);
 	
+	// database findAll method returns the JSON document
+	mockFreebase.findAll(Foobar.modelName, collectResults);
+	assertObjectEquals([frob.toDocument()], results);
+	assertEquals("toDocument should not be saved in the model object!",
+		undefined, results[0]["toDocument"]);
+
+	// model findAll method instantiates each result as a Model object
 	Foobar.findAll({}, collectResults);
 	assertObjectEquals([frob], results);
-
-	mockFreebase.findAll(Foobar.modelName, collectResults);
-	assertObjectEquals([frob.toDocument()], results.rows);
 
 	var e = assertThrows('Database should reject saving a second copy ' +
 		'of the model document', function()
 		{
-			mockFreebase.create$(Model(name, mockFreebase, cols),
+			mockFreebase.create$(Model(name, mockFreebase, cols).toDocument(),
 				function(){});
 		});
 	
@@ -293,7 +434,7 @@ function testFreebaseGuiRun()
 	var catDoc = Cat.toDocument();
 	mockFreebase.create$(catDoc, function(){});
 	assertObjectEquals('The Model Document should have been saved in the database',
-		mockFreebase.objectStore[catDoc._id], catDoc);
+		JSON.stringify(catDoc), mockFreebase.objectStore[catDoc._id]);
 	assertObjectEquals('The reconstructed Model class should be ' +
 		'identical to the one that produced the Model Document',
 		Cat, mockFreebase.app.models.Cat);

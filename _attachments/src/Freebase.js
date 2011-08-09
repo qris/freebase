@@ -141,6 +141,41 @@ com.qwirx.freebase.import = function(target_namespace /* packages... */)
 	goog.object.extend.apply(null, arguments);
 }
 
+com.qwirx.freebase.FunctionStringifier = function(key, value)
+{
+	if (goog.isFunction(value))
+	{
+		var v = value.toString();
+		return v;
+	}
+	else if (goog.isString(value))
+	{
+		return value;
+	}
+	else
+	{
+		if (goog.isObject(value))
+		{
+			for (var k in value)
+			{
+				value[k] = arguments.callee(k, value[k]);
+			}
+		}
+		
+		if (goog.isArray(value))
+		{
+			var length = value.length;
+		
+			for (var i = 0; i < value.length; i++)
+			{
+				value[i] = arguments.callee(k, value[i]);
+			}
+		}
+	
+		return value;
+	}
+};
+
 /**
  * Main class for the Freebase application.
  * @constructor
@@ -227,22 +262,20 @@ com.qwirx.freebase.ModelClass.findAll = function(params, successCallback, errorC
 			"derived model class created by Model()");
 	}
 	
-	this.freebase.findAll(this.modelName, 
+	this.freebase.findAll(this.modelName,
 		function(results)
 		{
-			var rows = results.rows
-			var len = rows.length;
-			var objects = [];
-			
-			for (var i = 0; i < len; i++)
+			var l = results.length;
+
+			for (var i = 0; i < l; i++)
 			{
-				var result = rows[i];
+				var result = results[i];
 				// call the constructor to build a model object from
 				// the database record
-				objects[i] = new self(result);
+				results[i] = new self(result);
 			}
 			
-			successCallback(objects);
+			successCallback(results);
 		},
 		errorCallback);
 };
@@ -275,8 +308,9 @@ com.qwirx.freebase.ModelClass.toDocument = function()
 			all: {
 				map: "function(doc) " +
 					"{ " +
-					"if (doc." + com.qwirx.freebase.Freebase.TABLE_FIELD + " == '" + name + "') { " +
-					"emit(doc._id, doc);" +
+					"if (doc." + com.qwirx.freebase.Freebase.TABLE_FIELD +
+						" == '" + this.modelName + "') { " +
+					"emit(doc._id, doc); " +
 					"} " +
 					"}"
 			}
@@ -553,10 +587,62 @@ com.qwirx.freebase.ClosableTab.prototype.close = function()
 	return this.dispatchEvent(closeEvent);	
 };
 
-com.qwirx.freebase.DocumentEditor = function(gui, document, opt_renderer,
-	opt_tabbar, opt_editarea)
+com.qwirx.freebase.Grid = function(columns, opt_renderer)
+{
+	opt_renderer = opt_renderer || com.qwirx.freebase.Grid.Renderer;
+	goog.ui.Control.call(this, null, opt_renderer);
+	this.columns_ = columns.slice(0); // copy	
+};
+
+goog.inherits(com.qwirx.freebase.Grid, goog.ui.Control);
+
+com.qwirx.freebase.Grid.Renderer = goog.ui.ControlRenderer.getCustomRenderer(
+	goog.ui.ControlRenderer, 'fb-grid');
+
+com.qwirx.freebase.Grid.prototype.createDom = function()
+{
+	this.element_ = this.dom_.createElement('table');
+
+	var columns = this.columns_;
+	var numCols = columns.length;
+	var colHeadingCells = [];
+	
+	for (var i = 0; i < numCols; i++)
+	{
+		var column = columns[i];
+		var th = column.tableCell = this.dom_.createDom('th', {},
+			column.caption);
+		colHeadingCells.push(th);
+		
+	}
+	
+	var headingRow = this.headingRow_ = this.dom_.createDom('tr', {},
+		colHeadingCells);
+	this.element_.appendChild(headingRow);
+};
+
+com.qwirx.freebase.Grid.prototype.addRow = function(columns)
+{
+	var numCols = columns.length;
+	var cells = [];
+	
+	for (var i = 0; i < numCols; i++)
+	{
+		var column = columns[i];
+		var td = column.tableCell = this.dom_.createDom('td', {},
+			column.value);
+		cells.push(td);
+	}
+	
+	var newRow = this.dom_.createDom('tr', {}, cells);
+	this.element_.appendChild(newRow);
+};
+
+com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
+	opt_renderer, opt_tabbar, opt_editarea)
 {
 	this.gui_ = gui;
+	this.freebase_ = freebase;
 	this.document_ = document;
 	this.documentId_ = (document ? document._id : null);
 	
@@ -565,6 +651,131 @@ com.qwirx.freebase.DocumentEditor = function(gui, document, opt_renderer,
 		var editorControl = this.editorControl_ = new goog.ui.Container(false,
 			opt_renderer);
 		editorControl.render(opt_editarea);
+		
+		if (this.documentId_ && Freebase.isTableId(this.documentId_))
+		{
+			// show all records in the table
+			
+			var columnsGridInfo = [];
+			var numCols = document.columns.length;
+			for (var i = 0; i < numCols; i++)
+			{
+				columnsGridInfo[i] = {caption: document.columns[i].name};
+			}
+			
+			var grid = this.grid_ = new com.qwirx.freebase.Grid(columnsGridInfo);
+			grid.addClassName('fb-datagrid');
+			grid.render(editorControl.getElement());
+			
+			freebase.view(this.documentId_, 'all',
+				function(all_results)
+				{
+					var num_rows = all_results.rows.length;
+					
+					for (var r = 0; r < num_rows; r++)
+					{
+						var result = all_results.rows[r];
+						var columnCells = [];
+				
+						for (var c = 0; c < num_columns; c++)
+						{
+							var column = document.columns[c];
+							var content = result.value[column.name];
+							var cell = {value: content};
+							columnCells.push(cell);
+						}
+						
+						grid.addRow(columnCells);
+					}
+				});
+		}
+		else
+		{
+			// auto-render something usable
+			editor.attr({'class':'fb-doc-editor'});
+
+			var table = jQuery('<table />').attr({'class':'fb-doc-auto'});
+			jQuery.each(doc,
+				function(key, val)
+				{
+					var input = jQuery('<input />');
+					
+					input.attr({
+						id: self.generate_id(dialog_id, key),
+						name: key,
+						value: val,
+					});
+					
+					if (key.indexOf('_') != 0)
+					{
+						input.attr('type', 'text');
+
+						var row = jQuery('<tr />');
+						jQuery('<th />').text(key).appendTo(row);
+					
+						var td = jQuery('<td />');
+						td.append(input);
+						row.append(td);
+						table.append(row);
+					}
+					else
+					{
+						input.attr('type', 'hidden');
+						editor.append(input);
+					}
+				});
+				
+			var row = jQuery('<tr />');
+			jQuery('<th />').appendTo(row);
+			
+			var rev = doc._rev;
+			
+			var td = jQuery('<td />');
+			var submit = jQuery('<input />');
+			submit.attr({type: 'button', value: 'Save'});
+			submit.click(function(e)
+				{
+					var newdoc = {};
+					
+					editor.find('input').each(
+						function(index)
+						{
+							if (this.name)
+							{
+								newdoc[this.name] = this.value;
+							}
+						});
+					self.database.put(newdoc, function(updated_doc)
+						{
+							if (updated_doc) // otherwise the PUT failed
+							{
+								flash.removeClass('fb-error-flash');
+								flash.addClass('fb-success-flash');
+								flash.text('Document saved.');
+								flash.show();
+								var control = document.getElementById(
+									self.generate_id(dialog_id, '_rev'));
+								control.value = updated_doc.rev;
+							}
+						},
+						{
+							ajaxErrorHandler: function(jqXHR,
+								textStatus, errorThrown)
+							{
+								flash.removeClass('fb-success-flash');
+								flash.addClass('fb-error-flash');
+								flash.text('Failed to save document: ' +
+									textStatus + ' (' + errorThrown + ')');
+								flash.show();
+							}
+						});
+				});
+			td.append(submit);
+			row.append(td);
+			table.append(row);
+			
+			editor.append(table);
+		}
 	}
 
 	if (opt_tabbar)
@@ -823,7 +1034,7 @@ com.qwirx.freebase.Freebase.Gui.prototype.onDocumentOpen = function(event)
 			function onSuccess(document)
 			{
 				self.openDocumentsById_[openedId] =
-					new DocumentEditor(self, document,
+					new DocumentEditor(self, self.fb_, document,
 						self.editAreaDocDivRenderer,
 						self.editAreaDocTabs_,
 						self.editArea_.getDocCell());
