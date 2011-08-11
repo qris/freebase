@@ -72,7 +72,8 @@ MockFreebase.prototype.deepCopy =  function(object, opt_stringifier)
 
 MockFreebase.prototype.get = function(documentId, onSuccess, onError)
 {
-	return this._get(documentId, onSuccess, onError);
+	return this._get(documentId, /* auto instantiate */ true, onSuccess,
+		onError);
 };
 
 /**
@@ -83,6 +84,7 @@ MockFreebase.prototype.get = function(documentId, onSuccess, onError)
 MockFreebase.prototype.findAll =  function(designName, onSuccess, onError)
 {
 	var results = this._get('_design/' + designName + '/_view/all',
+		/* auto instantiate */ true,
 		function(results)
 		{
 			var objects = [];
@@ -98,15 +100,35 @@ MockFreebase.prototype.findAll =  function(designName, onSuccess, onError)
 
 MockFreebase.prototype.listAll = function(onSuccess, onError)
 {
-	return this._get('_all_docs', onSuccess, onError);
+	return this._get('_all_docs', /* auto instantiate */ false,
+		onSuccess, onError);
 };
 
 MockFreebase.prototype.view = function(designId, viewName, onSuccess, onError)
 {
-	return this._get(designId + '/_view/' + viewName, onSuccess, onError);
+	return this._get(designId + '/_view/' + viewName,
+		/* auto instantiate */ false, onSuccess, onError);
 };
 
-MockFreebase.prototype._get = function(uri, onSuccess, onError)
+MockFreebase.prototype.instantiateModel_ = function(object)
+{
+	var table = object[com.qwirx.freebase.Freebase.TABLE_FIELD];
+	var model = this.app.models[table];
+	
+	if (table && model)
+	{
+		// call the constructor to build a model object
+		// from the database record
+		return new model(object);
+	}
+	else
+	{
+		return object;
+	}
+};
+
+MockFreebase.prototype._get = function(uri, autoInstantiate, onSuccess,
+	onError)
 {
 	var selector;
 	var viewIndex = uri.indexOf('/_view/');
@@ -119,12 +141,19 @@ MockFreebase.prototype._get = function(uri, onSuccess, onError)
 			'/_view/'.length);
 		eval("var mapFunction = " +	designDoc.views[viewName].map);
 		var emitted = [];
+		var self = this;
+		
 		function emit(key, value)
 		{
 			var row = {key: key, value: value};
 			if (value != null)
 			{
 				row.id = value._id;
+				
+				if (autoInstantiate)
+				{
+					row.value = self.instantiateModel_(value);
+				}
 			}
 			emitted.push(row);
 		}
@@ -151,7 +180,14 @@ MockFreebase.prototype._get = function(uri, onSuccess, onError)
 	}
 	else if (uri in this.objectStore)
 	{
-		onSuccess(JSON.parse(this.objectStore[uri]));
+		var object = JSON.parse(this.objectStore[uri]);
+		
+		if (autoInstantiate)
+		{
+			object = this.instantiateModel_(object);
+		}
+		
+		onSuccess(object);
 		return;
 	}
 	else
@@ -169,7 +205,10 @@ MockFreebase.prototype._get = function(uri, onSuccess, onError)
 		if (o._id.indexOf('_design/') != 0)
 		{
 			var emitted = selector(o);
-			foundRows = foundRows.concat(this.deepCopy(emitted));
+			// Don't copy the result because CouchDB doesn't. If you
+			// (or map()) modifies the emitted objects, then you can 
+			// expect weird results.
+			foundRows = foundRows.concat(emitted);
 		}
 	}
 	
@@ -178,7 +217,7 @@ MockFreebase.prototype._get = function(uri, onSuccess, onError)
 
 MockFreebase.prototype.save = function(object, onSuccess, onError)
 {
-	if (object._id && object._id.indexOf('_design/') == 0)
+	if (object._id && object._id.indexOf('_design/') == 0 && object.modelName)
 	{
 		this.app.models[object.modelName] = com.qwirx.freebase.Model(
 			object.modelName, this, object.columns);
@@ -267,9 +306,13 @@ function testMockFreebaseApi()
 			mockFreebase.create$(foo, function(){});
 		});
 
-	bar = assertCallback(function(c) { mockFreebase.create$(bar, c); })[0];
-	baz = assertCallback(function(c) { mockFreebase.create$(baz, c); })[0];
+	assertCallback(function(c) { mockFreebase.create$(bar, c); })[0];
+	assertCallback(function(c) { mockFreebase.create$(baz, c); })[0];
+	assertObjectEquals("Should not be any app models at this point", {},
+		mockFreebase.app.models);
 	assertCallback(function(c) { mockFreebase.create$(jobs, c); });
+	assertObjectEquals("Should still be no models (jobs is not really a model)",
+		{}, mockFreebase.app.models);
 	assertObjectEquals(foo, 
 		assertCallback(function(c) { mockFreebase.get(foo._id, c) })[0]);
 	
@@ -334,17 +377,16 @@ function testModelBuilder()
 	mockFreebase.save(frob, function(){});
 	assertNotNull(frob._id);
 	assertEquals("Foobar", frob[Freebase.TABLE_FIELD]);
-	// assertEquals("fb.Record", frob[Freebase.CLASS_FIELD]);
+	assertEquals("toDocument should not be saved in the model object",
+		undefined, frob.toDocument().toDocument);
 	
-	// database findAll method returns the JSON document
 	mockFreebase.findAll(Foobar.modelName, collectResults);
-	assertObjectEquals([frob.toDocument()], results);
-	assertEquals("toDocument should not be saved in the model object!",
-		undefined, results[0]["toDocument"]);
+	assertObjectEquals("Database findAll method should instantiate each " +
+		"result as a Model object", [frob], results);
 
-	// model findAll method instantiates each result as a Model object
 	Foobar.findAll({}, collectResults);
-	assertObjectEquals([frob], results);
+	assertObjectEquals("Model findAll method should instantiate each " +
+		"result as a Model object", [frob], results);
 
 	var e = assertThrows('Database should reject saving a second copy ' +
 		'of the model document', function()

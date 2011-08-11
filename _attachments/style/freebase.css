@@ -44,6 +44,16 @@
 	background: white;
 }
 
+div.fb-docedit-datagrid
+{
+	padding: 0;
+}
+
+div.fb-docedit-autoform
+{
+	padding: 1em;
+}
+
 table.fb-doc-auto
 {
 	border-collapse: collapse;
@@ -69,7 +79,23 @@ table.fb-doc-auto td
 	border-style: solid none;
 	background: #fff;
 	text-align: left;
-	font-weight: bold;
+}
+
+table.fb-grid
+{
+	border-collapse: collapse;
+}
+
+table.fb-grid > tr > th
+{
+	background: #eee;
+	text-align: left;
+	border: 1px solid #ddd;
+}
+
+table.fb-grid > tr > td
+{
+	border: 1px solid #ddd;
 }
 
 div.fb-success-flash

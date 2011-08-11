@@ -12,130 +12,6 @@ goog.require('goog.ui.TextareaRenderer');
 goog.require('goog.ui.SplitPane');
 goog.require('goog.ui.tree.TreeControl');
 
-/**
- * Copied from jQuery, some tools that we really want and Closure
- * doesn't give us.
- */
-
-/*
-// See jQuery's test/unit/core.js for details concerning isFunction.
-// Since version 1.3, DOM methods and functions like alert
-// aren't supported. They return false on IE (#2968).
-com.qwirx.freebase.isFunction = function( obj ) {
-	return toString.call(obj) === "[object Function]";
-};
-
-com.qwirx.freebase.isArray = function( obj ) {
-	return toString.call(obj) === "[object Array]";
-};
-
-com.qwirx.freebase.isPlainObject = function( obj ) {
-	// Must be an Object.
-	// Because of IE, we also have to check the presence of the constructor property.
-	// Make sure that DOM nodes and window objects don't pass through, as well
-	if ( !obj || toString.call(obj) !== "[object Object]" || obj.nodeType || obj.setInterval ) {
-		return false;
-	}
-	
-	// Not own constructor property must be Object
-	if ( obj.constructor
-		&& !hasOwnProperty.call(obj, "constructor")
-		&& !hasOwnProperty.call(obj.constructor.prototype, "isPrototypeOf") ) {
-		return false;
-	}
-	
-	// Own properties are enumerated firstly, so to speed up,
-	// if last one is own, then all properties are own.
-
-	var key;
-	for ( key in obj ) {}
-	
-	return key === undefined || hasOwnProperty.call( obj, key );
-};
-
-com.qwirx.freebase.isEmptyObject = function( obj ) {
-	for ( var name in obj ) {
-		return false;
-	}
-	return true;
-};
-
-com.qwirx.freebase.extend = function()
-{
-	// copy reference to target object
-	var target = arguments[0] || {}, i = 1, length = arguments.length, deep = false, options, name, src, copy;
-
-	// Handle a deep copy situation
-	if ( typeof target === "boolean" ) {
-		deep = target;
-		target = arguments[1] || {};
-		// skip the boolean and the target
-		i = 2;
-	}
-
-	// Handle case when target is a string or something (possible in deep copy)
-	if ( typeof target !== "object" && !com.qwirx.freebase.isFunction(target) ) {
-		target = {};
-	}
-
-	// extend jQuery itself if only one argument is passed
-	if ( length === i ) {
-		target = this;
-		--i;
-	}
-
-	for ( ; i < length; i++ ) {
-		// Only deal with non-null/undefined values
-		if ( (options = arguments[ i ]) != null ) {
-			// Extend the base object
-			for ( name in options ) {
-				src = target[ name ];
-				copy = options[ name ];
-
-				// Prevent never-ending loop
-				if ( target === copy ) {
-					continue;
-				}
-
-				// Recurse if we're merging object literal values or arrays
-				var recurse = com.qwirx.freebase.isPlainObject(copy) ||
-					com.qwirx.freebase.isArray(copy);
-				
-				if (deep && copy && recurse)
-				{
-					var sourceIsCopyable = com.qwirx.freebase.isPlainObject(src) ||
-						com.qwirx.freebase.isArray(src);
-					var clone;
-					if (src && sourceIsCopyable)
-					{
-						clone = src;
-					}
-					else if (com.qwirx.freebase.isArray(copy))
-					{
-						clone = [];
-					}
-					else
-					{
-						clone = {};
-					}
-
-					// Never move original objects, clone them
-					target[name] = com.qwirx.freebase.extend(deep, clone, copy);
-				}
-				else if (copy !== undefined)
-				// Don't bring in undefined values
-				{
-					target[name] = copy;
-				}
-			}
-		}
-	}
-
-	// Return the modified object
-	return target;
-};
-*/
-
 com.qwirx.freebase.import = function(target_namespace /* packages... */)
 {
 	goog.object.extend.apply(null, arguments);
@@ -363,6 +239,9 @@ com.qwirx.freebase.Model = function(name, freebase, columns)
 
 	dynamicClass.prototype = com.qwirx.freebase.ModelClass.prototype;
 	
+	// replace the constructor property lost by replacing the prototype
+	dynamicClass.prototype.constructor = dynamicClass;
+	
 	// static members
 	goog.object.extend(dynamicClass, com.qwirx.freebase.ModelClass);	
 	goog.object.extend(dynamicClass, 
@@ -525,7 +404,7 @@ com.qwirx.freebase.Freebase.Gui.prototype.run = function(container)
 	this.refresh();
 };
 
-com.qwirx.freebase.CloseButtonRenderer =
+com.qwirx.freebase.CLOSE_BUTTON_RENDERER =
 	goog.ui.ControlRenderer.getCustomRenderer(goog.ui.CustomButtonRenderer,
 		'fb-tab-close-button');
 
@@ -535,7 +414,7 @@ com.qwirx.freebase.CloseButton = function(opt_renderer, opt_domHelper)
 	var closeIconElement = domHelper.createDom('span',
 		'fb-tab-close-icon', '');
 	goog.ui.CustomButton.call(this, closeIconElement,
-		opt_renderer || com.qwirx.freebase.CloseButtonRenderer,
+		opt_renderer || com.qwirx.freebase.CLOSE_BUTTON_RENDERER,
 		opt_domHelper);
 	this.addClassName('fb-tab-close-button');
 	// this.addClassName('ui-icon');
@@ -589,19 +468,23 @@ com.qwirx.freebase.ClosableTab.prototype.close = function()
 
 com.qwirx.freebase.Grid = function(columns, opt_renderer)
 {
-	opt_renderer = opt_renderer || com.qwirx.freebase.Grid.Renderer;
+	opt_renderer = opt_renderer || com.qwirx.freebase.Grid.RENDERER;
 	goog.ui.Control.call(this, null, opt_renderer);
-	this.columns_ = columns.slice(0); // copy	
+	this.columns_ = columns.slice(0); // copy
+	
+	// focusing a grid isn't very useful and looks ugly in Chrome
+	this.setSupportedState(goog.ui.Component.State.FOCUSED, false);
 };
 
 goog.inherits(com.qwirx.freebase.Grid, goog.ui.Control);
 
-com.qwirx.freebase.Grid.Renderer = goog.ui.ControlRenderer.getCustomRenderer(
+com.qwirx.freebase.Grid.RENDERER = goog.ui.ControlRenderer.getCustomRenderer(
 	goog.ui.ControlRenderer, 'fb-grid');
 
 com.qwirx.freebase.Grid.prototype.createDom = function()
 {
-	this.element_ = this.dom_.createElement('table');
+	this.element_ = this.dom_.createDom('table',
+		this.getRenderer().getClassNames(this).join(' '));
 
 	var columns = this.columns_;
 	var numCols = columns.length;
@@ -673,8 +556,11 @@ com.qwirx.freebase.Grid.prototype.getRow = function(rowIndex)
 	return this.rows_[rowIndex];
 }
 
+com.qwirx.freebase.FLASH_RENDERER = goog.ui.ControlRenderer.getCustomRenderer(
+	goog.ui.ControlRenderer, 'fb-flash');
+
 com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
-	opt_renderer, opt_tabbar, opt_editarea)
+	opt_tabbar, opt_editarea)
 {
 	this.gui_ = gui;
 	this.freebase_ = freebase;
@@ -684,13 +570,20 @@ com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
 	
 	if (opt_editarea)
 	{
-		var editorControl = this.editorControl_ = new goog.ui.Container(false,
-			opt_renderer);
+		var editorControl = this.editorControl_ = new goog.ui.Control(null,
+			com.qwirx.freebase.DocumentEditor.EDIT_AREA_RENDERER);
+		
+		// focusing the editor control (a huge div) isn't very useful and
+		// looks ugly in Chrome
+		// editorControl.setFocusable(false);
+		editorControl.setSupportedState(goog.ui.Component.State.FOCUSED, false);
+
 		editorControl.render(opt_editarea);
 		
 		if (this.documentId_ && Freebase.isTableId(this.documentId_))
 		{
 			// show all records in the table
+			editorControl.addClassName('fb-docedit-datagrid');
 			
 			var columnsGridInfo = [{caption: 'ID'}];
 			
@@ -708,7 +601,7 @@ com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
 			// if a document shown in this grid is modified.
 			goog.events.listen(freebase,
 				com.qwirx.freebase.DocumentSaved.EVENT_TYPE,
-				function(event) { self.onDocumentSaved(event) });
+				this.onDocumentSaved, false, this);
 				
 			var rowMap = this.rowMap_ = {};
 			
@@ -730,91 +623,87 @@ com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
 		else
 		{
 			// auto-render something usable
-			editor.attr({'class':'fb-doc-editor'});
+			editorControl.addClassName('fb-docedit-autoform');
+			var controls = this.autoFormControls_ = {};
 
-			var table = jQuery('<table />').attr({'class':'fb-doc-auto'});
-			jQuery.each(doc,
-				function(key, val)
-				{
-					var input = jQuery('<input />');
-					
-					input.attr({
-						id: self.generate_id(dialog_id, key),
-						name: key,
-						value: val,
-					});
-					
-					if (key.indexOf('_') != 0)
-					{
-						input.attr('type', 'text');
-
-						var row = jQuery('<tr />');
-						jQuery('<th />').text(key).appendTo(row);
-					
-						var td = jQuery('<td />');
-						td.append(input);
-						row.append(td);
-						table.append(row);
-					}
-					else
-					{
-						input.attr('type', 'hidden');
-						editor.append(input);
-					}
-				});
+			var dom = goog.dom.getDomHelper();
+			
+			var flash = this.autoFormFlash_ = new goog.ui.Control('',
+				com.qwirx.freebase.FLASH_RENDERER, dom);
+			flash.render(editorControl.getElement());
+			goog.style.showElement(flash.getElement(), false);
+			
+			var table = dom.createDom('table', 'fb-doc-auto');
+			editorControl.getElement().appendChild(table);
+			
+			for (var i in document)
+			{
+				var inputAttribs = {value: document[i]};
+				var tr = undefined;
 				
-			var row = jQuery('<tr />');
-			jQuery('<th />').appendTo(row);
-			
-			var rev = doc._rev;
-			
-			var td = jQuery('<td />');
-			var submit = jQuery('<input />');
-			submit.attr({type: 'button', value: 'Save'});
-			submit.click(function(e)
+				if (!document.hasOwnProperty(i))
 				{
-					var newdoc = {};
+					// ignore inherited properties such as methods
+				}
+				else if (i.indexOf('_') == 0)
+				{
+					// create _id and _rev document attributes as
+					// hidden fields
+					inputAttribs.type = 'hidden';
+					var input = dom.createDom('input', inputAttribs);
+					editorControl.getElement().appendChild(input);
 					
-					editor.find('input').each(
-						function(index)
+					if (i == '_id')
+					{
+						tr = dom.createDom('tr', 'fb-row');
+
+						var th = dom.createDom('th', 'fb-row-heading', i);
+						tr.appendChild(th);
+					
+						var td = dom.createDom('td', 'fb-row-value',
+							document[i]);
+						tr.appendChild(td);
+					}
+				}
+				else
+				{
+					tr = dom.createDom('tr', 'fb-row');
+
+					/*					
+					var column = undefined;
+					var l = document.constructor.columns.length;
+					for (var c = 0; c < l; c++)
+					{
+						if (document.constructor.columns[c].name == i)
 						{
-							if (this.name)
-							{
-								newdoc[this.name] = this.value;
-							}
-						});
-					self.database.put(newdoc, function(updated_doc)
-						{
-							if (updated_doc) // otherwise the PUT failed
-							{
-								flash.removeClass('fb-error-flash');
-								flash.addClass('fb-success-flash');
-								flash.text('Document saved.');
-								flash.show();
-								var control = document.getElementById(
-									self.generate_id(dialog_id, '_rev'));
-								control.value = updated_doc.rev;
-							}
-						},
-						{
-							ajaxErrorHandler: function(jqXHR,
-								textStatus, errorThrown)
-							{
-								flash.removeClass('fb-success-flash');
-								flash.addClass('fb-error-flash');
-								flash.text('Failed to save document: ' +
-									textStatus + ' (' + errorThrown + ')');
-								flash.show();
-							}
-						});
-				});
-			td.append(submit);
-			row.append(td);
-			table.append(row);
+							column = document.constructor.columns[c];
+						}
+					}
+					*/
+					
+					var th = dom.createDom('th', 'fb-row-heading', i);
+					tr.appendChild(th);
+					
+					var td = dom.createDom('td', 'fb-row-value');
+					tr.appendChild(td);
+					
+					inputAttribs.type = 'text';
+					var input = controls[i] =
+						dom.createDom('input', inputAttribs);
+					td.appendChild(input);
+				}
+
+				if (tr)
+				{
+					table.appendChild(tr);
+				}				
+			}
 			
-			editor.append(table);
-		}
-	}
+			var submit = new goog.ui.Button('Save');
+			goog.events.listen(submit, goog.ui.Component.EventType.ACTION,
+				this.onSaveClicked, false, this);
+		} // table or document
+	} // have edit area
 
 	if (opt_tabbar)
 	{
@@ -831,7 +720,39 @@ com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
 			this.onTabUnselect, false, this);
 		goog.events.listen(tab, goog.ui.Component.EventType.CLOSE,
 			this.onTabClose, false, this);
+	} // have tabbar
+}; // DocumentEditarea() constructor
+
+com.qwirx.freebase.DocumentEditor.EDIT_AREA_RENDERER =
+	goog.ui.ControlRenderer.getCustomRenderer(goog.ui.ControlRenderer,
+		'fb-edit-area-doc-div');
+
+com.qwirx.freebase.DocumentEditor.prototype.onSaveClicked = function(event)
+{
+	var controls = this.autoFormControls_;
+	
+	for (var i in controls)
+	{
+		this.document_[i] = controls[i].value;
 	}
+	
+	var flash = this.autoFormFlash_;
+	
+	this.freebase_.save(this.document_,
+		function onSuccess(object)
+		{
+			flash.removeClassName('fb-error-flash');
+			flash.addClassName('fb-success-flash');
+			flash.setContent('Document saved.');
+			goog.style.showElement(flash.getElement(), true);
+		},
+		function onError(error)
+		{
+			flash.removeClassName('fb-success-flash');
+			flash.addClassName('fb-error-flash');
+			flash.setContent('Failed to save document: ' + error);
+			goog.style.showElement(flash.getElement(), true);
+		});
 };
 
 com.qwirx.freebase.DocumentEditor.prototype.activate = function()
@@ -1001,9 +922,6 @@ com.qwirx.freebase.Freebase.Gui.prototype.construct = function()
 	goog.events.listen(navigator, goog.events.EventType.CHANGE,
 		this.onDocumentOpen, false, this);
 	
-	this.editAreaDocDivRenderer = goog.ui.ContainerRenderer.getCustomRenderer(
-		goog.ui.ContainerRenderer, 'fb-edit-area-doc-div');
-	
 	return;
 	
 	var self = this;
@@ -1150,7 +1068,6 @@ com.qwirx.freebase.Freebase.Gui.prototype.openDocument =
 			{
 				var editor = self.openDocumentsById_[openedId] =
 					new DocumentEditor(self, self.fb_, document,
-						self.editAreaDocDivRenderer,
 						self.editAreaDocTabs_,
 						self.editArea_.getDocCell());
 				onSuccess(editor);
