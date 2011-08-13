@@ -7,6 +7,7 @@ Based on goog.array.array_test.html from Google Closure
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <title>Freebase Unit Tests - com.qwirx.freebase.Freebase</title>
 <script src="../ext/closure-library/closure/goog/base.js"></script>
+<script src="calculated_deps.js"></script>
 <script src="Freebase.deps.js"></script>
 <script src="Freebase.js"></script>
 <script>
@@ -575,6 +576,22 @@ function testFreebaseGuiRun()
 	etc.age = 1;
 	mockFreebase.save(etc, function(){});
 	assertGridRow(etc);	
+	
+	// try opening a document
+	editor.close();
+	editor = assertCallback(function(c) { gui.openDocument(etc._id, c); })[0];
+	assertObjectEquals(['fb-docedit-autoform'],
+		editor.editorControl_.getExtraClassNames());
+	var flash = editor.autoFormFlash_;
+	assertFalse(flash.isVisible());
+	var table = editor.autoFormTable_;
+	assertEquals('fb-doc-auto', table.className);
+	var rows = goog.dom.getChildren(table);
+	assertEquals('_id', goog.dom.getNodeAtOffset(rows[0], 1).data);
+	assertEquals('age', goog.dom.getNodeAtOffset(rows[1], 1).data);
+	assertEquals('name', goog.dom.getNodeAtOffset(rows[2], 1).data);
+	assertEquals(3, rows.length);
+	var controls = editor.autoFormControls_;
 }
 
 </script>
