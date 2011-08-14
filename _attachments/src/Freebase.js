@@ -4,6 +4,7 @@
  */
 
 goog.provide('com.qwirx.freebase');
+goog.provide('com.qwirx.freebase.Freebase');
 goog.require('com.qwirx.freebase.DocumentEditor');
 
 goog.require('goog.events.EventTarget');
@@ -52,13 +53,6 @@ com.qwirx.freebase.FunctionStringifier = function(key, value)
 		return value;
 	}
 };
-
-/**
- * Main class for the Freebase application.
- * @constructor
- */
-
-com.qwirx.freebase.Freebase = {}
 
 /*
 com.qwirx.freebase.Freebase = function(database)
@@ -345,20 +339,6 @@ com.qwirx.freebase.DocumentArea.prototype.getDocCell = function()
 	return this.docCell_;
 }
 
-/**
- * A container that knows how to render its children, unlike
- * {@link goog.ui.Component}.
- *
- * @param {goog.dom.DomHelper=} opt_domHelper Optional DOM helper.
- * @constructor
- * @extends {goog.ui.Container}
- */
-com.qwirx.freebase.Container = function(opt_domHelper)
-{
-	goog.ui.Component.call(this);
-};
-goog.inherits(com.qwirx.freebase.Container, goog.ui.Component);
-
 com.qwirx.freebase.Freebase.Gui = function(database)
 {
 	this.fb_ = database; // new com.qwirx.freebase.Freebase(database);
@@ -434,43 +414,6 @@ com.qwirx.freebase.Freebase.Gui.prototype.construct = function()
 	
 	goog.events.listen(navigator, goog.events.EventType.CHANGE,
 		this.onDocumentOpen, false, this);
-	
-	return;
-	
-	var self = this;
-	var win = this.window.empty();
-	var table = jQuery('<table />').attr('class', 'fb-table').appendTo(win);
-	var tr = jQuery('<tr />').appendTo(table);
-	this.nav = jQuery('<td />').attr('class', 'fb-nav').appendTo(tr);
-	this.edit_area = jQuery('<td />').attr('class', 'fb-edit-area').appendTo(tr);
-	// jquery.ui.tabs requires a UL inside the area to be tabbed
-	jQuery('<ul />').appendTo(this.edit_area);
-	this.tabset = this.edit_area.tabs(
-	{
-		tabTemplate: "<li><a href='#{href}'>#{label}</a> " +
-			"<span class='ui-icon ui-icon-close'>Remove Tab</span></li>",
-		add: function(event, ui)
-		{
-			// select the newly added tab
-			self.tabset.tabs('select', '#' + ui.panel.id);
-			
-			self.open_editors[ui.panel.id] = {
-				tab_index: ui.index,
-				panel: ui.panel
-			};
-		
-			// http://jqueryui.com/demos/tabs/#manipulation	
-			// close icon: removing the tab on click
-			// note: closable tabs gonna be an option in the future - see http://dev.jqueryui.com/ticket/3924
-			jQuery("span.ui-icon-close", ui.tab.parentNode).live("click",
-				function()
-				{
-					var index = $("li", self.tabset).index($(this).parent());
-					self.tabset.tabs("remove", index);
-					delete self.open_editors[ui.panel.id];
-				});
-		}
-	});
 };
 
 com.qwirx.freebase.Freebase.Gui.prototype.refresh = function()
@@ -596,25 +539,6 @@ com.qwirx.freebase.Freebase.Gui.prototype.onError = function(exception)
 {
 	alert(exception);
 };
-
-/*
-com.qwirx.freebase.Freebase.Gui.prototype.onDocumentSwitch = function(event)
-{
-	if (this.activeEditor_)
-	{
-		this.activeEditor_.editDoc.getElement().style =
-			"display: none;";
-	}
-	
-	var activeTab = this.editAreaDocTabs_.getSelectedTab();
-	var editor = this.activeEditor_ = activeTab.getModel();
-	
-	if (editor)
-	{
-		editor.editDoc.getElement().style = "display: block;";
-	}
-};
-*/
 
 com.qwirx.freebase.Freebase.Gui.prototype.onDocumentClose = function(documentEditor)
 {
