@@ -1,7 +1,7 @@
 10
 
 dir
-1186
+1205
 http://closure-library.googlecode.com/svn/trunk/closure/goog/dom/pattern
 http://closure-library.googlecode.com/svn
 
@@ -230,9 +230,6 @@ has-props
 
 5506
 
-callback
-dir
-
 allchildren.js
 file
 
@@ -266,6 +263,9 @@ has-props
 
 
 2043
+
+callback
+dir
 
 matcher.js
 file

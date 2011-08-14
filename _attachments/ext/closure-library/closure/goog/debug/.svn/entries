@@ -1,7 +1,7 @@
 10
 
 dir
-1186
+1205
 http://closure-library.googlecode.com/svn/trunk/closure/goog/debug
 http://closure-library.googlecode.com/svn
 
@@ -604,40 +604,6 @@ has-props
 
 3135
 
-logbuffer_test.html
-file
-
-
-
-
-2011-06-19T11:08:30.000000Z
-d7791777f80a9e878b3a493b12530ed1
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2964
-
 console.js
 file
 
@@ -671,6 +637,40 @@ has-props
 
 
 5043
+
+logbuffer_test.html
+file
+
+
+
+
+2011-06-19T11:08:30.000000Z
+d7791777f80a9e878b3a493b12530ed1
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2964
 
 entrypointregistry.js
 file
@@ -845,14 +845,14 @@ has-props
 
 1853
 
-logrecord.js
+error_test.html
 file
 
 
 
 
 2011-06-19T11:08:30.000000Z
-3a02d3afed72cf357f94c36c73d4d085
+a6e0d8b8541f981674027859ddd93f49
 2011-04-12T20:35:47.000000Z
 850
 diegosalas@google.com
@@ -877,7 +877,7 @@ has-props
 
 
 
-6697
+2134
 
 tracer.js
 file
@@ -913,14 +913,14 @@ has-props
 
 19872
 
-error_test.html
+logrecord.js
 file
 
 
 
 
 2011-06-19T11:08:30.000000Z
-a6e0d8b8541f981674027859ddd93f49
+3a02d3afed72cf357f94c36c73d4d085
 2011-04-12T20:35:47.000000Z
 850
 diegosalas@google.com
@@ -945,7 +945,7 @@ has-props
 
 
 
-2134
+6697
 
 debug.js
 file

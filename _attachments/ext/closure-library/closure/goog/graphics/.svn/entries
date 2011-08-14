@@ -1,7 +1,7 @@
 10
 
 dir
-1186
+1205
 http://closure-library.googlecode.com/svn/trunk/closure/goog/graphics
 http://closure-library.googlecode.com/svn
 
@@ -25,108 +25,6 @@ ponny@google.com
 
 
 0b95b8e8-c90f-11de-9d4f-f947ee5921c8
-
-pathelement.js
-file
-
-
-
-
-2011-06-19T11:10:08.000000Z
-4ed7821abf491cc5812f8e3a7fbf045a
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1757
-
-paths_test.html
-file
-
-
-
-
-2011-06-19T11:10:08.000000Z
-afc14cc6e88b8fba549134586311512c
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2694
-
-font.js
-file
-
-
-
-
-2011-06-19T11:10:08.000000Z
-e9d7c154fdf1dfb3d027230619f8ee31
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1507
 
 groupelement.js
 file
@@ -162,14 +60,14 @@ has-props
 
 1712
 
-stroke.js
+font.js
 file
 
 
 
 
 2011-06-19T11:10:08.000000Z
-da103858da74b23a6ed1f264a4298838
+e9d7c154fdf1dfb3d027230619f8ee31
 2011-04-12T20:35:47.000000Z
 850
 diegosalas@google.com
@@ -194,7 +92,109 @@ has-props
 
 
 
-1458
+1507
+
+paths_test.html
+file
+
+
+
+
+2011-06-19T11:10:08.000000Z
+afc14cc6e88b8fba549134586311512c
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2694
+
+pathelement.js
+file
+
+
+
+
+2011-06-19T11:10:08.000000Z
+4ed7821abf491cc5812f8e3a7fbf045a
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1757
+
+ellipseelement.js
+file
+
+
+
+
+2011-06-19T11:10:08.000000Z
+c0d54469afc174e8c2265bd23bb8f09a
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2041
 
 rectelement.js
 file
@@ -230,14 +230,14 @@ has-props
 
 2009
 
-ellipseelement.js
+stroke.js
 file
 
 
 
 
 2011-06-19T11:10:08.000000Z
-c0d54469afc174e8c2265bd23bb8f09a
+da103858da74b23a6ed1f264a4298838
 2011-04-12T20:35:47.000000Z
 850
 diegosalas@google.com
@@ -262,7 +262,7 @@ has-props
 
 
 
-2041
+1458
 
 vmlelement.js
 file
@@ -332,40 +332,6 @@ has-props
 
 8872
 
-strokeandfillelement.js
-file
-
-
-
-
-2011-06-19T11:10:08.000000Z
-a6f669478f0ff063f76c8076039d8217
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3084
-
 affinetransform_test.html
 file
 
@@ -400,17 +366,17 @@ has-props
 
 11318
 
-vmlgraphics.js
+strokeandfillelement.js
 file
 
 
 
 
 2011-06-19T11:10:08.000000Z
-c3761d6613eeebb56087e974a8b110e5
-2011-06-10T12:08:17.000000Z
-1024
-pallosp@google.com
+a6f669478f0ff063f76c8076039d8217
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
 has-props
 
 
@@ -432,7 +398,7 @@ has-props
 
 
 
-29270
+3084
 
 paths.js
 file
@@ -467,6 +433,40 @@ has-props
 
 
 2777
+
+vmlgraphics.js
+file
+
+
+
+
+2011-06-19T11:10:08.000000Z
+c3761d6613eeebb56087e974a8b110e5
+2011-06-10T12:08:17.000000Z
+1024
+pallosp@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+29270
 
 svggraphics.js
 file

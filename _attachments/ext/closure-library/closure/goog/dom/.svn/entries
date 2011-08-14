@@ -1,7 +1,7 @@
 10
 
 dir
-1186
+1205
 http://closure-library.googlecode.com/svn/trunk/closure/goog/dom
 http://closure-library.googlecode.com/svn
 
@@ -468,6 +468,40 @@ has-props
 
 7818
 
+tagiterator.js
+file
+
+
+
+
+2011-06-19T11:09:47.000000Z
+4a56d128648034fd70324de0e3569a51
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+10829
+
 browserrange
 dir
 
@@ -504,40 +538,6 @@ has-props
 
 
 3120
-
-tagiterator.js
-file
-
-
-
-
-2011-06-19T11:09:47.000000Z
-4a56d128648034fd70324de0e3569a51
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-10829
 
 forms.js
 file
@@ -641,40 +641,6 @@ has-props
 
 4651
 
-iter_test.html
-file
-
-
-
-
-2011-06-19T11:09:47.000000Z
-ecdf1ff81ce8ce6a47c36753ef4eb975
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2634
-
 iframe_test.html
 file
 
@@ -708,6 +674,40 @@ has-props
 
 
 2459
+
+iter_test.html
+file
+
+
+
+
+2011-06-19T11:09:47.000000Z
+ecdf1ff81ce8ce6a47c36753ef4eb975
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2634
 
 nodeoffset.js
 file
@@ -777,40 +777,6 @@ has-props
 
 1897
 
-browserfeature.js
-file
-
-
-
-
-2011-06-19T11:09:47.000000Z
-2f60cc4ba2a3725a580739961c8c2471
-2011-06-14T04:10:07.000000Z
-1038
-gboyer@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1996
-
 nodeiterator.js
 file
 
@@ -845,51 +811,17 @@ has-props
 
 2868
 
-xml.js
-file
-
-
-
-
-2011-08-03T23:09:21.895151Z
-3736d7c3bf3392908211a4b43056d580
-2011-07-14T15:15:32.000000Z
-1123
-pallosp@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-6899
-
-fontsizemonitor_test.html
+browserfeature.js
 file
 
 
 
 
 2011-06-19T11:09:47.000000Z
-e783dcec29fae5ab964c841ecbcdb5a1
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2f60cc4ba2a3725a580739961c8c2471
+2011-06-14T04:10:07.000000Z
+1038
+gboyer@google.com
 has-props
 
 
@@ -911,7 +843,7 @@ has-props
 
 
 
-8603
+1996
 
 annotate_test.html
 file
@@ -947,8 +879,73 @@ has-props
 
 6771
 
-pattern
-dir
+fontsizemonitor_test.html
+file
+
+
+
+
+2011-06-19T11:09:47.000000Z
+e783dcec29fae5ab964c841ecbcdb5a1
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+8603
+
+xml.js
+file
+
+
+
+
+2011-08-03T23:09:21.895151Z
+3736d7c3bf3392908211a4b43056d580
+2011-07-14T15:15:32.000000Z
+1123
+pallosp@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6899
 
 a11y_test.html
 file
@@ -983,6 +980,9 @@ has-props
 
 
 4605
+
+pattern
+dir
 
 dom_quirks_test.html
 file

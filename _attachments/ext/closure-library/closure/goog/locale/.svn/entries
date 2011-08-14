@@ -1,15 +1,15 @@
 10
 
 dir
-1186
+1205
 http://closure-library.googlecode.com/svn/trunk/closure/goog/locale
 http://closure-library.googlecode.com/svn
 
 
 
-2011-07-02T01:06:21.000000Z
-1096
-zhenya@google.com
+2011-08-08T20:51:21.000000Z
+1197
+mimisun@google.com
 
 
 
@@ -304,11 +304,11 @@ file
 
 
 
-2011-08-03T23:09:20.891151Z
-87e3ea8fcd100c7726284e252bade3f7
-2011-07-02T01:06:21.000000Z
-1096
-zhenya@google.com
+2011-08-14T08:51:51.466819Z
+e86dc4310f8856adc6675b2235a7389e
+2011-08-08T20:51:21.000000Z
+1197
+mimisun@google.com
 has-props
 
 
@@ -330,7 +330,7 @@ has-props
 
 
 
-13546
+13558
 
 timezonedetection_test.html
 file

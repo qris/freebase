@@ -1,7 +1,7 @@
 10
 
 dir
-1186
+1205
 http://closure-library.googlecode.com/svn/trunk/closure/goog/editor/plugins
 http://closure-library.googlecode.com/svn
 
@@ -573,40 +573,6 @@ has-props
 
 11493
 
-abstractdialogplugin.js
-file
-
-
-
-
-2011-06-19T11:10:05.000000Z
-3a2d86fdaf621297383e230d5dee0156
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-11423
-
 equationeditorplugin_test.html
 file
 
@@ -640,6 +606,40 @@ has-props
 
 
 4112
+
+abstractdialogplugin.js
+file
+
+
+
+
+2011-06-19T11:10:05.000000Z
+3a2d86fdaf621297383e230d5dee0156
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+11423
 
 headerformatter_test.html
 file
@@ -879,40 +879,6 @@ has-props
 
 2643
 
-removeformatting_test.html
-file
-
-
-
-
-2011-06-19T11:10:05.000000Z
-1258a2a47143f5c996ad4d251e9fa350
-2011-06-01T23:09:53.000000Z
-991
-nicksantos@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-35136
-
 abstracttabhandler_test.html
 file
 
@@ -946,6 +912,40 @@ has-props
 
 
 2714
+
+removeformatting_test.html
+file
+
+
+
+
+2011-06-19T11:10:05.000000Z
+1258a2a47143f5c996ad4d251e9fa350
+2011-06-01T23:09:53.000000Z
+991
+nicksantos@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+35136
 
 loremipsum_test.html
 file

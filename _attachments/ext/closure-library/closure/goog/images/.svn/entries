@@ -1,7 +1,7 @@
 10
 
 dir
-1186
+1205
 http://closure-library.googlecode.com/svn/trunk/closure/goog/images
 http://closure-library.googlecode.com/svn
 
@@ -505,40 +505,6 @@ has-props
 
 1139
 
-gears_paused.gif
-file
-
-
-
-
-2011-06-19T11:09:13.000000Z
-82b034d4a98aaaaaeabefcea830e36ee
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-93
-
 plus.png
 file
 
@@ -573,14 +539,14 @@ has-props
 
 239
 
-gears_offline.gif
+gears_paused.gif
 file
 
 
 
 
 2011-06-19T11:09:13.000000Z
-ca40bfdb653782ae8982d773ebfb97da
+82b034d4a98aaaaaeabefcea830e36ee
 2011-04-12T20:35:47.000000Z
 850
 diegosalas@google.com
@@ -605,7 +571,41 @@ has-props
 
 
 
-76
+93
+
+no_anchor_bubble_top.gif
+file
+
+
+
+
+2011-06-19T11:09:13.650102Z
+7875a21d2c17c4c8b594c478e55832dd
+2010-05-17T07:00:01.442076Z
+139
+dtbentley
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+123
 
 left_anchor_bubble_bot.gif
 file
@@ -641,17 +641,17 @@ has-props
 
 431
 
-no_anchor_bubble_top.gif
+gears_offline.gif
 file
 
 
 
 
-2011-06-19T11:09:13.650102Z
-7875a21d2c17c4c8b594c478e55832dd
-2010-05-17T07:00:01.442076Z
-139
-dtbentley
+2011-06-19T11:09:13.000000Z
+ca40bfdb653782ae8982d773ebfb97da
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
 has-props
 
 
@@ -673,7 +673,7 @@ has-props
 
 
 
-123
+76
 
 hsva-sprite.gif
 file
@@ -777,14 +777,14 @@ has-props
 
 21680
 
-dropdn_disabled.gif
+check.gif
 file
 
 
 
 
 2011-06-19T11:09:13.000000Z
-b69a61c02841c8bc238389767c96bee5
+6df1d736ee36c88a361c31524cab5539
 2011-04-12T20:35:47.000000Z
 850
 diegosalas@google.com
@@ -809,7 +809,7 @@ has-props
 
 
 
-51
+53
 
 close_box.gif
 file
@@ -845,14 +845,14 @@ has-props
 
 65
 
-check.gif
+dropdn_disabled.gif
 file
 
 
 
 
 2011-06-19T11:09:13.000000Z
-6df1d736ee36c88a361c31524cab5539
+b69a61c02841c8bc238389767c96bee5
 2011-04-12T20:35:47.000000Z
 850
 diegosalas@google.com
@@ -877,7 +877,7 @@ has-props
 
 
 
-53
+51
 
 gears_bluedot.gif
 file
