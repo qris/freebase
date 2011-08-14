@@ -171,20 +171,15 @@ com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
 	
 	if (opt_editarea)
 	{
-		var editorControl = this.editorControl_ = new goog.ui.Control(null,
-			com.qwirx.freebase.DocumentEditor.EDIT_AREA_RENDERER);
+		var editorControl = this.editorControl_ = goog.dom.createDom('div',
+			'fb-edit-area-doc-div');
 		
-		// focusing the editor control (a huge div) isn't very useful and
-		// looks ugly in Chrome
-		// editorControl.setFocusable(false);
-		editorControl.setSupportedState(goog.ui.Component.State.FOCUSED, false);
-
-		editorControl.render(opt_editarea);
+		opt_editarea.appendChild(editorControl);
 		
 		if (this.documentId_ && Freebase.isTableId(this.documentId_))
 		{
 			// show all records in the table
-			editorControl.addClassName('fb-docedit-datagrid');
+			editorControl.className += ' fb-docedit-datagrid';
 			
 			var columnsGridInfo = [{caption: 'ID'}];
 			
@@ -196,7 +191,7 @@ com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
 			
 			var grid = this.grid_ = new com.qwirx.freebase.Grid(columnsGridInfo);
 			grid.addClassName('fb-datagrid');
-			grid.render(editorControl.getElement());
+			grid.render(editorControl);
 			
 			// register a DocumentSaved event listener to update the grid
 			// if a document shown in this grid is modified.
@@ -213,30 +208,30 @@ com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
 					
 					for (var r = 0; r < numRows; r++)
 					{
-						var result = all_results.rows[r];
-						var columnCells = this.getGridColumnData(result,
+						var result = all_results.rows[r].value;
+						var columnCells = self.getGridColumnData(result,
 							numCols);
 						var rowIndex = grid.addRow(columnCells);
-						rowMap[document._id] = rowIndex;
+						rowMap[result._id] = rowIndex;
 					}
 				});
 		}
 		else
 		{
 			// auto-render something usable
-			editorControl.addClassName('fb-docedit-autoform');
+			editorControl.className += ' fb-docedit-autoform';
 			var controls = this.autoFormControls_ = {};
 
 			var dom = goog.dom.getDomHelper();
 			
 			var flash = this.autoFormFlash_ = new goog.ui.Control('',
 				com.qwirx.freebase.FLASH_RENDERER, dom);
-			flash.render(editorControl.getElement());
+			flash.render(editorControl);
 			flash.setVisible(false);
 			
 			var table = this.autoFormTable_ = dom.createDom('table',
 				'fb-doc-auto');
-			editorControl.getElement().appendChild(table);
+			editorControl.appendChild(table);
 			
 			var fields = goog.object.getKeys(document).sort();
 			var l = fields.length;
@@ -257,7 +252,7 @@ com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
 					// hidden fields
 					inputAttribs.type = 'hidden';
 					var input = dom.createDom('input', inputAttribs);
-					editorControl.getElement().appendChild(input);
+					editorControl.appendChild(input);
 					
 					if (fieldName == '_id')
 					{
@@ -311,7 +306,7 @@ com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
 			}
 			
 			var submit = new goog.ui.CustomButton('Save');
-			submit.render(editorControl.getElement());
+			submit.render(editorControl);
 			goog.events.listen(submit, goog.ui.Component.EventType.ACTION,
 				this.onSaveClicked, false, this);
 		} // table or document
@@ -379,7 +374,7 @@ com.qwirx.freebase.DocumentEditor.prototype.onTabSelect = function(event)
 {
 	if (this.editorControl_)
 	{
-		goog.style.showElement(this.editorControl_.getElement(), true);
+		goog.style.showElement(this.editorControl_, true);
 	}
 };
 
@@ -387,7 +382,7 @@ com.qwirx.freebase.DocumentEditor.prototype.onTabUnselect = function(event)
 {
 	if (this.editorControl_)
 	{
-		goog.style.showElement(this.editorControl_.getElement(), false);
+		goog.style.showElement(this.editorControl_, false);
 	}
 };
 
@@ -401,11 +396,6 @@ com.qwirx.freebase.DocumentEditor.prototype.close = function()
 	if (this.tab_)
 	{
 		this.tabBar_.removeChild(this.tab_, true);
-	}
-	
-	if (this.editorControl_)
-	{
-		this.editorControl_.dispose();
 	}
 	
 	if (this.gui_)

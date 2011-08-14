@@ -503,10 +503,9 @@ function testFreebaseGuiRun()
 	catNode.select();
 	var editor = gui.openDocumentsById_[Cat.getId()];
 	assertNotNull(editor);
-	assertTrue(goog.style.isElementShown(editor.editorControl_.getElement()));
+	assertTrue(goog.style.isElementShown(editor.editorControl_));
 	editor.close();
 	assertObjectEquals({}, gui.openDocumentsById_);	
-	assertNull(editor.editorControl_.getElement());
 
 	// open the badger document by selecting it from the tree	
 	var badgerNode = gui.navigator_.getChildAt(0);
@@ -514,7 +513,7 @@ function testFreebaseGuiRun()
 	badgerNode.select();
 	var badgerEditor = gui.openDocumentsById_[Badger.getId()];
 	assertEquals(badgerEditor.tab_, gui.editAreaDocTabs_.getSelectedTab());
-	assertTrue(goog.style.isElementShown(badgerEditor.editorControl_.getElement()));
+	assertTrue(goog.style.isElementShown(badgerEditor.editorControl_));
 
 	// open the cat document by selecting it from the tree, check that
 	// the badger tab is no longer active and the document is hidden
@@ -522,14 +521,14 @@ function testFreebaseGuiRun()
 	var catEditor = gui.openDocumentsById_[Cat.getId()];
 	assertEquals(catEditor.tab_, gui.editAreaDocTabs_.getSelectedTab());
 	assertEquals(Cat.getId(), catNode.getModel().id);
-	assertFalse(goog.style.isElementShown(badgerEditor.editorControl_.getElement()));
-	assertTrue(goog.style.isElementShown(catEditor.editorControl_.getElement()));
+	assertFalse(goog.style.isElementShown(badgerEditor.editorControl_));
+	assertTrue(goog.style.isElementShown(catEditor.editorControl_));
 	
 	// switch docs by opening badger again
 	badgerNode.select();
 	assertEquals(badgerEditor.tab_, gui.editAreaDocTabs_.getSelectedTab());
-	assertTrue(goog.style.isElementShown(badgerEditor.editorControl_.getElement()));
-	assertFalse(goog.style.isElementShown(catEditor.editorControl_.getElement()));
+	assertTrue(goog.style.isElementShown(badgerEditor.editorControl_));
+	assertFalse(goog.style.isElementShown(catEditor.editorControl_));
 	
 	badgerEditor.close(); // close inactive tab
 	catEditor.close(); // close active tab
@@ -575,13 +574,22 @@ function testFreebaseGuiRun()
 	// happy birthday Etcetera! Who knows?
 	etc.age = 1;
 	mockFreebase.save(etc, function(){});
-	assertGridRow(etc);	
+	assertGridRow(etc);
+	
+	// close and reopen the Cat editor, check that it works when
+	// documents already exist at open time
+	editor.close();
+	editor = assertCallback(function(c)	
+		{ gui.openDocument(Cat.getId(), c); })[0];
+	grid = editor.getDataGrid();
+	assertGridRow(etc);
+	assertGridRow(old);
 	
 	// try opening a document
 	editor.close();
 	editor = assertCallback(function(c) { gui.openDocument(etc._id, c); })[0];
-	assertObjectEquals(['fb-docedit-autoform'],
-		editor.editorControl_.getExtraClassNames());
+	assertEquals('fb-edit-area-doc-div fb-docedit-autoform',
+		editor.editorControl_.className);
 	var flash = editor.autoFormFlash_;
 	assertFalse(flash.isVisible());
 	var table = editor.autoFormTable_;
