@@ -57,11 +57,12 @@ div.fb-docedit-autoform
 table.fb-doc-auto
 {
 	border-collapse: collapse;
+	margin-bottom: 1em;
 }
 
 table.fb-doc-auto th, table.fb-doc-auto td
 {
-	padding: 0.1em 0.2em;
+	padding: 0.2em 0.5em;
 }
 
 table.fb-doc-auto th
