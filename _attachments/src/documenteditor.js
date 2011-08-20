@@ -168,6 +168,13 @@ com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
 	this.document_ = document;
 	this.documentId_ = (document ? document._id : null);
 	var self = this;
+
+	// Register a DocumentSaved event listener to update ourselves
+	// if necessary, whenever a document is modified.
+
+	goog.events.listen(freebase,
+		com.qwirx.freebase.DocumentSaved.EVENT_TYPE,
+		this.onDocumentSaved, false, this);
 	
 	if (opt_editarea)
 	{
@@ -193,12 +200,6 @@ com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
 			grid.addClassName('fb-datagrid');
 			grid.render(editorControl);
 			
-			// register a DocumentSaved event listener to update the grid
-			// if a document shown in this grid is modified.
-			goog.events.listen(freebase,
-				com.qwirx.freebase.DocumentSaved.EVENT_TYPE,
-				this.onDocumentSaved, false, this);
-				
 			var rowMap = this.rowMap_ = {};
 			
 			freebase.view(this.documentId_, 'all',
@@ -221,6 +222,7 @@ com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
 			// auto-render something usable
 			editorControl.className += ' fb-docedit-autoform';
 			var controls = this.autoFormControls_ = {};
+			this.autoFormFixedCells_ = {}
 
 			var dom = goog.dom.getDomHelper();
 			
@@ -239,73 +241,10 @@ com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
 			for (var i = 0; i < l; i++)
 			{
 				var fieldName = fields[i];
-				var inputAttribs = {value: document[fieldName]};
-				var tr = undefined;
-				
-				if (!document.hasOwnProperty(fieldName))
-				{
-					// ignore inherited properties such as methods
-				}
-				else if (fieldName.indexOf('_') == 0)
-				{
-					// create _id and _rev document attributes as
-					// hidden fields
-					inputAttribs.type = 'hidden';
-					var input = dom.createDom('input', inputAttribs);
-					editorControl.appendChild(input);
-					
-					if (fieldName == '_id')
-					{
-						tr = dom.createDom('tr', 'fb-row');
-
-						var th = dom.createDom('th', 'fb-row-heading',
-							fieldName);
-						tr.appendChild(th);
-					
-						var td = dom.createDom('td', 'fb-row-value',
-							document[fieldName]);
-						tr.appendChild(td);
-					}
-				}
-				else if (fieldName.indexOf(com.qwirx.freebase.Freebase.INTERNAL_FIELD_PREFIX) == 0)
-				{
-					// ignore internal fields, don't allow changing them
-				}
-				else
-				{
-					tr = dom.createDom('tr', 'fb-row');
-
-					/*					
-					var column = undefined;
-					var l = document.constructor.columns.length;
-					for (var c = 0; c < l; c++)
-					{
-						if (document.constructor.columns[c].name == i)
-						{
-							column = document.constructor.columns[c];
-						}
-					}
-					*/
-					
-					var th = dom.createDom('th', 'fb-row-heading', fieldName);
-					tr.appendChild(th);
-					
-					var td = dom.createDom('td', 'fb-row-value');
-					tr.appendChild(td);
-					
-					inputAttribs.type = 'text';
-					var input = controls[fieldName] =
-						dom.createDom('input', inputAttribs);
-					td.appendChild(input);
-				}
-
-				if (tr)
-				{
-					table.appendChild(tr);
-				}				
+				this.createAutoFormRow_(fieldName);
 			}
 			
-			var submit = new goog.ui.CustomButton('Save');
+			var submit = this.submitButton_ = new goog.ui.CustomButton('Save');
 			submit.render(editorControl);
 			goog.events.listen(submit, goog.ui.Component.EventType.ACTION,
 				this.onSaveClicked, false, this);
@@ -334,18 +273,112 @@ com.qwirx.freebase.DocumentEditor.EDIT_AREA_RENDERER =
 	goog.ui.ControlRenderer.getCustomRenderer(goog.ui.ControlRenderer,
 		'fb-edit-area-doc-div');
 
+com.qwirx.freebase.DocumentEditor.prototype.createAutoFormRow_ =
+	function(fieldName)
+{
+	var document = this.document_;
+	var editorControl = this.editorControl_;
+	var table = this.autoFormTable_;
+	var formControls = this.autoFormControls_;
+	var inputAttribs = {value: document[fieldName]};
+	var dom = goog.dom.getDomHelper();
+	var tr;
+
+	if (!document.hasOwnProperty(fieldName))
+	{
+		// ignore inherited properties such as methods
+	}
+	else if (fieldName.indexOf('_') == 0)
+	{
+		// create _id and _rev document attributes as
+		// hidden fields
+		inputAttribs.type = 'hidden';
+		var input = formControls[fieldName] = dom.createDom('input',
+			inputAttribs);
+		editorControl.appendChild(input);
+		
+		tr = dom.createDom('tr', 'fb-row');
+
+		var th = dom.createDom('th', 'fb-row-heading', fieldName);
+		tr.appendChild(th);
+	
+		var td = this.autoFormFixedCells_[fieldName] = dom.createDom('td',
+			'fb-row-value', document[fieldName]);
+		tr.appendChild(td);
+	}
+	else if (fieldName.indexOf(com.qwirx.freebase.Freebase.INTERNAL_FIELD_PREFIX) == 0)
+	{
+		// ignore internal fields, don't allow changing them
+	}
+	else
+	{
+		tr = dom.createDom('tr', 'fb-row');
+
+		/*
+		var column = undefined;
+		var l = document.constructor.columns.length;
+		for (var c = 0; c < l; c++)
+		{
+			if (document.constructor.columns[c].name == i)
+			{
+				column = document.constructor.columns[c];
+			}
+		}
+		*/
+		
+		var th = dom.createDom('th', 'fb-row-heading', fieldName);
+		tr.appendChild(th);
+		
+		var td = dom.createDom('td', 'fb-row-value');
+		tr.appendChild(td);
+		
+		inputAttribs.type = 'text';
+		var input = formControls[fieldName] =
+			dom.createDom('input', inputAttribs);
+		td.appendChild(input);
+	}
+
+	if (tr)
+	{
+		table.appendChild(tr);
+	}				
+};
+
 com.qwirx.freebase.DocumentEditor.prototype.onSaveClicked = function(event)
 {
 	var controls = this.autoFormControls_;
+	var columns = this.document_.constructor.columns;
+	var l = columns.length;
+	var columnsByName = {};
+	
+	for (var c = 0; c < l; c++)
+	{
+		var column = columns[c];
+		columnsByName[column.name] = column;
+	}
+	
+	var newDoc = this.document_ = goog.object.clone(this.document_);
 	
 	for (var i in controls)
 	{
-		this.document_[i] = controls[i].value;
+		var value = controls[i].value;
+		var column = columnsByName[i];
+		if (column)
+		{
+			if (column.type == 'Number')
+			{
+				value = Number(value);
+			}
+		}
+		newDoc[i] = value;
 	}
+	
+	newDoc = this.freebase_.instantiateModel_(newDoc);
+	this.document_ = newDoc;
 	
 	var flash = this.autoFormFlash_;
 	
-	this.freebase_.save(this.document_,
+	this.freebase_.save(newDoc,
 		function onSuccess(object)
 		{
 			flash.removeClassName('fb-error-flash');
@@ -451,7 +484,7 @@ com.qwirx.freebase.DocumentEditor.prototype.getGridColumnData =
 			}
 			else
 			{
-				value = "" + content;
+				value = content.toString();
 			}
 		}
 		else
@@ -480,11 +513,11 @@ com.qwirx.freebase.DocumentEditor.prototype.getGridColumnData =
  */
 com.qwirx.freebase.DocumentEditor.prototype.onDocumentSaved = function(event)
 {
+	var document = event.getDocument();
 	var grid = this.grid_;
 	
 	if (grid)
 	{
-		var document = event.getDocument();
 		var existingRowIndex = this.rowMap_[document._id];
 		
 		if (existingRowIndex)
@@ -496,6 +529,24 @@ com.qwirx.freebase.DocumentEditor.prototype.onDocumentSaved = function(event)
 		{
 			var newRowIndex = grid.addRow(this.getGridColumnData(document));
 			this.rowMap_[document._id] = newRowIndex;
+		}
+	}
+
+	var controls = this.autoFormControls_;
+	
+	if (controls)
+	{
+		this.document_ = document;
+		
+		for (var i in controls)
+		{
+			controls[i].value = document[i];
+		}
+		
+		for (var i in this.autoFormFixedCells_)
+		{
+			this.autoFormFixedCells_[i].innerHTML =
+				goog.string.htmlEscape(document[i]);
 		}
 	}
 };

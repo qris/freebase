@@ -137,7 +137,7 @@ MockFreebase.prototype._get = function(uri, autoInstantiate, onSuccess,
 	if (uri.indexOf('_design/') == 0 && viewIndex > 0)
 	{
 		var designName = uri.substring(0, viewIndex);
-		var designDoc = JSON.parse(this.objectStore[designName]);
+		var designDoc = JSON.parse(this.objectStore[designName].json);
 		var viewName = uri.substring(viewIndex +
 			'/_view/'.length);
 		eval("var mapFunction = " +	designDoc.views[viewName].map);
@@ -181,7 +181,7 @@ MockFreebase.prototype._get = function(uri, autoInstantiate, onSuccess,
 	}
 	else if (uri in this.objectStore)
 	{
-		var object = JSON.parse(this.objectStore[uri]);
+		var object = JSON.parse(this.objectStore[uri].json);
 		
 		if (autoInstantiate)
 		{
@@ -200,7 +200,7 @@ MockFreebase.prototype._get = function(uri, autoInstantiate, onSuccess,
 	
 	for (var i in this.objectStore)
 	{
-		var o = JSON.parse(this.objectStore[i]);
+		var o = JSON.parse(this.objectStore[i].json);
 		
 		// views don't search design documents for some reason
 		if (o._id.indexOf('_design/') != 0)
@@ -226,10 +226,25 @@ MockFreebase.prototype.save = function(object, onSuccess, onError)
 	
 	if (!object._id)
 	{
-		object._id = "mock_" + (Math.random() + "").substring(2);
+		object._id = "mock_" + Math.random().toString().substring(2);
 	}
 	
-	this.objectStore[object._id] = JSON.stringify(goog.object.clone(object));
+	if (this.objectStore[object._id])
+	{
+		var oldRev = this.objectStore[object._id].revision;
+		if (oldRev != object._rev)
+		{
+			throw new ConflictException(object, oldRev, object._rev);
+		}
+	}
+	
+	object._rev = Math.random().toString().substring(2);
+	
+	this.objectStore[object._id] = {
+		revision: object._rev,
+		json: JSON.stringify(goog.object.clone(object))
+	};
+	
 	// com.qwirx.freebase.FunctionStringifier);
 	this.dispatchEvent(new DocumentSaved(object));
 	onSuccess(object);
@@ -477,7 +492,7 @@ function testFreebaseGuiRun()
 	var catDoc = Cat.toDocument();
 	mockFreebase.create$(catDoc, function(){});
 	assertObjectEquals('The Model Document should have been saved in the database',
-		JSON.stringify(catDoc), mockFreebase.objectStore[catDoc._id]);
+		JSON.stringify(catDoc), mockFreebase.objectStore[catDoc._id].json);
 	assertObjectEquals('The reconstructed Model class should be ' +
 		'identical to the one that produced the Model Document',
 		Cat, mockFreebase.app.models.Cat);
@@ -595,11 +610,41 @@ function testFreebaseGuiRun()
 	var table = editor.autoFormTable_;
 	assertEquals('fb-doc-auto', table.className);
 	var rows = goog.dom.getChildren(table);
-	assertEquals('_id', goog.dom.getNodeAtOffset(rows[0], 1).data);
-	assertEquals('age', goog.dom.getNodeAtOffset(rows[1], 1).data);
-	assertEquals('name', goog.dom.getNodeAtOffset(rows[2], 1).data);
-	assertEquals(3, rows.length);
+	assertEquals('_id',  goog.dom.getNodeAtOffset(rows[0], 1).data);
+	assertEquals('_rev', goog.dom.getNodeAtOffset(rows[1], 1).data);
+	assertEquals('age',  goog.dom.getNodeAtOffset(rows[2], 1).data);
+	assertEquals('name', goog.dom.getNodeAtOffset(rows[3], 1).data);
+	assertEquals(4, rows.length);
+	
+	// change document using the form, check that it's saved
 	var controls = editor.autoFormControls_;
+	controls.age.value = 2;
+	controls.name.value = 'Anonymouse';
+	editor.submitButton_.performActionInternal(); // trigger a click event
+	assertEquals('Document saved.', editor.autoFormFlash_.getContent());
+	assertTrue(editor.autoFormFlash_.isVisible());
+	
+	var etc2 = assertCallback(function(c) { mockFreebase.get(etc._id, c); })[0];
+	assertEquals(2, etc2.age);
+	assertEquals('Anonymouse', etc2.name);
+	assertFalse(etc2._rev == etc._rev);
+	assertEquals(etc2._rev, editor.autoFormControls_._rev.value);
+	assertEquals(etc2._rev, goog.dom.getChildren(rows[1])[1].innerHTML);
+
+	// modify again to check that the revision in the form was updated
+	// properly
+	controls.age.value = 3;
+	controls.name.value = 'Sylvester';
+	editor.submitButton_.performActionInternal(); // trigger a click event
+	assertEquals('Document saved.', editor.autoFormFlash_.getContent());
+	assertTrue(editor.autoFormFlash_.isVisible());
+	
+	etc2 = assertCallback(function(c) { mockFreebase.get(etc._id, c); })[0];
+	assertEquals(3, etc2.age);
+	assertEquals('Sylvester', etc2.name);
+	assertFalse(etc2._rev == etc._rev);
+	assertEquals(etc2._rev, editor.autoFormControls_._rev.value);
+	assertEquals(etc2._rev, goog.dom.getChildren(rows[1])[1].innerHTML);
 }
 
 </script>
