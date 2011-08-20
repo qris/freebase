@@ -339,6 +339,24 @@ com.qwirx.freebase.DocumentArea.prototype.getDocCell = function()
 	return this.docCell_;
 }
 
+com.qwirx.freebase.ConflictException = function(object, expectedRev,
+	actualRev)
+{
+	this.object_      = object;
+	this.expectedRev_ = expectedRev;
+	this.actualRev_   = actualRev;
+};
+
+com.qwirx.freebase.ConflictException.prototype.toString = function()
+{
+	return "Conflicting changes to object " + this.object_ + ": " +
+		"the object to be saved must have the same revision number " +
+		"as the one in the database, " + this.expectedRev_ + ", but " +
+		"it has revision " + this.actualRev_ + " instead, which " +
+		"probably means that the one in the database was modified by " +
+		"someone else inbetween.";
+};
+
 com.qwirx.freebase.Freebase.Gui = function(database)
 {
 	this.fb_ = database; // new com.qwirx.freebase.Freebase(database);
