@@ -524,6 +524,11 @@ com.qwirx.freebase.Freebase.Gui.prototype.onDocumentOpen = function(event)
 		function onSuccess(){});
 };
 
+com.qwirx.freebase.Freebase.Gui.prototype.getEditorContainer = function()
+{
+	return this.editArea_.getDocCell();
+};
+
 com.qwirx.freebase.Freebase.Gui.prototype.openDocument =
 	function(openedId, onSuccess)
 {
@@ -541,9 +546,11 @@ com.qwirx.freebase.Freebase.Gui.prototype.openDocument =
 			function onGetSuccess(document)
 			{
 				var editor = self.openDocumentsById_[openedId] =
-					new DocumentEditor(self, self.fb_, document,
+					new com.qwirx.freebase.DocumentEditor(self,
+						self.fb_,
+						document,
 						self.editAreaDocTabs_,
-						self.editArea_.getDocCell());
+						self.getEditorContainer());
 				onSuccess(editor);
 			},
 			function onError(exception)

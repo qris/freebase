@@ -167,6 +167,7 @@ com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
 	this.freebase_ = freebase;
 	this.document_ = document;
 	this.documentId_ = (document ? document._id : null);
+	this.editArea_ = opt_editarea;
 	var self = this;
 
 	// Register a DocumentSaved event listener to update ourselves
@@ -429,6 +430,11 @@ com.qwirx.freebase.DocumentEditor.prototype.close = function()
 	if (this.tab_)
 	{
 		this.tabBar_.removeChild(this.tab_, true);
+	}
+	
+	if (this.editArea_)
+	{
+		goog.dom.removeNode(this.editorControl_);
 	}
 	
 	if (this.gui_)

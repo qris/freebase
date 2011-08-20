@@ -520,7 +520,10 @@ function testFreebaseGuiRun()
 	assertNotNull(editor);
 	assertTrue(goog.style.isElementShown(editor.editorControl_));
 	editor.close();
-	assertObjectEquals({}, gui.openDocumentsById_);	
+	assertObjectEquals({}, gui.openDocumentsById_);
+	assertFalse('Editor grid should have been removed from the ' +
+		'editor container on close',
+		goog.dom.contains(gui.getEditorContainer(), editor.editorControl_));
 
 	// open the badger document by selecting it from the tree	
 	var badgerNode = gui.navigator_.getChildAt(0);
