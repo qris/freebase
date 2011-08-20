@@ -38,9 +38,11 @@
 
 .fb-edit-area-doc-div
 {
-	/*vertical-align: top;*/
+	/*
+	vertical-align: top;
 	width: 100%;
 	height: 100%;
+	*/
 	background: white;
 }
 
