@@ -360,9 +360,8 @@ com.qwirx.freebase.ConflictException.prototype.toString = function()
 com.qwirx.freebase.Freebase.Gui = function(database)
 {
 	this.fb_ = database; // new com.qwirx.freebase.Freebase(database);
-	var self = this;
 	goog.events.listen(database, com.qwirx.freebase.DocumentSaved.EVENT_TYPE,
-		function(event) { self.onDocumentSaved(event) }, true);
+		this.onDocumentSaved, false, this);
 };
 
 /**
