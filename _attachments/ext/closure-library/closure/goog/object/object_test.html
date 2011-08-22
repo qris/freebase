@@ -293,7 +293,7 @@ function testTranspose() {
 function testExtend() {
   var o = {};
   var o2 = {a: 0, b: 1};
-  goog.object.extend(o, o2);
+  assertEquals(o, goog.object.extend(o, o2));
   assertEquals(0, o.a);
   assertEquals(1, o.b);
   assertTrue('a' in o);

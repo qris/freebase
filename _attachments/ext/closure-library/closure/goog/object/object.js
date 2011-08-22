@@ -532,6 +532,8 @@ goog.object.extend = function(target, var_args) {
       }
     }
   }
+  
+  return target;
 };
 
 
