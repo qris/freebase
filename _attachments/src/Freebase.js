@@ -432,39 +432,24 @@ com.qwirx.freebase.Freebase.Gui.prototype.construct = function()
 	
 	goog.events.listen(navigator, goog.events.EventType.CHANGE,
 		this.onDocumentOpen, false, this);
-};
-
-com.qwirx.freebase.Freebase.Gui.prototype.refresh = function()
-{
-	return;
-	var self = this;
-	self.nav.empty();
 	
-	self.database.get('_all_docs',
+	var self = this;
+	this.fb_.listAll(/* fetch document contents: true, */
 		function(results)
 		{
-			jQuery.each(results.rows,
-				function(i, result)
-				{
-					var result_id = result.id;
-					var div = jQuery('<div />').attr('class', 'fb-list-item');
-					var link = jQuery('<a />').attr('href', '#' + result_id);
-					link.click(function(e)
-						{
-							self.show(result_id);
-							return false;
-						});
-					// give the link a label:
-					link.append(document.createTextNode(result_id));
-					div.append(link);
-					self.nav.append(div);
-				});
+			var len = results.rows.length;
+			for (var i = 0; i < len; i++)
+			{
+				var result = results.rows[i];
+				var newNodeName = self.getDocumentLabel(result.doc);
+				var newNode = self.navigator_.createNode(newNodeName);
+				newNode.setModel({id: result.id});
+				self.navigator_.addChild(newNode);
+			}
 		});
-},
+};
 
 /**
- * Binary search on a sorted tree (actually any BaseNode) to find the
- * correct insertion point to maintain sort order.
  * Binary search on a sorted list, to find the correct insertion point
  * to maintain sort order.
  */
@@ -478,7 +463,7 @@ com.qwirx.freebase.binarySearch = function(countFn, compareFn)
 	{
 		var middle = (left + right) >> 1;
 		var compareResult = compareFn(middle);
-		if (compareResult > 0) 
+		if (compareResult > 0)
 		{
 			left = middle + 1;
 		}

@@ -117,11 +117,10 @@ com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW =
 com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL = 
 	com.qwirx.freebase.Freebase.FREEBASE_FIELD_PREFIX + 'grid_col';
 
-com.qwirx.freebase.Grid.prototype.addRow = function(columns)
+com.qwirx.freebase.Grid.prototype.insertRowAt = function(columns, newRowIndex)
 {
 	var numCols = columns.length;
 	var cells = [];
-	var newRowIndex = this.rowCount_;
 	
 	for (var i = 0; i < numCols; i++)
 	{
@@ -136,11 +135,18 @@ com.qwirx.freebase.Grid.prototype.addRow = function(columns)
 	}
 	
 	var newTableRow = this.dom_.createDom('tr', {}, cells);
-	this.element_.appendChild(newTableRow);
+	goog.dom.insertChildAt(this.element_, newTableRow,
+		newRowIndex + 1 /* for header row */);
 	
 	this.rowCount_++;
-	this.rows_.push(columns);
-	this.rowElements_[newRowIndex] = newTableRow;
+	this.rows_.splice(newRowIndex, 0, columns);
+	this.rowElements_.splice(newRowIndex, 0, newTableRow);
+};
+
+com.qwirx.freebase.Grid.prototype.appendRow = function(columns)
+{
+	var newRowIndex = this.rowCount_;
+	this.insertRowAt(columns, newRowIndex);
 	return newRowIndex;
 };
 
@@ -365,7 +371,7 @@ com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
 						var result = all_results.rows[r].value;
 						var columnCells = self.getGridColumnData(result,
 							numCols);
-						var rowIndex = grid.addRow(columnCells);
+						var rowIndex = grid.appendRow(columnCells);
 						rowMap[result._id] = rowIndex;
 					}
 				});
@@ -710,7 +716,7 @@ com.qwirx.freebase.DocumentEditor.prototype.onDocumentSaved = function(event)
 		}
 		else
 		{
-			var newRowIndex = grid.addRow(this.getGridColumnData(document));
+			var newRowIndex = grid.appendRow(this.getGridColumnData(document));
 			this.rowMap_[document._id] = newRowIndex;
 		}
 	}
