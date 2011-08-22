@@ -250,16 +250,35 @@ com.qwirx.freebase.Grid.prototype.handleMouseOver = function(e)
 	}
 	*/
 	
-	// if the new y2 is less than the old, reduce rows
-	for (var y = newy2 + 1; y <= this.drag.y2; y++)
+	var isDraggingDown = (newy2 >= this.drag.y1);
+	
+	if (isDraggingDown)
 	{
-		this.highlightRow(y, false);
-	}
+		// if the new y2 is less than the old, reduce rows
+		for (var y = newy2 + 1; y <= this.drag.y2; y++)
+		{
+			this.highlightRow(y, false);
+		}
 
-	// if the new y2 is greater than the old, add rows
-	for (var y = this.drag.y2 + 1; y <= newy2; y++)
+		// if the new y2 is greater than the old, add rows
+		for (var y = this.drag.y2 + 1; y <= newy2; y++)
+		{
+			this.highlightRow(y, true);
+		}
+	}
+	else // dragging up
 	{
-		this.highlightRow(y, true);
+		// if the new y2 is less than the old, add rows
+		for (var y = newy2; y <= this.drag.y2 - 1; y++)
+		{
+			this.highlightRow(y, true);
+		}
+
+		// if the new y2 is greater than the old, reduce rows
+		for (var y = this.drag.y2; y <= newy2 - 1; y++)
+		{
+			this.highlightRow(y, false);
+		}
 	}
 	
 	this.drag.y2 = newy2;

@@ -752,6 +752,19 @@ function testGridHighlight()
 	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(2, 1));
 	assertSelection('Selection should not have changed without another mousedown',
 		0, 0, 1, 1);
+
+	sendFakeMouseEvent(goog.events.EventType.MOUSEDOWN, 0, getCell(2, 1));
+	assertSelection('Selection should have changed with click', 2, 1, 2, 1);
+
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(1, 1));
+	assertSelection('Selection should have changed with drag', 2, 1, 1, 1);
+
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(1, 0));
+	assertSelection('Selection should have changed with drag', 2, 1, 1, 0);
+
+	sendFakeMouseEvent(goog.events.EventType.MOUSEUP, 0, getCell(0, 0));
+	assertSelection('Selection should not have changed with mouseup',
+		2, 1, 1, 0);
 }
 
 </script>
