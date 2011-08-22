@@ -406,7 +406,6 @@ com.qwirx.freebase.Freebase.Gui.prototype.run = function(container)
 	this.openDocumentsById_ = {};
 	this.window = container;
 	this.construct();
-	this.refresh();
 };
 
 
