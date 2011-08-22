@@ -650,6 +650,65 @@ function testFreebaseGuiRun()
 	assertEquals(etc2._rev, goog.dom.getChildren(rows[1])[1].innerHTML);
 }
 
+/**
+ * Fake getParentEventTarget() method patched into DOM elements so that
+ * dispatchEvent() works on them.
+ */
+function fakeGetParentEventTarget()
+{
+	return this.parentNode;
+}
+
+function sendFakeMouseEvent(type, button, target)
+{
+	// patch a fake getParentEventTarget() method into the DOM elements
+	// so that dispatchEvent works with them just like handleBrowserEvent().
+	for (var parent = target; parent; parent = parent.parentNode)
+	{
+		parent.getParentEventTarget = fakeGetParentEventTarget;
+	}
+	
+	goog.events.dispatchEvent(target,
+		new goog.events.BrowserEvent({
+			type: type,
+			button: button
+		}));
+}
+
+function testGridHighlight()
+{
+	var gui = new Freebase.Gui(mockFreebase);
+	gui.run(mockDocument);
+
+	var Cat = Model('Cat', mockFreebase, [{name: 'name', type: 'String'},
+		{name: 'age', type: 'Number'}]);
+	mockFreebase.create$(Cat.toDocument(), function(){});
+	
+	var editor = assertCallback(function(c) { gui.openDocument(Cat.getId(), c); })[0];
+
+	old = new Cat({name: "Old Deuteronomy", age: 82});
+	mockFreebase.save(old, function(){});
+	etc = new Cat({name: "Etcetera", age: 0});
+	mockFreebase.save(etc, function(){});
+
+	var grid = editor.grid_;
+	assertEquals('Grid should have been updated with newly created documents',
+		2, grid.getRowCount());
+	assertObjectEquals({x1: 0, y1: 0, x2: -1, y2: -1}, grid.drag);
+	/*
+	goog.events.dispatchEvent(grid.getElement(),
+		new goog.events.BrowserEvent({
+			type: goog.events.EventType.MOUSEOVER,
+			target: grid.getRow(0)[0].tableCell,
+			button: goog.events.BrowserEvent.MouseButton.LEFT
+		}));
+	*/
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER,
+		-1, grid.getRow(0)[0].tableCell);
+	assertObjectEquals('Selection should not have changed with mouseover',
+		{x1: 0, y1: 0, x2: -1, y2: -1}, grid.drag);
+}
+
 </script>
 </body>
 </html>

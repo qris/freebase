@@ -75,6 +75,8 @@ com.qwirx.freebase.Grid = function(columns, opt_renderer)
 	
 	// focusing a grid isn't very useful and looks ugly in Chrome
 	this.setSupportedState(goog.ui.Component.State.FOCUSED, false);
+	
+	this.drag = { x1: 0, y1: 0, x2: -1, y2: -1 };
 };
 
 goog.inherits(com.qwirx.freebase.Grid, goog.ui.Control);
@@ -86,6 +88,7 @@ com.qwirx.freebase.Grid.prototype.createDom = function()
 {
 	this.element_ = this.dom_.createDom('table',
 		this.getRenderer().getClassNames(this).join(' '));
+	this.element_.id = goog.string.createUniqueString();
 
 	var columns = this.columns_;
 	var numCols = columns.length;
@@ -105,27 +108,39 @@ com.qwirx.freebase.Grid.prototype.createDom = function()
 	
 	this.rowCount_ = 0;
 	this.rows_ = [];
+	this.rowElements_ = [];
+	this.highlightStyles_ = goog.style.installStyles('', this.element_);
 };
+
+com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW = 
+	com.qwirx.freebase.Freebase.FREEBASE_FIELD_PREFIX + 'grid_row';
+com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL = 
+	com.qwirx.freebase.Freebase.FREEBASE_FIELD_PREFIX + 'grid_col';
 
 com.qwirx.freebase.Grid.prototype.addRow = function(columns)
 {
 	var numCols = columns.length;
 	var cells = [];
+	var newRowIndex = this.rowCount_;
 	
 	for (var i = 0; i < numCols; i++)
 	{
 		var column = columns[i];
-		var td = column.tableCell = this.dom_.createDom('td', {},
+		var cssClasses = 'col_' + i;
+		var td = column.tableCell = this.dom_.createDom('td', cssClasses,
 			column.value);
+		td[com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL] = i;
+		td[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW] = newRowIndex;
+			
 		cells.push(td);
 	}
 	
 	var newTableRow = this.dom_.createDom('tr', {}, cells);
 	this.element_.appendChild(newTableRow);
 	
-	var newRowIndex = this.rowCount_;
 	this.rowCount_++;
 	this.rows_.push(columns);
+	this.rowElements_[newRowIndex] = newTableRow;
 	return newRowIndex;
 };
 
@@ -150,12 +165,102 @@ com.qwirx.freebase.Grid.prototype.updateRow = function(rowIndex, columns)
 com.qwirx.freebase.Grid.prototype.getRowCount = function()
 {
 	return this.rowCount_;
-}
+};
 
 com.qwirx.freebase.Grid.prototype.getRow = function(rowIndex)
 {
 	return this.rows_[rowIndex];
-}
+};
+
+com.qwirx.freebase.Grid.prototype.handleMouseDown = function(e)
+{
+	// remove existing selection
+	var oldy1 = Math.min(this.drag.y1, this.drag.y2);
+	var oldy2 = Math.max(this.drag.y1, this.drag.y2);
+	
+	for (var y = oldy1; y <= oldy2; y++)
+	{
+		this.highlightRow(y, false);
+	}
+
+	// Highlighted rows will be reset when createHighlightRule_()
+	// is called below, so don't waste effort doing it now.
+	
+	this.drag.x1 = this.drag.x2 = 
+		e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL];
+	this.drag.y1 = this.drag.y2 = 
+		e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW];
+	
+	this.highlightRow(this.drag.y1, true);
+	this.createHighlightRule_();
+};
+
+com.qwirx.freebase.Grid.prototype.createHighlightRule_ = function()
+{
+	var builder = new goog.string.StringBuffer();
+	
+	var x1 = Math.min(this.drag.x1, this.drag.x2);
+	var x2 = Math.max(this.drag.x1, this.drag.x2);
+
+	for (var x = x1; x <= x2; x++)
+	{
+		builder.append('table#' + this.element_.id + ' > ' +
+			'tr.highlight > td.col_' + x + ' { background: #ddf; }');
+	}
+	
+	goog.style.setStyles(this.highlightStyles_, builder.toString());
+};
+
+com.qwirx.freebase.Grid.prototype.highlightRow = function(rowIndex, enable)
+{
+	this.getRenderer().enableClassName(this.rowElements_[rowIndex],
+		'highlight', enable);
+};
+
+com.qwirx.freebase.Grid.prototype.handleMouseOver = function(e)
+{
+	if (!e.isMouseActionButton())
+	{
+		return;
+	}
+	
+	var newx2 = e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL];
+	var newy2 = e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW];
+	
+	/*
+	// if the new x2 is less than the old, reduce columns
+	for (var x = newx2 + 1; x <= this.drag.x2; x++)
+	{
+		this.highlightColumn(x, false);
+	}
+	
+	// if the new x2 is greater than the old, add columns
+	for (var x = this.drag.x2 + 1; x <= newx2; x++)
+	{
+		this.highlightColumn(x, true);
+	}
+	*/
+	
+	// if the new y2 is less than the old, reduce rows
+	for (var y = newy2 + 1; y <= this.drag.y2; y++)
+	{
+		this.highlightRow(y, false);
+	}
+
+	// if the new y2 is greater than the old, add rows
+	for (var y = this.drag.y2 + 1; y <= newy2; y++)
+	{
+		this.highlightRow(y, true);
+	}
+	
+	this.drag.y2 = newy2;
+	
+	if (newx2 != this.drag.x2)
+	{
+		this.drag.x2 = newx2;
+		this.createHighlightRule_();
+	}
+};
 
 com.qwirx.freebase.FLASH_RENDERER = goog.ui.ControlRenderer.getCustomRenderer(
 	goog.ui.ControlRenderer, 'fb-flash');
