@@ -465,20 +465,25 @@ com.qwirx.freebase.Freebase.Gui.prototype.refresh = function()
 /**
  * Binary search on a sorted tree (actually any BaseNode) to find the
  * correct insertion point to maintain sort order.
+ * Binary search on a sorted list, to find the correct insertion point
+ * to maintain sort order.
  */
-com.qwirx.freebase.treeSearch = function(node, compareFn, target)
+com.qwirx.freebase.binarySearch = function(countFn, compareFn)
 {
 	var left = 0;  // inclusive
-	var right = node.getChildCount();  // exclusive
+	var right = countFn();  // exclusive
 	var found;
 	
 	while (left < right)
 	{
 		var middle = (left + right) >> 1;
-		var compareResult = compareFn(target, node.getChildAt(middle));
-		if (compareResult > 0) {
+		var compareResult = compareFn(middle);
+		if (compareResult > 0) 
+		{
 			left = middle + 1;
-		} else {
+		}
+		else
+		{
 			right = middle;
 			// We are looking for the lowest index so we can't return immediately.
 			found = !compareResult;
@@ -489,6 +494,23 @@ com.qwirx.freebase.treeSearch = function(node, compareFn, target)
 	// ~left is a shorthand for -left - 1.
 	
 	return found ? left : ~left;
+};
+
+/**
+ * Binary search on a sorted tree (actually any BaseNode) to find the
+ * correct insertion point to maintain sort order.
+ */
+com.qwirx.freebase.treeSearch = function(node, compareNodeFn, target)
+{
+	return com.qwirx.freebase.binarySearch(
+		function countFn()
+		{
+			return node.getChildCount();
+		},
+		function compareFn(atIndex)
+		{
+			return compareNodeFn(target, node.getChildAt(atIndex));
+		});
 };
 
 com.qwirx.freebase.treeLabelCompare = function(a, b)

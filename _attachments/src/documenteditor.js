@@ -665,6 +665,31 @@ com.qwirx.freebase.DocumentEditor.prototype.getGridColumnData =
 };
 
 /**
+ * Binary search on a sorted tree (actually any BaseNode) to find the
+ * correct insertion point to maintain sort order.
+ */
+com.qwirx.freebase.DocumentEditor.prototype.gridRowIdSearch =
+	function(grid, compareRowFn, target)
+{
+	return com.qwirx.freebase.binarySearch(
+		function countFn()
+		{
+			return grid.getRowCount();
+		},
+		function compareFn(atIndex)
+		{
+			return compareRowFn(target, grid.getRow(atIndex));
+		});
+};
+
+com.qwirx.freebase.DocumentEditor.prototype.gridRowIdCompare = function(a, b)
+{
+	var ta = a[0].value;
+	var tb = b[0].value;
+	return goog.array.defaultCompare(ta, tb);
+};
+
+/**
  * Event handler for DocumentSaved events fired at the database, which
  * updates the grid if a document is modified or created which the
  * grid should display.
