@@ -250,37 +250,39 @@ com.qwirx.freebase.Grid.prototype.handleMouseOver = function(e)
 	}
 	*/
 	
-	var isDraggingDown = (newy2 >= this.drag.y1);
-	
-	if (isDraggingDown)
-	{
-		// if the new y2 is less than the old, reduce rows
-		for (var y = newy2 + 1; y <= this.drag.y2; y++)
-		{
-			this.highlightRow(y, false);
-		}
+	var oldymin = Math.min(this.drag.y1, this.drag.y2);
+	var oldymax = Math.max(this.drag.y1, this.drag.y2);
+	var newymin = Math.min(this.drag.y1, newy2);
+	var newymax = Math.max(this.drag.y1, newy2);
 
-		// if the new y2 is greater than the old, add rows
-		for (var y = this.drag.y2 + 1; y <= newy2; y++)
-		{
-			this.highlightRow(y, true);
-		}
-	}
-	else // dragging up
+	// If selection is above y1 and moving down, unselect any rows between
+	// the old and new minima.
+	for (var y = oldymin; y < newymin; y++)
 	{
-		// if the new y2 is less than the old, add rows
-		for (var y = newy2; y <= this.drag.y2 - 1; y++)
-		{
-			this.highlightRow(y, true);
-		}
-
-		// if the new y2 is greater than the old, reduce rows
-		for (var y = this.drag.y2; y <= newy2 - 1; y++)
-		{
-			this.highlightRow(y, false);
-		}
+		this.highlightRow(y, false);
 	}
 	
+	// If selection is above y1 and moving up, select any rows between
+	// the new and old minima.
+	for (var y = newymin; y < oldymin; y++)
+	{
+		this.highlightRow(y, true);
+	}
+	
+	// If selection is below y1 and moving down, select any rows between
+	// the old and new maxima.
+	for (var y = oldymax + 1; y <= newymax; y++)
+	{
+		this.highlightRow(y, true);
+	}
+	
+	// If selection is below y1 and moving up, unselect any rows between
+	// the new and old maxima.
+	for (var y = newymax + 1; y <= oldymax; y++)
+	{
+		this.highlightRow(y, false);
+	}
+
 	this.drag.y2 = newy2;
 	
 	if (newx2 != this.drag.x2)
