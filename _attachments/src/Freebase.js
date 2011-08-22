@@ -402,6 +402,7 @@ com.qwirx.freebase.Freebase.Gui.prototype.run = function(container)
 	this.loadCss('../ext/closure-library/closure/goog/css/custombutton');
 	// for ui-icon-close
 	// this.loadCss('../ext/jquery-ui-themes/base/jquery.ui.theme');
+	goog.dom.removeChildren(container);
 	this.openDocumentsById_ = {};
 	this.window = container;
 	this.construct();
