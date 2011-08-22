@@ -690,23 +690,48 @@ function testGridHighlight()
 	mockFreebase.save(old, function(){});
 	etc = new Cat({name: "Etcetera", age: 0});
 	mockFreebase.save(etc, function(){});
+	
+	function assertSelection(message, x1, y1, x2, y2)
+	{
+		assertObjectEquals(message, {x1: x1, y1: y1, x2: x2, y2: y2},
+			grid.drag);
+		
+		// check that row and column CSS classes match expectations
+		for (var y = 0; y < grid.getRowCount(); y++)
+		{
+			var rowElement = grid.rowElements_[y];
+			assertEquals(message,
+				/* should this row be highlighted? */
+				y >= Math.min(y1, y2) && y <= Math.max(y1, y2),
+				/* is it actually highlighted? */
+				goog.dom.classes.has(rowElement, 'highlight'));
+		}
 
+		var builder = new goog.string.StringBuffer();
+		for (var x = Math.min(x1, x2); x <= Math.max(x1, x2) && x1 >= 0; x++)
+		{
+			builder.append('table#' + grid.getElement().id + ' > ' +
+				'tr.highlight > td.col_' + x + ' { background: #ddf; }');
+		}
+		assertEquals(message, builder.toString(), grid.highlightStyles_.innerHTML);
+	}
+	
 	var grid = editor.grid_;
 	assertEquals('Grid should have been updated with newly created documents',
 		2, grid.getRowCount());
-	assertObjectEquals({x1: 0, y1: 0, x2: -1, y2: -1}, grid.drag);
-	/*
-	goog.events.dispatchEvent(grid.getElement(),
-		new goog.events.BrowserEvent({
-			type: goog.events.EventType.MOUSEOVER,
-			target: grid.getRow(0)[0].tableCell,
-			button: goog.events.BrowserEvent.MouseButton.LEFT
-		}));
-	*/
-	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER,
-		-1, grid.getRow(0)[0].tableCell);
-	assertObjectEquals('Selection should not have changed with mouseover',
-		{x1: 0, y1: 0, x2: -1, y2: -1}, grid.drag);
+	assertSelection('No cells should be selected initially', -1, -1, -1, -1);
+	
+	function getCell(x, y)
+	{
+		return grid.getRow(x)[y].tableCell;
+	}
+
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(0, 0));
+	assertSelection('Selection should not have changed without click',
+		-1, -1, -1, -1);
+
+	sendFakeMouseEvent(goog.events.EventType.MOUSEDOWN, 0, getCell(0, 0));
+	assertSelection('Selection should have changed with click', 0, 0, 0, 0);
 }
 
 </script>

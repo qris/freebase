@@ -76,7 +76,7 @@ com.qwirx.freebase.Grid = function(columns, opt_renderer)
 	// focusing a grid isn't very useful and looks ugly in Chrome
 	this.setSupportedState(goog.ui.Component.State.FOCUSED, false);
 	
-	this.drag = { x1: 0, y1: 0, x2: -1, y2: -1 };
+	this.drag = { x1: -1, y1: -1, x2: -1, y2: -1 };
 };
 
 goog.inherits(com.qwirx.freebase.Grid, goog.ui.Control);
@@ -178,7 +178,7 @@ com.qwirx.freebase.Grid.prototype.handleMouseDown = function(e)
 	var oldy1 = Math.min(this.drag.y1, this.drag.y2);
 	var oldy2 = Math.max(this.drag.y1, this.drag.y2);
 	
-	for (var y = oldy1; y <= oldy2; y++)
+	for (var y = oldy1; y <= oldy2 && oldy1 >= 0; y++)
 	{
 		this.highlightRow(y, false);
 	}
@@ -202,7 +202,9 @@ com.qwirx.freebase.Grid.prototype.createHighlightRule_ = function()
 	var x1 = Math.min(this.drag.x1, this.drag.x2);
 	var x2 = Math.max(this.drag.x1, this.drag.x2);
 
-	for (var x = x1; x <= x2; x++)
+	// don't create any rules if x1 == -1, which means there are currently
+	// no cell selected
+	for (var x = x1; x <= x2 && x1 >= 0; x++)
 	{
 		builder.append('table#' + this.element_.id + ' > ' +
 			'tr.highlight > td.col_' + x + ' { background: #ddf; }');
@@ -219,8 +221,13 @@ com.qwirx.freebase.Grid.prototype.highlightRow = function(rowIndex, enable)
 
 com.qwirx.freebase.Grid.prototype.handleMouseOver = function(e)
 {
-	if (!e.isMouseActionButton())
+	if (!this.isActive())
 	{
+		// Don't change selection unless the mouse action button is down.
+		// We can't tell directly because browsers don't set the button
+		// property of mouseover events, but 
+		// i.e. we have received a mousedown but no corresponding mouseup
+		// event.
 		return;
 	}
 	
