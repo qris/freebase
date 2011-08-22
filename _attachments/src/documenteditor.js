@@ -175,6 +175,7 @@ com.qwirx.freebase.Grid.prototype.getRow = function(rowIndex)
 com.qwirx.freebase.Grid.prototype.handleMouseDown = function(e)
 {
 	com.qwirx.freebase.Grid.superClass_.handleMouseDown.call(this, e);
+	var self = this;
 	
 	// remove existing selection
 	var oldy1 = Math.min(this.drag.y1, this.drag.y2);
@@ -195,6 +196,19 @@ com.qwirx.freebase.Grid.prototype.handleMouseDown = function(e)
 	
 	this.highlightRow(this.drag.y1, true);
 	this.createHighlightRule_();
+	
+	var d = new goog.fx.Dragger(this.element_);
+	d.addEventListener(goog.fx.Dragger.EventType.DRAG, 
+		function(e)
+		{
+			self.handleDrag(e);
+		});
+	d.addEventListener(goog.fx.Dragger.EventType.END,
+		function(e) {
+			self.handleDrag(e);
+			d.dispose();
+		});
+	d.startDrag(e);
 };
 
 com.qwirx.freebase.Grid.prototype.createHighlightRule_ = function()
@@ -221,8 +235,9 @@ com.qwirx.freebase.Grid.prototype.highlightRow = function(rowIndex, enable)
 		'highlight', enable);
 };
 
-com.qwirx.freebase.Grid.prototype.handleMouseOver = function(e)
+com.qwirx.freebase.Grid.prototype.handleDrag = function(e)
 {
+	/*
 	if (!this.isActive())
 	{
 		// Don't change selection unless the mouse action button is down.
@@ -232,9 +247,11 @@ com.qwirx.freebase.Grid.prototype.handleMouseOver = function(e)
 		// event.
 		return;
 	}
+	*/
 	
-	var newx2 = e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL];
-	var newy2 = e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW];
+	var be = e.browserEvent;
+	var newx2 = be.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL];
+	var newy2 = be.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW];
 	
 	/*
 	// if the new x2 is less than the old, reduce columns
