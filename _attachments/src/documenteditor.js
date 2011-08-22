@@ -594,6 +594,10 @@ com.qwirx.freebase.DocumentEditor.prototype.close = function()
 	{
 		goog.dom.removeNode(this.editorControl_);
 	}
+
+	goog.events.unlisten(this.freebase_,
+		com.qwirx.freebase.DocumentSaved.EVENT_TYPE,
+		this.onDocumentSaved, false, this);
 	
 	if (this.gui_)
 	{

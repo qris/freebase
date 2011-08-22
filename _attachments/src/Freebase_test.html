@@ -467,6 +467,11 @@ function testFreebaseGuiRun()
 	var gui = new Freebase.Gui(mockFreebase);
 	gui.run(mockDocument);
 	
+	assertObjectEquals('Should be only one DocumentSaved listener now',
+		[goog.events.getListener(mockFreebase,
+			DocumentSaved.EVENT_TYPE, gui.onDocumentSaved, false, gui)],
+		goog.events.listenerTree_[DocumentSaved.EVENT_TYPE][false][goog.getUid(mockFreebase)]);
+	
 	var i = new goog.dom.NodeIterator(mockDocument);
 	assertEquals(mockDocument, i.next());
 	assertEquals(gui.splitter_.getElement(), i.next());
@@ -553,6 +558,11 @@ function testFreebaseGuiRun()
 	badgerEditor.close(); // close inactive tab
 	catEditor.close(); // close active tab
 	assertObjectEquals({}, gui.openDocumentsById_);
+	assertObjectEquals('Should be only one DocumentSaved listener now',
+		goog.object.extend([goog.events.getListener(mockFreebase,
+			DocumentSaved.EVENT_TYPE, gui.onDocumentSaved, false, gui)],
+			{locked_: 0, needsCleanup_: false}),
+		goog.events.listenerTree_[DocumentSaved.EVENT_TYPE][false][goog.getUid(mockFreebase)]);
 	
 	// open the Cat document, showing a list of Cats
 	var editor = assertCallback(function(c)
