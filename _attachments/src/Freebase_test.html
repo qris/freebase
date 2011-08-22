@@ -270,6 +270,9 @@ MockFreebase.prototype.attachEvent = function()
 }
 
 var mockFreebase;
+var mockDocument = goog.dom.createDom(goog.dom.TagName.DIV,
+	{'style': 'background-color: #eee; width: 50%; float: right;'});
+goog.dom.appendChild(document.body, mockDocument);
 
 function setUp()
 {
@@ -459,9 +462,6 @@ function assertTreeContents(tree, freebase, optional_comment)
 
 function testFreebaseGuiRun()
 {
-	var mockDocument = goog.dom.createDom(goog.dom.TagName.DIV,
-		{'style': 'background-color: #eee;'});
-	goog.dom.appendChild(document.body, mockDocument);
 	var gui = new Freebase.Gui(mockFreebase);
 	gui.run(mockDocument);
 	
