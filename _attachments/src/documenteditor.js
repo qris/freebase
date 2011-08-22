@@ -174,6 +174,8 @@ com.qwirx.freebase.Grid.prototype.getRow = function(rowIndex)
 
 com.qwirx.freebase.Grid.prototype.handleMouseDown = function(e)
 {
+	com.qwirx.freebase.Grid.superClass_.handleMouseDown.call(this, e);
+	
 	// remove existing selection
 	var oldy1 = Math.min(this.drag.y1, this.drag.y2);
 	var oldy2 = Math.max(this.drag.y1, this.drag.y2);
