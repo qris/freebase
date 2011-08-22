@@ -429,7 +429,7 @@ com.qwirx.freebase.Freebase.Gui.prototype.construct = function()
 	editAreaDocTabs.render(editArea.getTabsCell());
 	
 	goog.events.listen(navigator, goog.events.EventType.CHANGE,
-		this.onDocumentOpen, false, this);
+		this.onNavigatorClicked, false, this);
 	
 	var self = this;
 	this.fb_.listAll(/* fetch document contents: true, */
@@ -528,7 +528,7 @@ com.qwirx.freebase.Freebase.Gui.prototype.onDocumentSaved = function(event)
 	}
 };
 
-com.qwirx.freebase.Freebase.Gui.prototype.onDocumentOpen = function(event)
+com.qwirx.freebase.Freebase.Gui.prototype.onNavigatorClicked = function(event)
 {
 	this.openDocument(this.navigator_.getSelectedItem().getModel().id,
 		function onSuccess(){});
