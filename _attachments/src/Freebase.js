@@ -124,15 +124,15 @@ com.qwirx.freebase.TableDocument = function(name, columns)
 	};
 };
 
-com.qwirx.freebase.ModelClass = function modelObjectConstructor()
+com.qwirx.freebase.ModelBase = function modelObjectConstructor()
 {
 };
 
-com.qwirx.freebase.ModelClass.findAll = function(params, successCallback, errorCallback)
+com.qwirx.freebase.ModelBase.findAll = function(params, successCallback, errorCallback)
 {
 	var self = this;
 	
-	if (this == com.qwirx.freebase.ModelClass)
+	if (this == com.qwirx.freebase.ModelBase)
 	{
 		throw new Error(arguments.callee.name + " is only valid on a " +
 			"derived model class created by Model()");
@@ -162,7 +162,7 @@ com.qwirx.freebase.ModelClass.findAll = function(params, successCallback, errorC
  * of the ID will depend on the kind of database that the model is
  * constructed for.
  */
-com.qwirx.freebase.ModelClass.getId = function()
+com.qwirx.freebase.ModelBase.getId = function()
 {
 	return com.qwirx.freebase.Freebase.getTableId(this.modelName);
 };
@@ -173,7 +173,7 @@ com.qwirx.freebase.ModelClass.getId = function()
  * Model.fromDocument(doc).
  */
  
-com.qwirx.freebase.ModelClass.toDocument = function()
+com.qwirx.freebase.ModelBase.toDocument = function()
 {
 	return {
 		_id: this.getId(),
@@ -198,7 +198,7 @@ com.qwirx.freebase.ModelClass.toDocument = function()
  * Converts a model *instance* (an object) to its storable document
  * form, i.e. plain JSON.
  */
-com.qwirx.freebase.ModelClass.prototype.toDocument = function()
+com.qwirx.freebase.ModelBase.prototype.toDocument = function()
 {
 	return JSON.parse(JSON.stringify(this));
 };
@@ -220,8 +220,10 @@ com.qwirx.freebase.ModelClass.prototype.toDocument = function()
  * objects that refer to them. This will add the new model to the
  * app.models namespace.
  */
-com.qwirx.freebase.Model = function(name, freebase, columns)
+com.qwirx.freebase.Model = function(modelName, freebase, columns)
 {
+	columns = columns.slice(0); // copy
+	
 	// constructor for new instances of models
 	var dynamicClass = function(attributes)
 	{
@@ -234,19 +236,30 @@ com.qwirx.freebase.Model = function(name, freebase, columns)
 		}
 		
 		// ensure that they know what table they belong to
-		this[com.qwirx.freebase.Freebase.TABLE_FIELD] = name;
+		this[com.qwirx.freebase.Freebase.TABLE_FIELD] = modelName;
 	};
-
-	dynamicClass.prototype = com.qwirx.freebase.ModelClass.prototype;
+	
+	function hiddenNamespace()
+	{
+		eval("var " + modelName + " = " + dynamicClass.toString());
+		return eval(modelName);
+	}
+	
+	dynamicClass = hiddenNamespace();
+	goog.inherits(dynamicClass, com.qwirx.freebase.ModelBase);
+	
+	/*
+	dynamicClass.prototype = com.qwirx.freebase.ModelBase.prototype;
 	
 	// replace the constructor property lost by replacing the prototype
 	dynamicClass.prototype.constructor = dynamicClass;
+	*/
 	
 	// static members
-	goog.object.extend(dynamicClass, com.qwirx.freebase.ModelClass);	
+	goog.object.extend(dynamicClass, com.qwirx.freebase.ModelBase);	
 	goog.object.extend(dynamicClass, 
 	{
-		modelName: name,
+		modelName: modelName,
 		freebase: freebase,
 		columns: columns
 	});
@@ -256,7 +269,7 @@ com.qwirx.freebase.Model = function(name, freebase, columns)
 
 /**
  * Construct a Model from a Model Document, as returned by
- * ModelClass.toDocument and/or stored in the database.
+ * ModelBase.toDocument and/or stored in the database.
  */
 com.qwirx.freebase.Model.fromDocument = function(document, freebase)
 {
@@ -432,7 +445,7 @@ com.qwirx.freebase.Freebase.Gui.prototype.construct = function()
 		this.onNavigatorClicked, false, this);
 	
 	var self = this;
-	this.fb_.listAll(/* fetch document contents: true, */
+	this.fb_.listAll(/* fetch document contents: */ true,
 		function(results)
 		{
 			var len = results.rows.length;

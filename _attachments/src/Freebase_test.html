@@ -101,10 +101,10 @@ MockFreebase.prototype.findAll =  function(designName, onSuccess, onError)
 		onError);
 };
 
-MockFreebase.prototype.listAll = function(onSuccess, onError)
+MockFreebase.prototype.listAll = function(fetchDocuments, onSuccess, onError)
 {
-	return this._get('_all_docs', /* auto instantiate */ false,
-		onSuccess, onError);
+	return this._get('_all_docs' + (fetchDocuments ? '?include_docs=true' : ''),
+		/* auto instantiate */ false, onSuccess, onError);
 };
 
 MockFreebase.prototype.view = function(designId, viewName, onSuccess, onError)
@@ -130,11 +130,79 @@ MockFreebase.prototype.instantiateModel_ = function(object)
 	}
 };
 
+function sortByProperty(name)
+{
+	return function(a, b)
+	{
+		if (a[name] < b[name])
+		{
+			return -1;
+		}
+		else if (a[name] > b[name])
+		{
+			return 1;
+		}
+		else
+		{
+			return 0;
+		}
+	};
+}
+
 MockFreebase.prototype._get = function(uri, autoInstantiate, onSuccess,
 	onError)
 {
-	var selector;
 	var viewIndex = uri.indexOf('/_view/');
+	var emitted = [];
+	var self = this;
+	var mapFunction;
+	var currentDocument;
+	var emitDocs = false;
+	var params = [];
+
+	var uriAndParams = uri.split('?', 2);
+	if (uriAndParams.length == 2)
+	{
+		uri = uriAndParams[0];
+		params = uriAndParams[1].split('&');
+	}
+	
+	for (var i = 0; i < params.length; i++)
+	{
+		if (params[i] == 'include_docs=true')
+		{
+			emitDocs = true;
+		}
+	}
+
+	function emit(key, value)
+	{
+		var row = {
+			id: currentDocument._id,
+			key: key,
+			value: value
+		};
+
+		if (autoInstantiate)
+		{
+			row.value = self.instantiateModel_(value);
+		}
+		
+		if (emitDocs)
+		{
+			row.doc = currentDocument;
+		}
+		
+		emitted.push(row);
+	}
+
+	var selector = function(o)
+	{
+		emitted = [];
+		currentDocument = o;
+		mapFunction(o);
+		return emitted;
+	}
 	
 	if (uri.indexOf('_design/') == 0 && viewIndex > 0)
 	{
@@ -142,43 +210,13 @@ MockFreebase.prototype._get = function(uri, autoInstantiate, onSuccess,
 		var designDoc = JSON.parse(this.objectStore[designName].json);
 		var viewName = uri.substring(viewIndex +
 			'/_view/'.length);
-		eval("var mapFunction = " +	designDoc.views[viewName].map);
-		var emitted = [];
-		var self = this;
-		
-		function emit(key, value)
-		{
-			var row = {key: key, value: value};
-			if (value != null)
-			{
-				row.id = value._id;
-				
-				if (autoInstantiate)
-				{
-					row.value = self.instantiateModel_(value);
-				}
-			}
-			emitted.push(row);
-		}
-		selector = function(o)
-		{
-			emitted = [];
-			mapFunction(o);
-			return emitted;
-		}
-	}
-	else if (uri == "_design/Foobar/_view/all")
-	{
-		selector = function(o)
-		{
-			return (o[Freebase.TABLE_FIELD] == 'Foobar') ? [o] : [];
-		}
+		eval("mapFunction = " + designDoc.views[viewName].map);
 	}
 	else if (uri == '_all_docs')
 	{
-		selector = function(o)
+		mapFunction = function(o)
 		{
-			return [o];
+			emit(o._id, o._rev);
 		}
 	}
 	else if (uri in this.objectStore)
@@ -205,7 +243,7 @@ MockFreebase.prototype._get = function(uri, autoInstantiate, onSuccess,
 		var o = JSON.parse(this.objectStore[i].json);
 		
 		// views don't search design documents for some reason
-		if (o._id.indexOf('_design/') != 0)
+		if (uri == '_all_docs' || o._id.indexOf('_design/') != 0)
 		{
 			var emitted = selector(o);
 			// Don't copy the result because CouchDB doesn't. If you
@@ -215,6 +253,7 @@ MockFreebase.prototype._get = function(uri, autoInstantiate, onSuccess,
 		}
 	}
 	
+	foundRows.sort(sortByProperty('id'));
 	onSuccess({total_rows: foundRows.length, offset: 0, rows: foundRows});
 };
 
@@ -279,6 +318,14 @@ goog.dom.appendChild(document.body, mockDocument);
 function setUp()
 {
 	mockFreebase = new MockFreebase();
+	Cat = Model('Cat', mockFreebase, [{name: 'name', type: 'String'},
+		{name: 'age', type: 'Number'}]);
+	mockFreebase.create$(Cat.toDocument(), function(){});
+	
+	old = new Cat({name: "Old Deuteronomy", age: 82});
+	mockFreebase.save(old, function(){});
+	etc = new Cat({name: "Etcetera", age: 0});
+	mockFreebase.save(etc, function(){});
 }
 
 /**
@@ -307,16 +354,26 @@ function assertCallback(f)
 
 function testMockFreebaseApi()
 {
-	var foo = {_id: 'foo', name: 'Foo'};
-	var bar = {name: 'Bar'};
-	var baz = {name: 'Basil'};
+	var expectedCatDoc = Cat.toDocument();
+	expectedCatDoc._rev = mockFreebase.objectStore[Cat.toDocument()._id].revision;
+	expectedCatDoc = JSON.stringify(expectedCatDoc);
+	assertObjectEquals('The Cat Model should have been saved in the ' +
+		'database by setUp()', expectedCatDoc, 
+		mockFreebase.objectStore[Cat.toDocument()._id].json);
+	assertObjectEquals('The reconstructed Model class should be ' +
+		'identical to the one that produced the Model Document',
+		Cat, mockFreebase.app.models.Cat);
+
+	var foo = {_id: 'foo', job: 'Foo'};
+	var bar = {job: 'Bar'};
+	var baz = {job: 'Basil'};
 	var jobs = {
 		_id: '_design/Jobs',
 		views: {
-			all:  {map: function(o) { emit(o._id, o); }.toString()},
-			name: {map: function(o) { emit(o.name, o); }.toString()},
-			foo:  {map: function(o) { if (o.name == 'Foo') { emit(null, o); } }.toString()},
-			bar:  {map: function(o) { if (o.name == 'Bar') { emit(o._id, null); } }.toString()}
+			all:  {map: function(o) { if (o.job) { emit(o._id, o); } }.toString()},
+			name: {map: function(o) { if (o.job) { emit(o.job, o); } }.toString()},
+			foo:  {map: function(o) { if (o.job == 'Foo') { emit(null, o); } }.toString()},
+			bar:  {map: function(o) { if (o.job == 'Bar') { emit(o._id, null); } }.toString()}
 		}
 	};
 	
@@ -329,16 +386,17 @@ function testMockFreebaseApi()
 
 	assertCallback(function(c) { mockFreebase.create$(bar, c); })[0];
 	assertCallback(function(c) { mockFreebase.create$(baz, c); })[0];
-	assertObjectEquals("Should not be any app models at this point", {},
-		mockFreebase.app.models);
+	var noNewModelsOnlyCat = {Cat: Cat};
+	assertObjectEquals("Should not be any new app models at this point",
+		noNewModelsOnlyCat, mockFreebase.app.models);
 	assertCallback(function(c) { mockFreebase.create$(jobs, c); });
 	assertObjectEquals("Should still be no models (jobs is not really a model)",
-		{}, mockFreebase.app.models);
+		noNewModelsOnlyCat, mockFreebase.app.models);
 	assertObjectEquals(foo, 
 		assertCallback(function(c) { mockFreebase.get(foo._id, c) })[0]);
 	
 	// returns all three objects, because jobs.views.map.all doesn't discriminate
-	assertObjectEquals([foo, bar, baz], 
+	assertObjectEquals([foo, bar, baz].sort(sortByProperty('_id')),
 		assertCallback(function(c) { mockFreebase.findAll('Jobs', c); })[0]);
 	
 	assertObjectEquals({
@@ -346,14 +404,14 @@ function testMockFreebaseApi()
 			{id: foo._id, key: foo._id, value: foo},
 			{id: bar._id, key: bar._id, value: bar},
 			{id: baz._id, key: baz._id, value: baz}
-		]},
+		].sort(sortByProperty('id'))},
 		assertCallback(function(c) { mockFreebase.view(jobs._id, 'all', c); })[0]);
 	assertObjectEquals({
 		total_rows: 3, offset: 0, rows: [
-			{id: foo._id, key: foo.name, value: foo},
-			{id: bar._id, key: bar.name, value: bar},
-			{id: baz._id, key: baz.name, value: baz}
-		]},
+			{id: foo._id, key: foo.job, value: foo},
+			{id: bar._id, key: bar.job, value: bar},
+			{id: baz._id, key: baz.job, value: baz}
+		].sort(sortByProperty('id'))},
 		assertCallback(function(c) { mockFreebase.view(jobs._id, 'name', c); })[0]);
 	assertObjectEquals({
 		total_rows: 1, offset: 0, rows: [
@@ -362,7 +420,7 @@ function testMockFreebaseApi()
 		assertCallback(function(c) { mockFreebase.view(jobs._id, 'foo', c); })[0]);
 	assertObjectEquals({
 		total_rows: 1, offset: 0, rows: [
-			{/* no ID without an object */ key: bar._id, value: null},
+			{id: bar._id, key: bar._id, value: null},
 		]},
 		assertCallback(function(c) { mockFreebase.view(jobs._id, 'bar', c); })[0]);
 }
@@ -376,7 +434,7 @@ function testModelBuilder()
 	var Foobar = Model(name, mockFreebase, cols);
 	assertEquals(mockFreebase, Foobar.freebase);
 	assertEquals(name, Foobar.modelName);
-	assertObjectEquals(com.qwirx.freebase.ModelClass.findAll,
+	assertObjectEquals(com.qwirx.freebase.ModelBase.findAll,
 		Foobar.findAll);
 
 	var results;
@@ -492,30 +550,20 @@ function testFreebaseGuiRun()
 		"have been initialised at construction to show the initial " +
 		"database contents");
 	
-	var Cat = Model('Cat', mockFreebase, [{name: 'name', type: 'String'},
-		{name: 'age', type: 'Number'}]);
-	assertObjectEquals({}, mockFreebase.objectStore);
+	assertEquals('age', etc.constructor.columns[1].name);
+	var Badger = Model('Badger', mockFreebase,
+		[{name: 'name', type: 'String'}, {name: 'set', type: 'Object'}]);
+	assertEquals('Creating a new model should not change the columns ' +
+		'of an existing model', 'age', etc.constructor.columns[1].name);
 
-	var catDoc = Cat.toDocument();
-	mockFreebase.create$(catDoc, function(){});
-	assertObjectEquals('The Model Document should have been saved in the database',
-		JSON.stringify(catDoc), mockFreebase.objectStore[catDoc._id].json);
-	assertObjectEquals('The reconstructed Model class should be ' +
-		'identical to the one that produced the Model Document',
-		Cat, mockFreebase.app.models.Cat);
-	Cat = mockFreebase.app.models.Cat;
-	assertTreeContents(gui.navigator_, mockFreebase, "Tree should have " +
-		"been updated with the new model document");
-		
-	Badger = Model('Badger', mockFreebase, [{name: 'name', type: 'String'},
-		{name: 'set', type: 'Object'}]);
-	mockFreebase.create$(Badger.toDocument(), function(){});
+	var badgerDoc = Badger.toDocument();
+	mockFreebase.create$(badgerDoc, function(){}, fail);
 	assertNotNull('Badger should be in the database after saving it',
 		mockFreebase.objectStore[Badger.toDocument()._id]);
 	assertTreeContents(gui.navigator_, mockFreebase, "Tree should have " +
-		"been updated with nodes in sort order");
+		"been updated with the new model document, correctly sorted");
 
-	mockFreebase.save(catDoc, function(){});
+	mockFreebase.save(badgerDoc, function(){});
 	assertTreeContents(gui.navigator_, mockFreebase,
 		'Save should not create a duplicate tree node');
 	
@@ -568,43 +616,52 @@ function testFreebaseGuiRun()
 	var editor = assertCallback(function(c)
 		{ gui.openDocument(Cat.getId(), c); })[0];
 	
-	// create a few cats
-	old = new Cat({name: "Old Deuteronomy", age: 82});
-	mockFreebase.save(old, function(){});
-	etc = new Cat({name: "Etcetera", age: 0});
-	mockFreebase.save(etc, function(){});
+	// create a few more cats
+	kit = new Cat({name: "Kitkat", age: 6});
+	mockFreebase.save(kit, function(){});
+	mog = new Cat({name: "Moggy", age: 9});
+	mockFreebase.save(mog, function(){});
 	
 	// should have been added to the tree automatically, sorted by ID
-	if (etc._id < old._id)
+	var allCats = [old, etc, kit, mog];
+	var allCatsMap = {};
+	for (var i = 0; i < allCats.length; i++)
 	{
-		assertEquals(etc._id, gui.navigator_.getChildAt(2).getModel().id);
-		assertEquals(old._id, gui.navigator_.getChildAt(3).getModel().id);
+		allCatsMap[allCats[i]._id] = allCats[i];
 	}
-	else
+	var allCatIds = goog.object.getKeys(allCatsMap).sort();
+	
+	for (var i = 0; i < allCatIds.length; i++)
 	{
-		assertEquals(etc._id, gui.navigator_.getChildAt(3).getModel().id);
-		assertEquals(old._id, gui.navigator_.getChildAt(2).getModel().id);
+		assertEquals(allCatIds[i],
+			gui.navigator_.getChildAt(2 + i).getModel().id);
 	}
-			
+
 	// data grid should have been updated
 	var grid = editor.getDataGrid();
-	assertEquals(2, grid.getRowCount());
+	assertEquals(4, grid.getRowCount());
 
-	function assertGridRow(modelObject)
+	function assertGridRow(rowIndex, modelObject)
 	{
-		var row = grid.getRow(editor.getDocumentRowIndex(modelObject._id));
+		var row = grid.getRow(rowIndex);
 		assertEquals(modelObject._id,  row[0].value);
 		assertEquals(modelObject.name, row[1].value);
 		assertEquals("" + modelObject.age, row[2].value);
 	}
-	
-	assertGridRow(etc);
-	assertGridRow(old);
+
+	function assertAllCatsGrid()
+	{	
+		for (var i = 0; i < allCatIds.length; i++)
+		{
+			var expectedCat = allCatsMap[allCatIds[i]];
+			assertGridRow(i, expectedCat);
+		}
+	}		
 	
 	// happy birthday Etcetera! Who knows?
 	etc.age = 1;
 	mockFreebase.save(etc, function(){});
-	assertGridRow(etc);
+	assertAllCatsGrid();
 	
 	// close and reopen the Cat editor, check that it works when
 	// documents already exist at open time
@@ -612,8 +669,7 @@ function testFreebaseGuiRun()
 	editor = assertCallback(function(c)	
 		{ gui.openDocument(Cat.getId(), c); })[0];
 	grid = editor.getDataGrid();
-	assertGridRow(etc);
-	assertGridRow(old);
+	assertAllCatsGrid();
 	
 	// try opening a document
 	editor.close();
@@ -692,16 +748,7 @@ function testGridHighlight()
 	var gui = new Freebase.Gui(mockFreebase);
 	gui.run(mockDocument);
 
-	var Cat = Model('Cat', mockFreebase, [{name: 'name', type: 'String'},
-		{name: 'age', type: 'Number'}]);
-	mockFreebase.create$(Cat.toDocument(), function(){});
-	
 	var editor = assertCallback(function(c) { gui.openDocument(Cat.getId(), c); })[0];
-
-	old = new Cat({name: "Old Deuteronomy", age: 82});
-	mockFreebase.save(old, function(){});
-	etc = new Cat({name: "Etcetera", age: 0});
-	mockFreebase.save(etc, function(){});
 	
 	function assertSelection(message, x1, y1, x2, y2)
 	{
@@ -729,7 +776,7 @@ function testGridHighlight()
 	}
 	
 	var grid = editor.grid_;
-	assertEquals('Grid should have been updated with newly created documents',
+	assertEquals('Grid should have been populated with some cats',
 		2, grid.getRowCount());
 	assertSelection('No cells should be selected initially', -1, -1, -1, -1);
 	

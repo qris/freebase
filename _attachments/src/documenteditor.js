@@ -359,8 +359,6 @@ com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
 			grid.addClassName('fb-datagrid');
 			grid.render(editorControl);
 			
-			var rowMap = this.rowMap_ = {};
-			
 			freebase.view(this.documentId_, 'all',
 				function(all_results)
 				{
@@ -372,7 +370,6 @@ com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
 						var columnCells = self.getGridColumnData(result,
 							numCols);
 						var rowIndex = grid.appendRow(columnCells);
-						rowMap[result._id] = rowIndex;
 					}
 				});
 		}
@@ -605,12 +602,6 @@ com.qwirx.freebase.DocumentEditor.prototype.close = function()
 	}
 };
 
-com.qwirx.freebase.DocumentEditor.prototype.getDocumentRowIndex =
-	function(documentId)
-{
-	return this.rowMap_[documentId];
-};
-
 com.qwirx.freebase.DocumentEditor.prototype.getDataGrid = function()
 {
 	return this.grid_;
@@ -711,17 +702,19 @@ com.qwirx.freebase.DocumentEditor.prototype.onDocumentSaved = function(event)
 	
 	if (grid)
 	{
-		var existingRowIndex = this.rowMap_[document._id];
+		var newRowData = this.getGridColumnData(document);
+		var rowIndex = this.gridRowIdSearch(grid,
+			this.gridRowIdCompare, newRowData);
 		
-		if (existingRowIndex)
+		if (rowIndex >= 0)
 		{
-			grid.updateRow(existingRowIndex,
-				this.getGridColumnData(document));
+			grid.updateRow(rowIndex, newRowData);
 		}
 		else
 		{
-			var newRowIndex = grid.appendRow(this.getGridColumnData(document));
-			this.rowMap_[document._id] = newRowIndex;
+			// row should not exist yet, so newRowIndex < 0
+			rowIndex = ~rowIndex;
+			grid.insertRowAt(newRowData, rowIndex);
 		}
 	}
 
