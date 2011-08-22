@@ -408,7 +408,6 @@ com.qwirx.freebase.Freebase.Gui.prototype.run = function(container)
 	this.construct();
 };
 
-
 com.qwirx.freebase.Freebase.Gui.prototype.construct = function()
 {
 	this.loadCss('../ext/closure-library/closure/goog/css/tree');
@@ -505,9 +504,14 @@ com.qwirx.freebase.treeLabelCompare = function(a, b)
 	return goog.array.defaultCompare(ta, tb);
 };
 
+com.qwirx.freebase.Freebase.Gui.prototype.getDocumentLabel = function(document)
+{
+	return document._id;
+};
+
 com.qwirx.freebase.Freebase.Gui.prototype.onDocumentSaved = function(event)
 {
-	var newNodeName = event.getDocument()._id;
+	var newNodeName = this.getDocumentLabel(event.getDocument());
 	var index = com.qwirx.freebase.treeSearch(this.navigator_,
 		com.qwirx.freebase.treeLabelCompare, newNodeName);
 
