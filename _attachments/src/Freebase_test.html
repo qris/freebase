@@ -896,6 +896,16 @@ function testGridHighlight()
 	sendFakeMouseEvent(goog.events.EventType.MOUSEUP, 0, getCell(0, 0));
 	assertSelection('Selection should not have changed with mouseup',
 		2, 1, 0, 1);
+		
+	// test that the header row doesn't become editable when clicked,
+	// and text selection is disabled.
+	assertEquals(true, grid.isAllowTextSelection());
+	sendFakeMouseEvent(goog.events.EventType.MOUSEDOWN, 0,
+		grid.colHeadingCells_[1]);
+	assertEquals("inherit", grid.colHeadingCells_[1].contentEditable);
+	assertSelection('Selection should not have changed with ' +
+		'mousedown on header', 2, 1, 0, 1);
+	assertEquals(false, grid.isAllowTextSelection());
 }
 
 </script>

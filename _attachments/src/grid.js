@@ -40,19 +40,19 @@ com.qwirx.freebase.Grid.prototype.createDom = function()
 
 	var columns = this.columns_;
 	var numCols = columns.length;
-	var colHeadingCells = [];
+	this.colHeadingCells_ = [];
 	
 	for (var i = 0; i < numCols; i++)
 	{
 		var column = columns[i];
 		var th = column.tableCell = this.dom_.createDom('th', {},
 			column.caption);
-		colHeadingCells.push(th);
+		this.colHeadingCells_.push(th);
 	}
 	
-	var headingRow = this.headingRow_ = this.dom_.createDom('tr', {},
-		colHeadingCells);
-	this.element_.appendChild(headingRow);
+	this.headerRow_ = this.dom_.createDom('tr', {},
+		this.colHeadingCells_);
+	this.element_.appendChild(this.headerRow_);
 	
 	this.rowCount_ = 0;
 	this.rows_ = [];
@@ -134,6 +134,14 @@ com.qwirx.freebase.Grid.DragMode = {
 
 com.qwirx.freebase.Grid.prototype.handleMouseDown = function(e)
 {
+	if (!(com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL in e.target) &&
+		!(com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW in e.target))
+	{
+		// clicked on a header cell
+		this.setAllowTextSelection(false);
+		return;
+	}
+
 	// com.qwirx.freebase.log("mouse down: " + e.type + ": " + e.target);
 	this.setAllowTextSelection(true);
 		
