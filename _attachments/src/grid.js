@@ -29,26 +29,6 @@ com.qwirx.freebase.Grid = function(columns, opt_renderer)
 
 goog.inherits(com.qwirx.freebase.Grid, goog.ui.Control);
 
-/*
-com.qwirx.freebase.Grid.prototype.enableMouseEventHandling_ = function(enable)
-{
-	com.qwirx.freebase.Grid.superClass_.enableMouseEventHandling_.call(this, enable);
-
-	var handler = this.getHandler();
-	var element = this.getElement();
-	if (enable)
-	{
-		handler.listen(element, goog.events.EventType.MOUSEMOVE,
-			this.handleMouseMove);
-	}
-	else
-	{
-		handler.unlisten(element, goog.events.EventType.MOUSEMOVE,
-			this.handleMouseMove);
-	}
-};
-*/
-
 com.qwirx.freebase.Grid.RENDERER = goog.ui.ControlRenderer.getCustomRenderer(
 	goog.ui.ControlRenderer, 'fb-grid');
 
@@ -146,29 +126,6 @@ com.qwirx.freebase.Grid.prototype.getRow = function(rowIndex)
 	return this.rows_[rowIndex];
 };
 
-/**
- * Triggers an event. Copied from @link goog.jsaction.replay.triggerEvent_
- * because that one's private.
- * @param {!Element} elem The element to trigger the event on.
- * @param {!Event} event The event object.
- * @see http://stackoverflow.com/questions/5159806/how-do-i-synthesize-a-browser-click-event-on-a-div-element
- * @private
- */
-/*
-com.qwirx.freebase.Grid.prototype.triggerEvent_ = function(elem, event)
-{
-	if (elem.dispatchEvent)
-	{
-		elem.dispatchEvent(event);
-	}
-	else
-	{
-		goog.asserts.assert(elem.fireEvent);
-		elem.fireEvent('on' + event.type, event);
-	}
-};
-*/
-
 com.qwirx.freebase.Grid.DragMode = {
 	NONE: "NONE",
 	TEXT: "TEXT",
@@ -252,20 +209,8 @@ com.qwirx.freebase.Grid.prototype.handleDrag = function(e)
 	var be = e.browserEvent || e;
 	var newx2 = be.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL];
 	var newy2 = be.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW];
-	
-	/*
-	// if the new x2 is less than the old, reduce columns
-	for (var x = newx2 + 1; x <= this.drag.x2; x++)
-	{
-		this.highlightColumn(x, false);
-	}
-	
-	// if the new x2 is greater than the old, add columns
-	for (var x = this.drag.x2 + 1; x <= newx2; x++)
-	{
-		this.highlightColumn(x, true);
-	}
-	*/
+
+	// changes to x2 are handled by rewriting the highlight rule.
 	
 	var oldymin = Math.min(this.drag.y1, this.drag.y2);
 	var oldymax = Math.max(this.drag.y1, this.drag.y2);
@@ -308,37 +253,6 @@ com.qwirx.freebase.Grid.prototype.handleDrag = function(e)
 		this.createHighlightRule_();
 	}
 };
-
-/**
- * Subclass @link goog.editor.SeamlessField to change the default
- * handleMouseDown_ behaviour to stop event propagation. Otherwise
- * the Grid's handleMouseDown handles the event next, calls
- * goog.ui.Control.prototype.handleMouseDown, which prevents the
- * default action, stopping editing events from being processed by
- * the browser, particularly focus clicks and range selections.
- *
- * But stopping the event propagation also breaks our own use of the
- * same event for selecting grid cells, bah!
- *
- * @param {string} id An identifer for the field. This is used to find the
- *     field and the element associated with this field.
- * @param {Document=} opt_doc The document that the element with the given
- *     id can be found it.
- * @constructor
- * @extends {goog.editor.SeamlessField}
- */
-/*
-com.qwirx.freebase.SeamlessField = function(id, opt_doc) {
-  goog.editor.SeamlessField.call(this, id, opt_doc);
-};
-goog.inherits(com.qwirx.freebase.SeamlessField, goog.editor.SeamlessField);
-
-com.qwirx.freebase.SeamlessField.prototype.handleMouseDown_ = function(e)
-{
-	com.qwirx.freebase.SeamlessField.superClass_.handleMouseDown_.call(this, e);
-	e.stopPropagation();
-};
-*/
 
 /**
  * Makes a particular cell editable, cancelling any other that was
@@ -389,8 +303,8 @@ com.qwirx.freebase.Grid.prototype.logEvent = function(e)
 };
 
 /**
- * Handles dblclick events by making the selected cell editable,
- * cancelling any other currently editable cell.
+ * Turns off cell selection by dragging, and allows text selection
+ * again within the editable cell.
  */
 com.qwirx.freebase.Grid.prototype.handleMouseUp = function(e)
 {
@@ -398,8 +312,6 @@ com.qwirx.freebase.Grid.prototype.handleMouseUp = function(e)
 	com.qwirx.freebase.Grid.superClass_.handleMouseUp.call(this, e);
 
 	if (!this.isEnabled()) return;
-	// this.setEditableCell(e.target);
-	// e.target.focus();
 	this.dragMode_ = com.qwirx.freebase.Grid.DragMode.NONE;
 	this.setAllowTextSelection(true);
 };
@@ -420,19 +332,7 @@ com.qwirx.freebase.Grid.prototype.handleMouseOver = function(e)
 		if (e.target == this.drag.origin)
 		{
 			// re-entering the cell where dragging started, restore the
-			// original selection
-			// https://groups.google.com/group/closure-library-discuss/browse_thread/thread/2da0f1f94c396d93
-
-			com.qwirx.freebase.log("stop dragging");
-			// this.dragger_.dispose();
-		
-			/*
-			if (this.drag.savedSelection_)
-			{
-				this.drag.savedSelection_.restore();
-				delete this.drag.savedSelection_;
-			}
-			*/
+			// original selection, by just re-enabling text selection.
 
 			com.qwirx.freebase.log("restored selection, switching to TEXT mode");
 			this.dragMode_ = com.qwirx.freebase.Grid.DragMode.TEXT;
@@ -447,56 +347,6 @@ com.qwirx.freebase.Grid.prototype.handleMouseOver = function(e)
 	}
 };
 
-/*
-com.qwirx.freebase.Grid.prototype.startDrag = function(event)
-{
-	com.qwirx.freebase.log("start dragging");
-	var grid = this;
-	this.dragger_ = d = new goog.fx.Dragger(this.element_);
-	d.addEventListener(goog.fx.Dragger.EventType.DRAG, 
-		function(e)
-		{
-			grid.handleDrag(e);
-			return true;
-		});
-	d.addEventListener(goog.fx.Dragger.EventType.END,
-		function(e) {
-			grid.handleDrag(e);
-			d.dispose();
-		});
-	// d.startDrag(event);
-}
-*/
-
-/*
-com.qwirx.freebase.Grid.prototype.handleMouseMove = function(e)
-{
-	// this.logEvent(e);
-	
-	if (com.qwirx.freebase.Grid.superClass_.handleMouseMove)
-	{
-		com.qwirx.freebase.Grid.superClass_.handleMouseMove.call(this, e);
-	}
-
-	if (this.dragMode_ == com.qwirx.freebase.Grid.DragMode.CELLS)
-	{
-		// stop drag events from reaching the browser, where they
-		// would result in text selection
-		e.preventDefault();
-		com.qwirx.freebase.log("mousemove suppressed: " +
-			window.getSelection().anchorOffset);
-			// window.getSelection().getRangeAt(0).getStart());
-		this.handleDrag(e);
-		return false;
-	}
-	else if (this.dragMode_ == com.qwirx.freebase.Grid.DragMode.TEXT)
-	{
-		com.qwirx.freebase.log("mousemove allowed: " +
-			window.getSelection().anchorOffset);
-	}
-};
-*/
-
 com.qwirx.freebase.Grid.prototype.handleMouseOut = function(e)
 {
 	this.logEvent(e);
@@ -505,23 +355,12 @@ com.qwirx.freebase.Grid.prototype.handleMouseOut = function(e)
 	if (this.dragMode_ == com.qwirx.freebase.Grid.DragMode.TEXT &&
 		e.target == this.drag.origin)
 	{
-		// leaving the cell where dragging started, save the
-		// original selection
-		// https://groups.google.com/group/closure-library-discuss/browse_thread/thread/2da0f1f94c396d93
-
-		/*
-		var range = goog.dom.Range.createFromWindow();
-		if (range)
-		{
-			this.drag.savedSelection_ = range.saveUsingDom();
-			goog.dom.Range.clearSelection();
-		}
-		*/
+		// leaving the cell where dragging started, disable text
+		// selection to avoid messy interaction with cell selection.
 
 		com.qwirx.freebase.log("saving selection, switching to CELLS mode");
 		this.dragMode_ = com.qwirx.freebase.Grid.DragMode.CELLS;
 		this.setAllowTextSelection(false);
-		// this.startDrag(e);
 	}
 };
 
