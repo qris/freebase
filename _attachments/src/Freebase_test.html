@@ -752,7 +752,8 @@ function testGridHighlight()
 	
 	function assertSelection(message, x1, y1, x2, y2)
 	{
-		assertObjectEquals(message, {x1: x1, y1: y1, x2: x2, y2: y2},
+		assertObjectEquals(message,
+			{origin: getCell(x1, y1), x1: x1, y1: y1, x2: x2, y2: y2},
 			grid.drag);
 		
 		// check that row and column CSS classes match expectations
@@ -778,11 +779,19 @@ function testGridHighlight()
 	var grid = editor.grid_;
 	assertEquals('Grid should have been populated with some cats',
 		2, grid.getRowCount());
-	assertSelection('No cells should be selected initially', -1, -1, -1, -1);
+	assertSelection('No cells should be selected initially',
+		-1, -1, -1, -1);
 	
 	function getCell(x, y)
 	{
-		return grid.getRow(y)[x].tableCell;
+		if (x == -1 && y == -1)
+		{
+			return undefined;
+		}
+		else
+		{
+			return grid.getRow(y)[x].tableCell;
+		}
 	}
 
 	sendFakeMouseEvent(goog.events.EventType.MOUSEMOVE, 0, getCell(0, 0));
@@ -790,52 +799,103 @@ function testGridHighlight()
 		-1, -1, -1, -1);
 
 	sendFakeMouseEvent(goog.events.EventType.MOUSEDOWN, 0, getCell(0, 0));
-	assertSelection('Selection should have changed with click', 0, 0, 0, 0);
+	assertSelection('Selection should have changed with click',
+		0, 0, 0, 0);
+		
+	// simulate MOUSEOUT to change the drag mode from TEXT to CELLS
+	assertEquals(com.qwirx.freebase.Grid.DragMode.TEXT, grid.dragMode_);
+	assertEquals(true, grid.isAllowTextSelection());
+	// MOUSEOUT on a different cell is spurious and doesn't change mode
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOUT, 0, getCell(1, 0));
+	assertEquals(com.qwirx.freebase.Grid.DragMode.TEXT, grid.dragMode_);
+	assertEquals(true, grid.isAllowTextSelection());
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOUT, 0, getCell(0, 1));
+	assertEquals(com.qwirx.freebase.Grid.DragMode.TEXT, grid.dragMode_);
+	assertEquals(true, grid.isAllowTextSelection());
+	// this is the original starting cell, and leaving it does change mode
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOUT, 0, getCell(0, 0));
+	assertEquals(com.qwirx.freebase.Grid.DragMode.CELLS, grid.dragMode_);
+	assertEquals(false, grid.isAllowTextSelection());
+	// entry into another cell has no effect
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(1, 1));
+	assertEquals(com.qwirx.freebase.Grid.DragMode.CELLS, grid.dragMode_);
+	assertEquals(false, grid.isAllowTextSelection());
+	// re-entry into starting cell switches mode back to TEXT
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(0, 0));
+	assertEquals(com.qwirx.freebase.Grid.DragMode.TEXT, grid.dragMode_);
+	assertEquals(true, grid.isAllowTextSelection());
+	// re-exit from starting cell switches mode back to CELLS
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOUT, 0, getCell(0, 0));
+	assertEquals(com.qwirx.freebase.Grid.DragMode.CELLS, grid.dragMode_);
+	assertEquals(false, grid.isAllowTextSelection());
 
-	sendFakeMouseEvent(goog.events.EventType.MOUSEMOVE, 0, getCell(0, 1));
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(0, 1));
 	assertSelection('Selection should have changed with drag',
 		0, 0, 0, 1);
 
-	sendFakeMouseEvent(goog.events.EventType.MOUSEMOVE, 0, getCell(1, 0));
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(1, 0));
 	assertSelection('Selection should have changed with drag',
 		0, 0, 1, 0);
 
-	sendFakeMouseEvent(goog.events.EventType.MOUSEMOVE, 0, getCell(1, 1));
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(0, 0));
+	assertSelection('Selection should have changed with reentry to ' +
+		'starting cell', 0, 0, 0, 0);
+
+	// that will have switched the mode back to TEXT, and only
+	// a mouseout will change it back
+	assertEquals(com.qwirx.freebase.Grid.DragMode.TEXT, grid.dragMode_);
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOUT, 0, getCell(0, 0));
+	assertEquals(com.qwirx.freebase.Grid.DragMode.CELLS, grid.dragMode_);
+
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(1, 1));
 	assertSelection('Selection should have changed with drag',
 		0, 0, 1, 1);
 
+	// mouseup should enable text selection, even if it wasn't
+	// enabled before, to allow keyboard selection afterwards
+	assertEquals(com.qwirx.freebase.Grid.DragMode.CELLS, grid.dragMode_);
+	assertEquals(false, grid.isAllowTextSelection());
 	sendFakeMouseEvent(goog.events.EventType.MOUSEUP, 0, getCell(0, 0));
-	assertSelection('Selection should have changed with mouseup',
-		0, 0, 0, 0);
+	assertEquals(true, grid.isAllowTextSelection());
+	// and set the selection mode back to NONE, so that future
+	// mouse movement events don't cause selection changes
+	assertEquals(com.qwirx.freebase.Grid.DragMode.NONE, grid.dragMode_);
+	// selection changes with mouseover, not mouseup
+	assertSelection('Selection should not have changed with mouseup',
+		0, 0, 1, 1);
 
-	sendFakeMouseEvent(goog.events.EventType.MOUSEMOVE, 0, getCell(2, 1));
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(2, 1));
 	assertSelection('Selection should not have changed without another mousedown',
-		0, 0, 0, 0);
+		0, 0, 1, 1);
 
 	sendFakeMouseEvent(goog.events.EventType.MOUSEDOWN, 0, getCell(2, 1));
-	assertSelection('Selection should have changed with click', 2, 1, 2, 1);
+	assertSelection('Selection should have changed with click',
+		2, 1, 2, 1);
 
-	sendFakeMouseEvent(goog.events.EventType.MOUSEMOVE, 0, getCell(1, 1));
-	assertSelection('Selection should have changed with drag', 2, 1, 1, 1);
-
-	sendFakeMouseEvent(goog.events.EventType.MOUSEMOVE, 0, getCell(1, 0));
-	assertSelection('Selection should have changed with drag', 2, 1, 1, 0);
-
-	sendFakeMouseEvent(goog.events.EventType.MOUSEMOVE, 0, getCell(1, 1));
-	assertSelection('Selection should have changed with drag', 2, 1, 1, 1);
-
-	sendFakeMouseEvent(goog.events.EventType.MOUSEOUT, 0, getCell(0, 1));
-	assertSelection('Selection should not have changed with mouseout',
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(1, 1));
+	assertSelection('Selection should have changed with drag',
 		2, 1, 1, 1);
 
-	sendFakeMouseEvent(goog.events.EventType.MOUSEMOVE, 0, getCell(0, 1));
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(1, 0));
+	assertSelection('Selection should have changed with drag',
+		2, 1, 1, 0);
+
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(1, 1));
+	assertSelection('Selection should have changed with drag',
+		2, 1, 1, 1);
+
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOUT, 0, getCell(0, 1));
+	assertSelection('Selection should not have changed when mouse ' +
+		'left the grid', 2, 1, 1, 1);
+
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(0, 1));
 	assertSelection('Selection should still be changeable after mouse ' +
-		'leaves the grid and reenters in a different place',
+		'left the grid and reentered in a different place',
 		2, 1, 0, 1);
 
 	sendFakeMouseEvent(goog.events.EventType.MOUSEUP, 0, getCell(0, 0));
-	assertSelection('Selection should have changed with mouseup',
-		2, 1, 0, 0);
+	assertSelection('Selection should not have changed with mouseup',
+		2, 1, 0, 1);
 }
 
 </script>
