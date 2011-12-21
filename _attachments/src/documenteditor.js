@@ -432,7 +432,7 @@ com.qwirx.freebase.DocumentEditor.prototype.gridRowIdSearch =
 		},
 		function compareFn(atIndex)
 		{
-			return compareRowFn(target, grid.getRow(atIndex));
+			return compareRowFn(target, grid.getRow(atIndex).getColumns());
 		});
 };
 

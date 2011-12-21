@@ -65,9 +65,32 @@ com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW =
 com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL = 
 	com.qwirx.freebase.Freebase.FREEBASE_FIELD_PREFIX + 'grid_col';
 
+/**
+ * Row is a class, not a static index, to allow renumbering and
+ * dynamically numbering large grids quickly.
+ */
+com.qwirx.freebase.Grid.Row = function(grid, columns)
+{
+	this.grid_= grid;
+	this.columns_ = columns;
+};
+
+com.qwirx.freebase.Grid.Row.prototype.getRowIndex = function()
+{
+	return goog.array.indexOf(this.grid_.rows_, this);
+}
+
+com.qwirx.freebase.Grid.Row.prototype.getColumns = function()
+{
+	return this.columns_;
+}
+
 com.qwirx.freebase.Grid.prototype.insertRowAt = function(columns, newRowIndex)
 {
 	var numCols = columns.length;
+	var row = new com.qwirx.freebase.Grid.Row(this, columns);
+	this.rows_.splice(newRowIndex, 0, row);
+
 	var cells = [];
 	
 	for (var i = 0; i < numCols; i++)
@@ -77,7 +100,7 @@ com.qwirx.freebase.Grid.prototype.insertRowAt = function(columns, newRowIndex)
 		var td = column.tableCell = this.dom_.createDom('td', cssClasses,
 			column.value);
 		td[com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL] = i;
-		td[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW] = newRowIndex;
+		td[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW] = row;
 			
 		cells.push(td);
 	}
@@ -87,7 +110,6 @@ com.qwirx.freebase.Grid.prototype.insertRowAt = function(columns, newRowIndex)
 		newRowIndex + 1 /* for header row */);
 	
 	this.rowCount_++;
-	this.rows_.splice(newRowIndex, 0, columns);
 	this.rowElements_.splice(newRowIndex, 0, newTableRow);
 };
 
@@ -111,8 +133,8 @@ com.qwirx.freebase.Grid.prototype.updateRow = function(rowIndex, columns)
 	for (var i = 0; i < numCols; i++)
 	{
 		var column = columns[i];
-		var td = oldRow[i].tableCell;
-		td.innerHTML = oldRow[i].value = column.value;
+		var td = oldRow.columns_[i].tableCell;
+		td.innerHTML = oldRow.columns_[i].value = column.value;
 	}
 };
 
@@ -162,7 +184,7 @@ com.qwirx.freebase.Grid.prototype.handleMouseDown = function(e)
 	this.drag.x1 = this.drag.x2 = 
 		e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL];
 	this.drag.y1 = this.drag.y2 = 
-		e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW];
+		e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW].getRowIndex();
 	this.drag.origin = e.target;
 	
 	this.setEditableCell(e.target);
@@ -216,7 +238,7 @@ com.qwirx.freebase.Grid.prototype.handleDrag = function(e)
 	
 	var be = e.browserEvent || e;
 	var newx2 = be.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL];
-	var newy2 = be.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW];
+	var newy2 = be.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW].getRowIndex();
 
 	// changes to x2 are handled by rewriting the highlight rule.
 	
@@ -306,7 +328,7 @@ com.qwirx.freebase.Grid.prototype.logEvent = function(e)
 		e.target + " [x=" +
 		e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL] +
 		", y=" +
-		e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW] +
+		e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW].getRowIndex() +
 		"]");
 };
 

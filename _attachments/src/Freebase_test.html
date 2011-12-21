@@ -617,9 +617,9 @@ function testFreebaseGuiRun()
 		{ gui.openDocument(Cat.getId(), c); })[0];
 	
 	// create a few more cats
-	kit = new Cat({name: "Kitkat", age: 6});
+	var kit = new Cat({name: "Kitkat", age: 6});
 	mockFreebase.save(kit, function(){});
-	mog = new Cat({name: "Moggy", age: 9});
+	var mog = new Cat({name: "Moggy", age: 9});
 	mockFreebase.save(mog, function(){});
 	
 	// should have been added to the tree automatically, sorted by ID
@@ -643,7 +643,7 @@ function testFreebaseGuiRun()
 
 	function assertGridRow(rowIndex, modelObject)
 	{
-		var row = grid.getRow(rowIndex);
+		var row = grid.getRow(rowIndex).getColumns();
 		assertEquals(modelObject._id,  row[0].value);
 		assertEquals(modelObject.name, row[1].value);
 		assertEquals("" + modelObject.age, row[2].value);
@@ -743,6 +743,44 @@ function sendFakeMouseEvent(type, button, target)
 		}));
 }
 
+function getCell(grid, x, y)
+{
+	if (x == -1 && y == -1)
+	{
+		return undefined;
+	}
+	else
+	{
+		return grid.getRow(y).getColumns()[x].tableCell;
+	}
+}
+
+function assertSelection(grid, message, x1, y1, x2, y2)
+{
+	assertObjectEquals(message,
+		{origin: getCell(grid, x1, y1), x1: x1, y1: y1, x2: x2, y2: y2},
+		grid.drag);
+	
+	// check that row and column CSS classes match expectations
+	for (var y = 0; y < grid.getRowCount(); y++)
+	{
+		var rowElement = grid.rowElements_[y];
+		assertEquals(message,
+			/* should this row be highlighted? */
+			y >= Math.min(y1, y2) && y <= Math.max(y1, y2),
+			/* is it actually highlighted? */
+			goog.dom.classes.has(rowElement, 'highlight'));
+	}
+
+	var builder = new goog.string.StringBuffer();
+	for (var x = Math.min(x1, x2); x <= Math.max(x1, x2) && x1 >= 0; x++)
+	{
+		builder.append('table#' + grid.getElement().id + ' > ' +
+			'tr.highlight > td.col_' + x + ' { background: #ddf; }');
+	}
+	assertEquals(message, builder.toString(), grid.highlightStyles_.innerHTML);
+}
+
 function testGridHighlight()
 {
 	var gui = new Freebase.Gui(mockFreebase);
@@ -750,151 +788,135 @@ function testGridHighlight()
 
 	var editor = assertCallback(function(c) { gui.openDocument(Cat.getId(), c); })[0];
 	
-	function assertSelection(message, x1, y1, x2, y2)
-	{
-		assertObjectEquals(message,
-			{origin: getCell(x1, y1), x1: x1, y1: y1, x2: x2, y2: y2},
-			grid.drag);
-		
-		// check that row and column CSS classes match expectations
-		for (var y = 0; y < grid.getRowCount(); y++)
-		{
-			var rowElement = grid.rowElements_[y];
-			assertEquals(message,
-				/* should this row be highlighted? */
-				y >= Math.min(y1, y2) && y <= Math.max(y1, y2),
-				/* is it actually highlighted? */
-				goog.dom.classes.has(rowElement, 'highlight'));
-		}
-
-		var builder = new goog.string.StringBuffer();
-		for (var x = Math.min(x1, x2); x <= Math.max(x1, x2) && x1 >= 0; x++)
-		{
-			builder.append('table#' + grid.getElement().id + ' > ' +
-				'tr.highlight > td.col_' + x + ' { background: #ddf; }');
-		}
-		assertEquals(message, builder.toString(), grid.highlightStyles_.innerHTML);
-	}
-	
 	var grid = editor.grid_;
 	assertEquals('Grid should have been populated with some cats',
 		2, grid.getRowCount());
-	assertSelection('No cells should be selected initially',
+	assertSelection(grid, 'No cells should be selected initially',
 		-1, -1, -1, -1);
 	
-	function getCell(x, y)
-	{
-		if (x == -1 && y == -1)
-		{
-			return undefined;
-		}
-		else
-		{
-			return grid.getRow(y)[x].tableCell;
-		}
-	}
-
-	sendFakeMouseEvent(goog.events.EventType.MOUSEMOVE, 0, getCell(0, 0));
-	assertSelection('Selection should not have changed without click',
+	sendFakeMouseEvent(goog.events.EventType.MOUSEMOVE, 0, 
+		getCell(grid, 0, 0));
+	assertSelection(grid, 'Selection should not have changed without click',
 		-1, -1, -1, -1);
 
-	sendFakeMouseEvent(goog.events.EventType.MOUSEDOWN, 0, getCell(0, 0));
-	assertSelection('Selection should have changed with click',
+	sendFakeMouseEvent(goog.events.EventType.MOUSEDOWN, 0,
+		getCell(grid, 0, 0));
+	assertSelection(grid, 'Selection should have changed with click',
 		0, 0, 0, 0);
 		
 	// simulate MOUSEOUT to change the drag mode from TEXT to CELLS
 	assertEquals(com.qwirx.freebase.Grid.DragMode.TEXT, grid.dragMode_);
 	assertEquals(true, grid.isAllowTextSelection());
 	// MOUSEOUT on a different cell is spurious and doesn't change mode
-	sendFakeMouseEvent(goog.events.EventType.MOUSEOUT, 0, getCell(1, 0));
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOUT, 0,
+		getCell(grid, 1, 0));
 	assertEquals(com.qwirx.freebase.Grid.DragMode.TEXT, grid.dragMode_);
 	assertEquals(true, grid.isAllowTextSelection());
-	sendFakeMouseEvent(goog.events.EventType.MOUSEOUT, 0, getCell(0, 1));
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOUT, 0,
+		getCell(grid, 0, 1));
 	assertEquals(com.qwirx.freebase.Grid.DragMode.TEXT, grid.dragMode_);
 	assertEquals(true, grid.isAllowTextSelection());
 	// this is the original starting cell, and leaving it does change mode
-	sendFakeMouseEvent(goog.events.EventType.MOUSEOUT, 0, getCell(0, 0));
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOUT, 0,
+		getCell(grid, 0, 0));
 	assertEquals(com.qwirx.freebase.Grid.DragMode.CELLS, grid.dragMode_);
 	assertEquals(false, grid.isAllowTextSelection());
 	// entry into another cell has no effect
-	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(1, 1));
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0,
+		getCell(grid, 1, 1));
 	assertEquals(com.qwirx.freebase.Grid.DragMode.CELLS, grid.dragMode_);
 	assertEquals(false, grid.isAllowTextSelection());
 	// re-entry into starting cell switches mode back to TEXT
-	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(0, 0));
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0,
+		getCell(grid, 0, 0));
 	assertEquals(com.qwirx.freebase.Grid.DragMode.TEXT, grid.dragMode_);
 	assertEquals(true, grid.isAllowTextSelection());
 	// re-exit from starting cell switches mode back to CELLS
-	sendFakeMouseEvent(goog.events.EventType.MOUSEOUT, 0, getCell(0, 0));
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOUT, 0,
+		getCell(grid, 0, 0));
 	assertEquals(com.qwirx.freebase.Grid.DragMode.CELLS, grid.dragMode_);
 	assertEquals(false, grid.isAllowTextSelection());
 
-	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(0, 1));
-	assertSelection('Selection should have changed with drag',
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0,
+		getCell(grid, 0, 1));
+	assertSelection(grid, 'Selection should have changed with drag',
 		0, 0, 0, 1);
 
-	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(1, 0));
-	assertSelection('Selection should have changed with drag',
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0,
+		getCell(grid, 1, 0));
+	assertSelection(grid, 'Selection should have changed with drag',
 		0, 0, 1, 0);
 
-	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(0, 0));
-	assertSelection('Selection should have changed with reentry to ' +
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0,
+		getCell(grid, 0, 0));
+	assertSelection(grid, 'Selection should have changed with reentry to ' +
 		'starting cell', 0, 0, 0, 0);
 
 	// that will have switched the mode back to TEXT, and only
 	// a mouseout will change it back
 	assertEquals(com.qwirx.freebase.Grid.DragMode.TEXT, grid.dragMode_);
-	sendFakeMouseEvent(goog.events.EventType.MOUSEOUT, 0, getCell(0, 0));
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOUT, 0,
+		getCell(grid, 0, 0));
 	assertEquals(com.qwirx.freebase.Grid.DragMode.CELLS, grid.dragMode_);
 
-	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(1, 1));
-	assertSelection('Selection should have changed with drag',
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0,
+		getCell(grid, 1, 1));
+	assertSelection(grid, 'Selection should have changed with drag',
 		0, 0, 1, 1);
 
 	// mouseup should enable text selection, even if it wasn't
 	// enabled before, to allow keyboard selection afterwards
 	assertEquals(com.qwirx.freebase.Grid.DragMode.CELLS, grid.dragMode_);
 	assertEquals(false, grid.isAllowTextSelection());
-	sendFakeMouseEvent(goog.events.EventType.MOUSEUP, 0, getCell(0, 0));
+	sendFakeMouseEvent(goog.events.EventType.MOUSEUP, 0, 
+		getCell(grid, 0, 0));
 	assertEquals(true, grid.isAllowTextSelection());
 	// and set the selection mode back to NONE, so that future
 	// mouse movement events don't cause selection changes
 	assertEquals(com.qwirx.freebase.Grid.DragMode.NONE, grid.dragMode_);
 	// selection changes with mouseover, not mouseup
-	assertSelection('Selection should not have changed with mouseup',
+	assertSelection(grid, 'Selection should not have changed with mouseup',
 		0, 0, 1, 1);
 
-	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(2, 1));
-	assertSelection('Selection should not have changed without another mousedown',
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0,
+		getCell(grid, 2, 1));
+	assertSelection(grid, 'Selection should not have changed without another mousedown',
 		0, 0, 1, 1);
 
-	sendFakeMouseEvent(goog.events.EventType.MOUSEDOWN, 0, getCell(2, 1));
-	assertSelection('Selection should have changed with click',
+	sendFakeMouseEvent(goog.events.EventType.MOUSEDOWN, 0,
+		getCell(grid, 2, 1));
+	assertSelection(grid, 'Selection should have changed with click',
 		2, 1, 2, 1);
 
-	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(1, 1));
-	assertSelection('Selection should have changed with drag',
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0,
+		getCell(grid, 1, 1));
+	assertSelection(grid, 'Selection should have changed with drag',
 		2, 1, 1, 1);
 
-	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(1, 0));
-	assertSelection('Selection should have changed with drag',
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0,
+		getCell(grid, 1, 0));
+	assertSelection(grid, 'Selection should have changed with drag',
 		2, 1, 1, 0);
 
-	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(1, 1));
-	assertSelection('Selection should have changed with drag',
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0,
+		getCell(grid, 1, 1));
+	assertSelection(grid, 'Selection should have changed with drag',
 		2, 1, 1, 1);
 
-	sendFakeMouseEvent(goog.events.EventType.MOUSEOUT, 0, getCell(0, 1));
-	assertSelection('Selection should not have changed when mouse ' +
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOUT, 0, 
+		getCell(grid, 0, 1));
+	assertSelection(grid, 'Selection should not have changed when mouse ' +
 		'left the grid', 2, 1, 1, 1);
 
-	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0, getCell(0, 1));
-	assertSelection('Selection should still be changeable after mouse ' +
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0,
+		getCell(grid, 0, 1));
+	assertSelection(grid, 'Selection should still be changeable after mouse ' +
 		'left the grid and reentered in a different place',
 		2, 1, 0, 1);
 
-	sendFakeMouseEvent(goog.events.EventType.MOUSEUP, 0, getCell(0, 0));
-	assertSelection('Selection should not have changed with mouseup',
+	sendFakeMouseEvent(goog.events.EventType.MOUSEUP, 0,
+		getCell(grid, 0, 0));
+	assertSelection(grid, 'Selection should not have changed with mouseup',
 		2, 1, 0, 1);
 		
 	// test that the header row doesn't become editable when clicked,
@@ -903,9 +925,52 @@ function testGridHighlight()
 	sendFakeMouseEvent(goog.events.EventType.MOUSEDOWN, 0,
 		grid.colHeadingCells_[1]);
 	assertEquals("inherit", grid.colHeadingCells_[1].contentEditable);
-	assertSelection('Selection should not have changed with ' +
+	assertSelection(grid, 'Selection should not have changed with ' +
 		'mousedown on header', 2, 1, 0, 1);
 	assertEquals(false, grid.isAllowTextSelection());
+}
+
+function testGridInsertRowAt()
+{
+	var gui = new Freebase.Gui(mockFreebase);
+	gui.run(mockDocument);
+	var editor = assertCallback(function(c) { gui.openDocument(Cat.getId(), c); })[0];
+	var grid = editor.grid_;
+	assertEquals('Grid should have been populated with some cats',
+		2, grid.getRowCount());
+	
+	// insert a row between two others
+	grid.insertRowAt([{value: "unidentified"}, {value: "flying"},
+		{value: "object"}], 1);
+	assertEquals('Grid row count should have been updated',
+		3, grid.getRowCount());
+	
+	var allCats = assertCallback(function(c)
+		// { mockFreebase.listAll(true, c); })[0].rows;
+		{ mockFreebase.findAll(Cat.modelName, c); })[0];
+	
+	var allCatsMap = {};
+	for (var i = 0; i < allCats.length; i++)
+	{
+		allCatsMap[allCats[i]._id] = allCats[i];
+	}
+	var allCatIds = goog.object.getKeys(allCatsMap).sort();
+	
+	function assertCellContentsAndSelection(rowIndex, contents)
+	{
+		assertEquals(contents, grid.getRow(rowIndex).getColumns()[0].value);
+		assertEquals(rowIndex, grid.getRow(rowIndex).getRowIndex());
+		var cell = grid.getRow(rowIndex).getColumns()[0].tableCell;
+		assertEquals(rowIndex,
+			cell[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW].getRowIndex());
+		sendFakeMouseEvent(goog.events.EventType.MOUSEDOWN, 0, cell);
+		assertSelection(grid, 'Selection should have changed with mousedown',
+			0, rowIndex, 0, rowIndex);
+	}
+	
+	assertCellContentsAndSelection(0, allCatIds[0]);
+	assertCellContentsAndSelection(1, "unidentified");
+	assertCellContentsAndSelection(2, allCatIds[1]);
 }
 
 </script>
