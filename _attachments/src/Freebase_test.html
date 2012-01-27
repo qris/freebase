@@ -954,7 +954,7 @@ function assertSelection(grid, message, x1, y1, x2, y2)
 	assertEquals(message, builder.toString(), grid.highlightStyles_.innerHTML);
 }
 
-function testGridHighlight()
+function assertGetGrid()
 {
 	var gui = new Freebase.Gui(mockFreebase);
 	gui.run(mockDocument);
@@ -966,6 +966,13 @@ function testGridHighlight()
 		2, grid.getRowCount());
 	assertSelection(grid, 'No cells should be selected initially',
 		-1, -1, -1, -1);
+
+	return grid;
+}
+
+function testGridHighlightModeCells()
+{
+	var grid = assertGetGrid();
 	
 	sendFakeMouseEvent(goog.events.EventType.MOUSEMOVE, 0, 
 		getCell(grid, 0, 0));
@@ -1091,11 +1098,15 @@ function testGridHighlight()
 		getCell(grid, 0, 0));
 	assertSelection(grid, 'Selection should not have changed with mouseup',
 		2, 1, 0, 1);
-		
+}
+
+function testGridHighlightModeColumns()
+{
+	var grid = assertGetGrid();
+
 	// test that the header row doesn't become editable when clicked,
 	// that text selection is disabled, and the entire column is
 	// highlighted.
-	assertEquals(true, grid.isAllowTextSelection());
 	sendFakeMouseEvent(goog.events.EventType.MOUSEDOWN, 0,
 		grid.columns_[1].getIdentityNode());
 	assertEquals(com.qwirx.freebase.Grid.DragMode.COLUMNS,
@@ -1123,6 +1134,42 @@ function testGridHighlight()
 		getCell(grid, 2, 1));
 	assertSelection(grid, 'Selection should not have changed with ' +
 		'mouseover on body after mouseup', 1, 0, 0, 1);
+}
+
+function testGridHighlightModeRows()
+{
+	var grid = assertGetGrid();
+
+	// test that the header row doesn't become editable when clicked,
+	// that text selection is disabled, and the entire column is
+	// highlighted.
+	sendFakeMouseEvent(goog.events.EventType.MOUSEDOWN, 0,
+		grid.rows_[0].getIdentityNode());
+	assertEquals(com.qwirx.freebase.Grid.DragMode.ROWS,
+		grid.dragMode_);
+	assertSelection(grid, 'Selection should have changed with ' +
+		'mousedown on header', 0, 0, 2, 0);
+	assertEquals("Header node should never allow text selection",
+		false, grid.isAllowTextSelection());
+	assertEquals("Header node should never be editable",
+		"inherit", grid.rows_[0].getIdentityNode().contentEditable);
+
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0,
+		grid.rows_[1].getIdentityNode());
+	assertSelection(grid, 'Selection should have changed with ' +
+		'mouseover on header', 0, 0, 2, 1);
+
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0,
+		getCell(grid, 0, 0));
+	assertSelection(grid, 'Selection should have changed with ' +
+		'mouseover on body', 0, 0, 2, 0);
+
+	sendFakeMouseEvent(goog.events.EventType.MOUSEUP, 0,
+		getCell(grid, 2, 0));
+	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0,
+		getCell(grid, 2, 1));
+	assertSelection(grid, 'Selection should not have changed with ' +
+		'mouseover on body after mouseup', 0, 0, 2, 0);
 }
 
 function testGridInsertRowAt()

@@ -43,6 +43,8 @@ com.qwirx.freebase.Grid.prototype.createDom = function()
 	var numCols = columns.length;
 
 	var cornerCell = this.dom_.createDom('th', {});
+	cornerCell[com.qwirx.freebase.Grid.TD_ATTRIBUTE_TYPE] =
+		com.qwirx.freebase.Grid.CellType.CORNER;
 	var colHeadingCells = [cornerCell];
 	this.columns_ = [];
 	
@@ -207,7 +209,8 @@ com.qwirx.freebase.Grid.prototype.getRow = function(rowIndex)
 com.qwirx.freebase.Grid.CellType = {
 	COLUMN_HEAD: "COLUMN_HEAD",
 	ROW_HEAD: "ROW_HEAD",
-	MIDDLE: "MIDDLE"
+	MIDDLE: "MIDDLE",
+	CORNER: "CORNER",
 };
 
 com.qwirx.freebase.Grid.DragMode = {
@@ -375,9 +378,13 @@ com.qwirx.freebase.Grid.prototype.handleDrag = function(e)
 	{
 		newx2 = this.scrollOffset_.x;
 	}
-	else
+	else if (col)
 	{
 		newx2 = col.getColumnIndex();
+	}
+	else
+	{
+		newx2 = this.drag.x2;
 	}
 	
 	if (dragMode == dragModes.COLUMNS)
@@ -388,9 +395,13 @@ com.qwirx.freebase.Grid.prototype.handleDrag = function(e)
 	{
 		newy2 = this.scrollOffset_.y;
 	}
-	else
+	else if (row)
 	{
 		newy2 = row.getRowIndex();
+	}
+	else
+	{
+		newy2 = this.drag.y2;
 	}
 	
 	com.qwirx.freebase.log("dragging: selection changed from " +
@@ -484,7 +495,8 @@ com.qwirx.freebase.Grid.prototype.logEvent = function(e)
 	var cellType = e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_TYPE];
 	var cellTypes = com.qwirx.freebase.Grid.CellType;
 	
-	if (cellType == cellTypes.ROW_HEAD)
+	if (cellType == cellTypes.ROW_HEAD ||
+		cellType == cellTypes.CORNER)
 	{
 		col = "H";
 	}
@@ -493,7 +505,8 @@ com.qwirx.freebase.Grid.prototype.logEvent = function(e)
 		col = col.getColumnIndex();
 	}
 	
-	if (cellType == cellTypes.COLUMN_HEAD)
+	if (cellType == cellTypes.COLUMN_HEAD ||
+		cellType == cellTypes.CORNER)
 	{
 		row = "H";
 	}
