@@ -25,6 +25,7 @@ com.qwirx.freebase.Grid = function(columns, opt_renderer)
 	
 	this.drag = { origin: undefined, x1: -1, y1: -1, x2: -1, y2: -1 };
 	
+	this.scrollOffset_ = { x: 0, y: 0 };
 };
 
 goog.inherits(com.qwirx.freebase.Grid, goog.ui.Control);
@@ -40,30 +41,61 @@ com.qwirx.freebase.Grid.prototype.createDom = function()
 
 	var columns = this.columns_;
 	var numCols = columns.length;
-	this.colHeadingCells_ = [];
+	var colHeadingCells = [];
+	this.columns_ = [];
 	
 	for (var i = 0; i < numCols; i++)
 	{
-		var column = columns[i];
-		var th = column.tableCell = this.dom_.createDom('th', {},
-			column.caption);
-		this.colHeadingCells_.push(th);
+		var columnInfo = columns[i];
+		var column = new com.qwirx.freebase.Grid.Column(this,
+			columnInfo.caption);
+		this.columns_.push(column);
+		colHeadingCells.push(column.getIdentityNode());
 	}
 	
 	this.headerRow_ = this.dom_.createDom('tr', {},
-		this.colHeadingCells_);
+		colHeadingCells);
 	this.element_.appendChild(this.headerRow_);
 	
-	this.rowCount_ = 0;
 	this.rows_ = [];
 	this.rowElements_ = [];
 	this.highlightStyles_ = goog.style.installStyles('', this.element_);
 };
 
+com.qwirx.freebase.Grid.TD_ATTRIBUTE_TYPE =
+	com.qwirx.freebase.Freebase.FREEBASE_FIELD_PREFIX + 'grid_cell_type';
 com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW = 
 	com.qwirx.freebase.Freebase.FREEBASE_FIELD_PREFIX + 'grid_row';
 com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL = 
 	com.qwirx.freebase.Freebase.FREEBASE_FIELD_PREFIX + 'grid_col';
+
+/**
+ * Column is a class, not a static index, to allow renumbering and
+ * dynamically numbering large grids quickly.
+ */
+com.qwirx.freebase.Grid.Column = function(grid, caption)
+{
+	this.grid_= grid;
+	var th = this.tableCell_ = grid.dom_.createDom('th', {}, caption);
+	th[com.qwirx.freebase.Grid.TD_ATTRIBUTE_TYPE] =
+		com.qwirx.freebase.Grid.CellType.COLUMN_HEAD;
+	th[com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL] = this;
+};
+
+com.qwirx.freebase.Grid.Column.prototype.getColumnIndex = function()
+{
+	return goog.array.indexOf(this.grid_.columns_, this);
+};
+
+/**
+ * @return the DOM node for the cell above the first data cell,
+ * which normally displays a column number, and on which the user
+ * can click to select the entire column.
+ */
+com.qwirx.freebase.Grid.Column.prototype.getIdentityNode = function()
+{
+	return this.tableCell_;
+};
 
 /**
  * Row is a class, not a static index, to allow renumbering and
@@ -78,12 +110,12 @@ com.qwirx.freebase.Grid.Row = function(grid, columns)
 com.qwirx.freebase.Grid.Row.prototype.getRowIndex = function()
 {
 	return goog.array.indexOf(this.grid_.rows_, this);
-}
+};
 
 com.qwirx.freebase.Grid.Row.prototype.getColumns = function()
 {
 	return this.columns_;
-}
+};
 
 com.qwirx.freebase.Grid.prototype.insertRowAt = function(columns, newRowIndex)
 {
@@ -99,7 +131,11 @@ com.qwirx.freebase.Grid.prototype.insertRowAt = function(columns, newRowIndex)
 		var cssClasses = 'col_' + i;
 		var td = column.tableCell = this.dom_.createDom('td', cssClasses,
 			column.value);
-		td[com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL] = i;
+			
+		td[com.qwirx.freebase.Grid.TD_ATTRIBUTE_TYPE] =
+			com.qwirx.freebase.Grid.CellType.MIDDLE;
+		td[com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL] =
+			this.columns_[i];
 		td[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW] = row;
 			
 		cells.push(td);
@@ -109,13 +145,12 @@ com.qwirx.freebase.Grid.prototype.insertRowAt = function(columns, newRowIndex)
 	goog.dom.insertChildAt(this.element_, newTableRow,
 		newRowIndex + 1 /* for header row */);
 	
-	this.rowCount_++;
 	this.rowElements_.splice(newRowIndex, 0, newTableRow);
 };
 
 com.qwirx.freebase.Grid.prototype.appendRow = function(columns)
 {
-	var newRowIndex = this.rowCount_;
+	var newRowIndex = this.getRowCount();
 	this.insertRowAt(columns, newRowIndex);
 	return newRowIndex;
 };
@@ -140,7 +175,12 @@ com.qwirx.freebase.Grid.prototype.updateRow = function(rowIndex, columns)
 
 com.qwirx.freebase.Grid.prototype.getRowCount = function()
 {
-	return this.rowCount_;
+	return this.rows_.length;
+};
+
+com.qwirx.freebase.Grid.prototype.getColumnCount = function()
+{
+	return this.columns_.length;
 };
 
 com.qwirx.freebase.Grid.prototype.getRow = function(rowIndex)
@@ -148,28 +188,28 @@ com.qwirx.freebase.Grid.prototype.getRow = function(rowIndex)
 	return this.rows_[rowIndex];
 };
 
+com.qwirx.freebase.Grid.CellType = {
+	COLUMN_HEAD: "COLUMN_HEAD",
+	ROW_HEAD: "ROW_HEAD",
+	MIDDLE: "MIDDLE"
+};
+
 com.qwirx.freebase.Grid.DragMode = {
 	NONE: "NONE",
 	TEXT: "TEXT",
-	CELLS: "CELLS"
+	CELLS: "CELLS",
+	COLUMNS: "COLUMNS",
+	ROWS: "ROWS"
 };
 
 com.qwirx.freebase.Grid.prototype.handleMouseDown = function(e)
 {
-	if (!(com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL in e.target) &&
-		!(com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW in e.target))
-	{
-		// clicked on a header cell
-		this.setAllowTextSelection(false);
-		return;
-	}
-
-	// com.qwirx.freebase.log("mouse down: " + e.type + ": " + e.target);
-	this.setAllowTextSelection(true);
-		
 	com.qwirx.freebase.Grid.superClass_.handleMouseDown.call(this, e);
 	
-	// remove existing selection
+	// Remove existing highlight from rows. Highlighted columns
+	// will be reset when createHighlightRule_() is called below,
+	// so don't waste effort doing it now.
+
 	var oldy1 = Math.min(this.drag.y1, this.drag.y2);
 	var oldy2 = Math.max(this.drag.y1, this.drag.y2);
 	
@@ -178,24 +218,47 @@ com.qwirx.freebase.Grid.prototype.handleMouseDown = function(e)
 		this.highlightRow(y, false);
 	}
 
-	// Highlighted rows will be reset when createHighlightRule_()
-	// is called below, so don't waste effort doing it now.
-	
-	this.drag.x1 = this.drag.x2 = 
-		e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL];
-	this.drag.y1 = this.drag.y2 = 
-		e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW].getRowIndex();
+	var type = e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_TYPE];
+	var col = e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL];
+	var row = e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW];
+
 	this.drag.origin = e.target;
 	
-	this.setEditableCell(e.target);
-	this.dragMode_ = com.qwirx.freebase.Grid.DragMode.TEXT;
+	if (type == com.qwirx.freebase.Grid.CellType.COLUMN_HEAD)
+	{
+		// clicked on a header cell
+		this.setAllowTextSelection(false);
+		this.dragMode_ = com.qwirx.freebase.Grid.DragMode.COLUMNS;
+		this.drag.x1 = this.drag.x2 = col.getColumnIndex();
+		this.drag.y1 = 0;
+		this.drag.y2 = this.getRowCount() - 1;
+	}
+	else if (type == com.qwirx.freebase.Grid.CellType.MIDDLE)
+	{
+		this.setAllowTextSelection(true);
+		this.setEditableCell(e.target);
+		this.dragMode_ = com.qwirx.freebase.Grid.DragMode.TEXT;
+		this.drag.x1 = this.drag.x2 = col.getColumnIndex();
+		this.drag.y1 = this.drag.y2 = row.getRowIndex();
+	}
 	
-	this.highlightRow(this.drag.y1, true);
+	for (var y = this.drag.y1; y <= this.drag.y2; y++)
+	{
+		this.highlightRow(y, true);
+	}
+	
 	this.createHighlightRule_();
 		
 	return true;
 };
 
+/**
+ * Replace the contents of the style element that marks highlighted
+ * cells when their row has the <code>highlight</code> class. This
+ * mechanism means that updating the highlight is O(r+c) instead of
+ * O(r*c), because we don't have to visit every cell to apply
+ * (or remove) a highlight style to it.
+ */
 com.qwirx.freebase.Grid.prototype.createHighlightRule_ = function()
 {
 	var builder = new goog.string.StringBuffer();
@@ -220,63 +283,137 @@ com.qwirx.freebase.Grid.prototype.highlightRow = function(rowIndex, enable)
 		'highlight', enable);
 };
 
+/**
+ * Update the selection (of cells in the grid) based on a mouse
+ * movement event.
+ * <p>
+ * The way the selection is updated depends on the current
+ * {@link com.qwirx.freebase.Grid.DragMode selection mode} and the
+ * {@link com.qwirx.freebase.Grid.CellType cell type} of the cell
+ * which the mouse entered.
+ *
+ * <dl>
+ * <dt>0</dt>
+ * <dd>Zero (lowest row/column number in grid)</dd>
+ * <dt>inf</dt>
+ * <dd>Highest row/column number in grid</dd>
+ * <dt>x</dt>
+ * <dd>The x coordinate of the cell just entered</dd>
+ * <dt>y</dt>
+ * <dd>The y coordinate of the cell just entered</dd>
+ * <dt>min</dt>
+ * <dd>The lowest x/y coordinate visible (this.scrollOffset_.x/y)</dd>
+ * <dt>max</dt>
+ * <dd>The highest x/y coordinate visible (this.scrollOffset_.x/y plus
+ * this.visibleArea_.rows/cols)</dd>
+ * </dl>
+ *
+ * <pre>
+ *             | CELLS     | COLUMNS   | ROWS      | Drag mode
+ *             |-----------|-----------|-----------|
+ *             | x2  | y2  | x2  | y2  | x2  | y2  |
+ *             |-----|-----|-----|-----|-----|-----|
+ * MIDDLE      | x   | y   | x   | inf | inf | y   |
+ * COLUMN_HEAD | x   | min | x   | inf | inf | min |
+ * ROW_HEAD    | min | y   | min | inf | inf | y   |
+ * Cell type   |
+ * </pre>
+ */
 com.qwirx.freebase.Grid.prototype.handleDrag = function(e)
 {
 	// com.qwirx.freebase.log("dragging: " + e.type + ": " + e.target);
 
-	/*
-	if (!this.isActive())
+	var be = e.browserEvent || e;
+
+	var cellType = e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_TYPE];
+	var cellTypes = com.qwirx.freebase.Grid.CellType;
+	
+	if (!cellType)
 	{
-		// Don't change selection unless the mouse action button is down.
-		// We can't tell directly because browsers don't set the button
-		// property of mouseover events, but 
-		// i.e. we have received a mousedown but no corresponding mouseup
-		// event.
+		// maybe an event for the whole table, not a cell?
 		return;
 	}
-	*/
 	
-	var be = e.browserEvent || e;
-	var newx2 = be.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL];
-	var newy2 = be.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW].getRowIndex();
+	var dragMode = this.dragMode_;
+	var dragModes = com.qwirx.freebase.Grid.DragMode;
+	var col = e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL];
+	var row = e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW];
+	
+	var newx2, newy2;
+
+	// compute the new x2 and y2 using the above table
+	if (dragMode == dragModes.ROWS)
+	{
+		newx2 = this.getColumnCount() - 1;
+	}
+	else if (cellType == cellTypes.ROW_HEAD)
+	{
+		newx2 = this.scrollOffset_.x;
+	}
+	else
+	{
+		newx2 = col.getColumnIndex();
+	}
+	
+	if (dragMode == dragModes.COLUMNS)
+	{
+		newy2 = this.getRowCount() - 1;
+	}
+	else if (cellType == cellTypes.COLUMN_HEAD)
+	{
+		newy2 = this.scrollOffset_.y;
+	}
+	else
+	{
+		newy2 = row.getRowIndex();
+	}
+	
+	com.qwirx.freebase.log("dragging: selection changed from " +
+		this.drag.x2 + "," + this.drag.y2 + " to " +
+		newx2 + "," + newy2);
+
+	// changes to y2 are handled by (un)highlighting rows.
+	
+	if (newy2 != this.drag.y2)
+	{
+		var oldymin = Math.min(this.drag.y1, this.drag.y2);
+		var oldymax = Math.max(this.drag.y1, this.drag.y2);
+		var newymin = Math.min(this.drag.y1, newy2);
+		var newymax = Math.max(this.drag.y1, newy2);
+
+		// If selection is above y1 and moving down, unselect any rows between
+		// the old and new minima.
+		for (var y = oldymin; y < newymin; y++)
+		{
+			this.highlightRow(y, false);
+		}
+	
+		// If selection is above y1 and moving up, select any rows between
+		// the new and old minima.
+		for (var y = newymin; y < oldymin; y++)
+		{
+			this.highlightRow(y, true);
+		}
+	
+		// If selection is below y1 and moving down, select any rows between
+		// the old and new maxima.
+		for (var y = oldymax + 1; y <= newymax; y++)
+		{
+			this.highlightRow(y, true);
+		}
+	
+		// If selection is below y1 and moving up, unselect any rows between
+		// the new and old maxima.
+		for (var y = newymax + 1; y <= oldymax; y++)
+		{
+			this.highlightRow(y, false);
+		}
+
+		this.drag.y2 = newy2;
+	}	
 
 	// changes to x2 are handled by rewriting the highlight rule.
-	
-	var oldymin = Math.min(this.drag.y1, this.drag.y2);
-	var oldymax = Math.max(this.drag.y1, this.drag.y2);
-	var newymin = Math.min(this.drag.y1, newy2);
-	var newymax = Math.max(this.drag.y1, newy2);
 
-	// If selection is above y1 and moving down, unselect any rows between
-	// the old and new minima.
-	for (var y = oldymin; y < newymin; y++)
-	{
-		this.highlightRow(y, false);
-	}
-	
-	// If selection is above y1 and moving up, select any rows between
-	// the new and old minima.
-	for (var y = newymin; y < oldymin; y++)
-	{
-		this.highlightRow(y, true);
-	}
-	
-	// If selection is below y1 and moving down, select any rows between
-	// the old and new maxima.
-	for (var y = oldymax + 1; y <= newymax; y++)
-	{
-		this.highlightRow(y, true);
-	}
-	
-	// If selection is below y1 and moving up, unselect any rows between
-	// the new and old maxima.
-	for (var y = newymax + 1; y <= oldymax; y++)
-	{
-		this.highlightRow(y, false);
-	}
-
-	this.drag.y2 = newy2;
-	
 	if (newx2 != this.drag.x2)
 	{
 		this.drag.x2 = newx2;
@@ -305,13 +442,6 @@ com.qwirx.freebase.Grid.prototype.setEditableCell = function(cell)
 		cell.focus();
 		com.qwirx.freebase.log("set editable cell: " + cell);
 		
-		/* Refire the event to set the selection based on where exactly
-		 * the user clicked within the control. The SeamlessField will
-		 * stop propagation to prevent it returning here and causing
-		 * an infinite loop.
-		 */
-		// this.triggerEvent_(e.target, e.getBrowserEvent());
-
 		this.editableCellField_.addEventListener(
 			goog.events.EventType.MOUSEDOWN, 
 			function(e)
@@ -324,12 +454,31 @@ com.qwirx.freebase.Grid.prototype.setEditableCell = function(cell)
 
 com.qwirx.freebase.Grid.prototype.logEvent = function(e)
 {
+	var row = e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW];
+	var col = e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL];
+	var cellType = e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_TYPE];
+	var cellTypes = com.qwirx.freebase.Grid.CellType;
+	
+	if (cellType == cellTypes.ROW_HEAD)
+	{
+		col = "H";
+	}
+	else
+	{
+		col = col.getColumnIndex();
+	}
+	
+	if (cellType == cellTypes.COLUMN_HEAD)
+	{
+		row = "H";
+	}
+	else
+	{
+		row = row.getRowIndex();
+	}
+	
 	com.qwirx.freebase.log("log event " + e.type + ": " + 
-		e.target + " [x=" +
-		e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL] +
-		", y=" +
-		e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW].getRowIndex() +
-		"]");
+		e.target + " [x=" + col + ", y=" + row + "]");
 };
 
 /**
@@ -379,7 +528,7 @@ com.qwirx.freebase.Grid.prototype.handleMouseOver = function(e)
 
 com.qwirx.freebase.Grid.prototype.handleMouseOut = function(e)
 {
-	this.logEvent(e);
+	// this.logEvent(e);
 	com.qwirx.freebase.Grid.superClass_.handleMouseOut.call(this, e);
 
 	if (this.dragMode_ == com.qwirx.freebase.Grid.DragMode.TEXT &&
