@@ -41,7 +41,9 @@ com.qwirx.freebase.Grid.prototype.createDom = function()
 
 	var columns = this.columns_;
 	var numCols = columns.length;
-	var colHeadingCells = [];
+
+	var cornerCell = this.dom_.createDom('th', {});
+	var colHeadingCells = [cornerCell];
 	this.columns_ = [];
 	
 	for (var i = 0; i < numCols; i++)
@@ -105,6 +107,20 @@ com.qwirx.freebase.Grid.Row = function(grid, columns)
 {
 	this.grid_= grid;
 	this.columns_ = columns;
+	var th = this.tableCell_ = grid.dom_.createDom('th', {}, '');
+	th[com.qwirx.freebase.Grid.TD_ATTRIBUTE_TYPE] =
+		com.qwirx.freebase.Grid.CellType.ROW_HEAD;
+	th[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW] = this;
+};
+
+/**
+ * @return the DOM node for the cell above the first data cell,
+ * which normally displays a column number, and on which the user
+ * can click to select the entire column.
+ */
+com.qwirx.freebase.Grid.Row.prototype.getIdentityNode = function()
+{
+	return this.tableCell_;
 };
 
 com.qwirx.freebase.Grid.Row.prototype.getRowIndex = function()
@@ -123,7 +139,7 @@ com.qwirx.freebase.Grid.prototype.insertRowAt = function(columns, newRowIndex)
 	var row = new com.qwirx.freebase.Grid.Row(this, columns);
 	this.rows_.splice(newRowIndex, 0, row);
 
-	var cells = [];
+	var cells = [row.getIdentityNode()];
 	
 	for (var i = 0; i < numCols; i++)
 	{
@@ -232,6 +248,15 @@ com.qwirx.freebase.Grid.prototype.handleMouseDown = function(e)
 		this.drag.x1 = this.drag.x2 = col.getColumnIndex();
 		this.drag.y1 = 0;
 		this.drag.y2 = this.getRowCount() - 1;
+	}
+	else if (type == com.qwirx.freebase.Grid.CellType.ROW_HEAD)
+	{
+		// clicked on a header cell
+		this.setAllowTextSelection(false);
+		this.dragMode_ = com.qwirx.freebase.Grid.DragMode.ROWS;
+		this.drag.x1 = 0;
+		this.drag.x2 = this.getColumnCount() - 1;
+		this.drag.y1 = this.drag.y2 = row.getRowIndex();
 	}
 	else if (type == com.qwirx.freebase.Grid.CellType.MIDDLE)
 	{
