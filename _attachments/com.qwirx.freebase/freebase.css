@@ -85,28 +85,6 @@ table.fb-doc-auto td
 	text-align: left;
 }
 
-table.fb-grid
-{
-	border-collapse: collapse;
-}
-
-table.fb-grid > tr > th,
-table.fb-grid > tr > td
-{
-	border: 1px solid #ddd;
-	padding: 0.1em 0.2em;
-}
-
-table.fb-grid > tr > th
-{
-	background: #eee;
-	text-align: left;
-}
-
-table.fb-grid > tr > td
-{
-}
-
 div.fb-success-flash
 {
 	margin: 0 0 1em;

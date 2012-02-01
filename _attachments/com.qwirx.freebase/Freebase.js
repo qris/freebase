@@ -5,6 +5,7 @@
 
 goog.provide('com.qwirx.freebase');
 goog.provide('com.qwirx.freebase.Freebase');
+goog.require('com.qwirx.loader');
 goog.require('com.qwirx.freebase.DocumentEditor');
 
 goog.require('goog.events.EventTarget');
@@ -377,43 +378,15 @@ com.qwirx.freebase.Freebase.Gui = function(database)
 		this.onDocumentSaved, false, this);
 };
 
-/**
- * Loads (adds to the current HTML document) a CSS stylesheet file,
- * whose name is relative to this Javascript file's path, and
- * without the .css extension.
- */
-com.qwirx.freebase.Freebase.Gui.prototype.loadCss = function(/* varargs */)
-{
-	var len = arguments.length;
-	for (var i = 0; i < len; i++)
-	{
-		var sheet = arguments[i];
-		if (! window[sheet])
-		{
-			sheetUrl = sheet + ".css";
-			linkTag = goog.dom.createDom(goog.dom.TagName.LINK,
-				{rel: 'stylesheet', href: sheetUrl});
-			goog.dom.appendChild(document.head, linkTag);
-			window[sheet] = sheetUrl;
-		}
-	};
-};
-
 // Main entry function to start the Freebase application. Takes over the
-// supplied {{{container}}}, which should be a jQuery selector or behave
-// like one, and uses the supplied {{{jQuery}}} object to create new
-// elements.
+// supplied {{{container}}}, which should be a DOM element.
 
 com.qwirx.freebase.Freebase.Gui.prototype.run = function(container)
 {
-	this.loadCss('../style/freebase');
-	this.loadCss('../ext/closure-library/closure/goog/css/common');
-	this.loadCss('../ext/closure-library/closure/goog/css/tab');
-	this.loadCss('../ext/closure-library/closure/goog/css/tabbar');
-	this.loadCss('../ext/closure-library/closure/goog/css/button');
-	this.loadCss('../ext/closure-library/closure/goog/css/custombutton');
-	// for ui-icon-close
-	// this.loadCss('../ext/jquery-ui-themes/base/jquery.ui.theme');
+	com.qwirx.loader.loadCss('com.qwirx.freebase', 'freebase.css');
+	com.qwirx.loader.loadCss('goog.closure', 'common.css',
+		'tab.css', 'tabbar.css', 'button.css', 'custombutton.css');
+
 	goog.dom.removeChildren(container);
 	this.openDocumentsById_ = {};
 	this.window = container;
@@ -422,10 +395,10 @@ com.qwirx.freebase.Freebase.Gui.prototype.run = function(container)
 
 com.qwirx.freebase.Freebase.Gui.prototype.construct = function()
 {
-	this.loadCss('../ext/closure-library/closure/goog/css/tree');
+	com.qwirx.loader.loadCss('goog.closure', 'tree.css');
 
 	var treeConfig = goog.ui.tree.TreeControl.defaultConfig;
-	treeConfig['cleardotPath'] = '../ext/closure-library/closure/' +
+	treeConfig['cleardotPath'] = '../closure-library/closure/' +
 		'goog/images/tree/cleardot.gif';
 	var navigator = this.navigator_ =
 		new goog.ui.tree.TreeControl('localhost', treeConfig);

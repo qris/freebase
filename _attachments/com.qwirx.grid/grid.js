@@ -1,4 +1,5 @@
-goog.provide('com.qwirx.freebase.Grid');
+goog.provide('com.qwirx.grid.Grid');
+goog.require('com.qwirx.loader');
 
 goog.require('goog.ui.Control');
 goog.require('goog.editor.SeamlessField');
@@ -14,11 +15,20 @@ com.qwirx.freebase.log = function(var_args)
 	}
 };
 
-com.qwirx.freebase.Grid = function(columns, opt_renderer)
+com.qwirx.grid.Grid = function(columns_or_datasource, opt_renderer)
 {
-	opt_renderer = opt_renderer || com.qwirx.freebase.Grid.RENDERER;
+	opt_renderer = opt_renderer || com.qwirx.grid.Grid.RENDERER;
 	goog.ui.Control.call(this, null, opt_renderer);
-	this.columns_ = columns.slice(0); // copy
+	
+	if (columns_or_datasource.getRow)
+	{
+		this.dataSource_ = columns_or_datasource;
+		this.columns_ = columns_or_datasource.getColumns().slice(0); // copy
+	}
+	else
+	{
+		this.columns_ = columns_or_datasource.slice(0); // copy
+	}
 	
 	// focusing a grid isn't very useful and looks ugly in Chrome
 	this.setSupportedState(goog.ui.Component.State.FOCUSED, false);
@@ -28,12 +38,31 @@ com.qwirx.freebase.Grid = function(columns, opt_renderer)
 	this.scrollOffset_ = { x: 0, y: 0 };
 };
 
-goog.inherits(com.qwirx.freebase.Grid, goog.ui.Control);
+goog.inherits(com.qwirx.grid.Grid, goog.ui.Control);
 
-com.qwirx.freebase.Grid.RENDERER = goog.ui.ControlRenderer.getCustomRenderer(
+com.qwirx.grid.Grid.RENDERER = goog.ui.ControlRenderer.getCustomRenderer(
 	goog.ui.ControlRenderer, 'fb-grid');
+	
+/**
+ * Capture the parent element because enterDocument needs it.
+ */
+com.qwirx.grid.Grid.prototype.render = function(opt_parentElement)
+{
+	if (opt_parentElement)
+	{
+		var parent = opt_parentElement;
+	}
+	else
+	{
+		var parent = this.dom_.getDocument().body;
+	}
+	
+	this.fb_parent_ = parent;
+	com.qwirx.grid.Grid.superClass_.render.call(this, 
+		opt_parentElement);
+};
 
-com.qwirx.freebase.Grid.prototype.createDom = function()
+com.qwirx.grid.Grid.prototype.createDom = function()
 {
 	this.element_ = this.dom_.createDom('table',
 		this.getRenderer().getClassNames(this).join(' '));
@@ -43,15 +72,15 @@ com.qwirx.freebase.Grid.prototype.createDom = function()
 	var numCols = columns.length;
 
 	var cornerCell = this.dom_.createDom('th', {});
-	cornerCell[com.qwirx.freebase.Grid.TD_ATTRIBUTE_TYPE] =
-		com.qwirx.freebase.Grid.CellType.CORNER;
+	cornerCell[com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE] =
+		com.qwirx.grid.Grid.CellType.CORNER;
 	var colHeadingCells = [cornerCell];
 	this.columns_ = [];
 	
 	for (var i = 0; i < numCols; i++)
 	{
 		var columnInfo = columns[i];
-		var column = new com.qwirx.freebase.Grid.Column(this,
+		var column = new com.qwirx.grid.Grid.Column(this,
 			columnInfo.caption);
 		this.columns_.push(column);
 		colHeadingCells.push(column.getIdentityNode());
@@ -66,27 +95,68 @@ com.qwirx.freebase.Grid.prototype.createDom = function()
 	this.highlightStyles_ = goog.style.installStyles('', this.element_);
 };
 
-com.qwirx.freebase.Grid.TD_ATTRIBUTE_TYPE =
+/**
+ * Can't add rows until we enter the document, because we need to
+ * know whether they fit inside the container.
+ */
+com.qwirx.grid.Grid.prototype.enterDocument = function()
+{
+	com.qwirx.grid.Grid.superClass_.enterDocument.call(this);
+	com.qwirx.loader.loadCss('com.qwirx.grid', 'grid.css');
+
+	if (!this.dataSource_)
+	{
+		return;
+	}
+	
+	var container = this.fb_parent_;
+	var containerPos = goog.style.getPageOffset(container);
+	var containerBorder = goog.style.getBorderBox(container);		
+	
+	for (var i = 0; i < this.dataSource_.getRowCount(); i++)
+	{
+		this.appendRow(this.dataSource_.getRow(i));
+
+		// stolen from goog.style.scrollIntoContainerView 
+		var element = this.rowElements_[i];
+		var elementPos = goog.style.getPageOffset(element);
+		if (elementPos.y + element.clientHeight >
+			containerPos.y + container.clientHeight + containerBorder.top)
+		{
+			// This row can't be completely displayed in the
+			// container. Don't add any more rows.
+			break;
+		}
+		
+		if (elementPos.y + element.clientHeight > 10000)
+		{
+			// emergency brakes!
+			break;
+		}
+	}
+};
+
+com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE =
 	com.qwirx.freebase.Freebase.FREEBASE_FIELD_PREFIX + 'grid_cell_type';
-com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW = 
+com.qwirx.grid.Grid.TD_ATTRIBUTE_ROW = 
 	com.qwirx.freebase.Freebase.FREEBASE_FIELD_PREFIX + 'grid_row';
-com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL = 
+com.qwirx.grid.Grid.TD_ATTRIBUTE_COL = 
 	com.qwirx.freebase.Freebase.FREEBASE_FIELD_PREFIX + 'grid_col';
 
 /**
  * Column is a class, not a static index, to allow renumbering and
  * dynamically numbering large grids quickly.
  */
-com.qwirx.freebase.Grid.Column = function(grid, caption)
+com.qwirx.grid.Grid.Column = function(grid, caption)
 {
 	this.grid_= grid;
 	var th = this.tableCell_ = grid.dom_.createDom('th', {}, caption);
-	th[com.qwirx.freebase.Grid.TD_ATTRIBUTE_TYPE] =
-		com.qwirx.freebase.Grid.CellType.COLUMN_HEAD;
-	th[com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL] = this;
+	th[com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE] =
+		com.qwirx.grid.Grid.CellType.COLUMN_HEAD;
+	th[com.qwirx.grid.Grid.TD_ATTRIBUTE_COL] = this;
 };
 
-com.qwirx.freebase.Grid.Column.prototype.getColumnIndex = function()
+com.qwirx.grid.Grid.Column.prototype.getColumnIndex = function()
 {
 	return goog.array.indexOf(this.grid_.columns_, this);
 };
@@ -96,7 +166,7 @@ com.qwirx.freebase.Grid.Column.prototype.getColumnIndex = function()
  * which normally displays a column number, and on which the user
  * can click to select the entire column.
  */
-com.qwirx.freebase.Grid.Column.prototype.getIdentityNode = function()
+com.qwirx.grid.Grid.Column.prototype.getIdentityNode = function()
 {
 	return this.tableCell_;
 };
@@ -105,14 +175,14 @@ com.qwirx.freebase.Grid.Column.prototype.getIdentityNode = function()
  * Row is a class, not a static index, to allow renumbering and
  * dynamically numbering large grids quickly.
  */
-com.qwirx.freebase.Grid.Row = function(grid, columns)
+com.qwirx.grid.Grid.Row = function(grid, columns)
 {
 	this.grid_= grid;
 	this.columns_ = columns;
 	var th = this.tableCell_ = grid.dom_.createDom('th', {}, '');
-	th[com.qwirx.freebase.Grid.TD_ATTRIBUTE_TYPE] =
-		com.qwirx.freebase.Grid.CellType.ROW_HEAD;
-	th[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW] = this;
+	th[com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE] =
+		com.qwirx.grid.Grid.CellType.ROW_HEAD;
+	th[com.qwirx.grid.Grid.TD_ATTRIBUTE_ROW] = this;
 };
 
 /**
@@ -120,25 +190,25 @@ com.qwirx.freebase.Grid.Row = function(grid, columns)
  * which normally displays a column number, and on which the user
  * can click to select the entire column.
  */
-com.qwirx.freebase.Grid.Row.prototype.getIdentityNode = function()
+com.qwirx.grid.Grid.Row.prototype.getIdentityNode = function()
 {
 	return this.tableCell_;
 };
 
-com.qwirx.freebase.Grid.Row.prototype.getRowIndex = function()
+com.qwirx.grid.Grid.Row.prototype.getRowIndex = function()
 {
 	return goog.array.indexOf(this.grid_.rows_, this);
 };
 
-com.qwirx.freebase.Grid.Row.prototype.getColumns = function()
+com.qwirx.grid.Grid.Row.prototype.getColumns = function()
 {
 	return this.columns_;
 };
 
-com.qwirx.freebase.Grid.prototype.insertRowAt = function(columns, newRowIndex)
+com.qwirx.grid.Grid.prototype.insertRowAt = function(columns, newRowIndex)
 {
 	var numCols = columns.length;
-	var row = new com.qwirx.freebase.Grid.Row(this, columns);
+	var row = new com.qwirx.grid.Grid.Row(this, columns);
 	this.rows_.splice(newRowIndex, 0, row);
 
 	var cells = [row.getIdentityNode()];
@@ -150,11 +220,11 @@ com.qwirx.freebase.Grid.prototype.insertRowAt = function(columns, newRowIndex)
 		var td = column.tableCell = this.dom_.createDom('td', cssClasses,
 			column.value);
 			
-		td[com.qwirx.freebase.Grid.TD_ATTRIBUTE_TYPE] =
-			com.qwirx.freebase.Grid.CellType.MIDDLE;
-		td[com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL] =
+		td[com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE] =
+			com.qwirx.grid.Grid.CellType.MIDDLE;
+		td[com.qwirx.grid.Grid.TD_ATTRIBUTE_COL] =
 			this.columns_[i];
-		td[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW] = row;
+		td[com.qwirx.grid.Grid.TD_ATTRIBUTE_ROW] = row;
 			
 		cells.push(td);
 	}
@@ -166,7 +236,7 @@ com.qwirx.freebase.Grid.prototype.insertRowAt = function(columns, newRowIndex)
 	this.rowElements_.splice(newRowIndex, 0, newTableRow);
 };
 
-com.qwirx.freebase.Grid.prototype.appendRow = function(columns)
+com.qwirx.grid.Grid.prototype.appendRow = function(columns)
 {
 	var newRowIndex = this.getRowCount();
 	this.insertRowAt(columns, newRowIndex);
@@ -177,7 +247,7 @@ com.qwirx.freebase.Grid.prototype.appendRow = function(columns)
  * Replace the existing contents of the existing row identified by
  * rowIndex with the new contents in the array of columns provided.
  */
-com.qwirx.freebase.Grid.prototype.updateRow = function(rowIndex, columns)
+com.qwirx.grid.Grid.prototype.updateRow = function(rowIndex, columns)
 {
 	var oldRow = this.rows_[rowIndex];
 	var numCols = columns.length;
@@ -191,29 +261,29 @@ com.qwirx.freebase.Grid.prototype.updateRow = function(rowIndex, columns)
 	}
 };
 
-com.qwirx.freebase.Grid.prototype.getRowCount = function()
+com.qwirx.grid.Grid.prototype.getRowCount = function()
 {
 	return this.rows_.length;
 };
 
-com.qwirx.freebase.Grid.prototype.getColumnCount = function()
+com.qwirx.grid.Grid.prototype.getColumnCount = function()
 {
 	return this.columns_.length;
 };
 
-com.qwirx.freebase.Grid.prototype.getRow = function(rowIndex)
+com.qwirx.grid.Grid.prototype.getRow = function(rowIndex)
 {
 	return this.rows_[rowIndex];
 };
 
-com.qwirx.freebase.Grid.CellType = {
+com.qwirx.grid.Grid.CellType = {
 	COLUMN_HEAD: "COLUMN_HEAD",
 	ROW_HEAD: "ROW_HEAD",
 	MIDDLE: "MIDDLE",
 	CORNER: "CORNER",
 };
 
-com.qwirx.freebase.Grid.DragMode = {
+com.qwirx.grid.Grid.DragMode = {
 	NONE: "NONE",
 	TEXT: "TEXT",
 	CELLS: "CELLS",
@@ -221,9 +291,9 @@ com.qwirx.freebase.Grid.DragMode = {
 	ROWS: "ROWS"
 };
 
-com.qwirx.freebase.Grid.prototype.handleMouseDown = function(e)
+com.qwirx.grid.Grid.prototype.handleMouseDown = function(e)
 {
-	com.qwirx.freebase.Grid.superClass_.handleMouseDown.call(this, e);
+	com.qwirx.grid.Grid.superClass_.handleMouseDown.call(this, e);
 	
 	// Remove existing highlight from rows. Highlighted columns
 	// will be reset when createHighlightRule_() is called below,
@@ -237,35 +307,35 @@ com.qwirx.freebase.Grid.prototype.handleMouseDown = function(e)
 		this.highlightRow(y, false);
 	}
 
-	var type = e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_TYPE];
-	var col = e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL];
-	var row = e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW];
+	var type = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE];
+	var col = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_COL];
+	var row = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_ROW];
 
 	this.drag.origin = e.target;
 	
-	if (type == com.qwirx.freebase.Grid.CellType.COLUMN_HEAD)
+	if (type == com.qwirx.grid.Grid.CellType.COLUMN_HEAD)
 	{
 		// clicked on a header cell
 		this.setAllowTextSelection(false);
-		this.dragMode_ = com.qwirx.freebase.Grid.DragMode.COLUMNS;
+		this.dragMode_ = com.qwirx.grid.Grid.DragMode.COLUMNS;
 		this.drag.x1 = this.drag.x2 = col.getColumnIndex();
 		this.drag.y1 = 0;
 		this.drag.y2 = this.getRowCount() - 1;
 	}
-	else if (type == com.qwirx.freebase.Grid.CellType.ROW_HEAD)
+	else if (type == com.qwirx.grid.Grid.CellType.ROW_HEAD)
 	{
 		// clicked on a header cell
 		this.setAllowTextSelection(false);
-		this.dragMode_ = com.qwirx.freebase.Grid.DragMode.ROWS;
+		this.dragMode_ = com.qwirx.grid.Grid.DragMode.ROWS;
 		this.drag.x1 = 0;
 		this.drag.x2 = this.getColumnCount() - 1;
 		this.drag.y1 = this.drag.y2 = row.getRowIndex();
 	}
-	else if (type == com.qwirx.freebase.Grid.CellType.MIDDLE)
+	else if (type == com.qwirx.grid.Grid.CellType.MIDDLE)
 	{
 		this.setAllowTextSelection(true);
 		this.setEditableCell(e.target);
-		this.dragMode_ = com.qwirx.freebase.Grid.DragMode.TEXT;
+		this.dragMode_ = com.qwirx.grid.Grid.DragMode.TEXT;
 		this.drag.x1 = this.drag.x2 = col.getColumnIndex();
 		this.drag.y1 = this.drag.y2 = row.getRowIndex();
 	}
@@ -287,7 +357,7 @@ com.qwirx.freebase.Grid.prototype.handleMouseDown = function(e)
  * O(r*c), because we don't have to visit every cell to apply
  * (or remove) a highlight style to it.
  */
-com.qwirx.freebase.Grid.prototype.createHighlightRule_ = function()
+com.qwirx.grid.Grid.prototype.createHighlightRule_ = function()
 {
 	var builder = new goog.string.StringBuffer();
 	
@@ -305,7 +375,7 @@ com.qwirx.freebase.Grid.prototype.createHighlightRule_ = function()
 	goog.style.setStyles(this.highlightStyles_, builder.toString());
 };
 
-com.qwirx.freebase.Grid.prototype.highlightRow = function(rowIndex, enable)
+com.qwirx.grid.Grid.prototype.highlightRow = function(rowIndex, enable)
 {
 	this.getRenderer().enableClassName(this.rowElements_[rowIndex],
 		'highlight', enable);
@@ -316,8 +386,8 @@ com.qwirx.freebase.Grid.prototype.highlightRow = function(rowIndex, enable)
  * movement event.
  * <p>
  * The way the selection is updated depends on the current
- * {@link com.qwirx.freebase.Grid.DragMode selection mode} and the
- * {@link com.qwirx.freebase.Grid.CellType cell type} of the cell
+ * {@link com.qwirx.grid.Grid.DragMode selection mode} and the
+ * {@link com.qwirx.grid.Grid.CellType cell type} of the cell
  * which the mouse entered.
  *
  * <dl>
@@ -347,14 +417,14 @@ com.qwirx.freebase.Grid.prototype.highlightRow = function(rowIndex, enable)
  * Cell type   |
  * </pre>
  */
-com.qwirx.freebase.Grid.prototype.handleDrag = function(e)
+com.qwirx.grid.Grid.prototype.handleDrag = function(e)
 {
 	// com.qwirx.freebase.log("dragging: " + e.type + ": " + e.target);
 
 	var be = e.browserEvent || e;
 
-	var cellType = e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_TYPE];
-	var cellTypes = com.qwirx.freebase.Grid.CellType;
+	var cellType = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE];
+	var cellTypes = com.qwirx.grid.Grid.CellType;
 	
 	if (!cellType)
 	{
@@ -363,9 +433,9 @@ com.qwirx.freebase.Grid.prototype.handleDrag = function(e)
 	}
 	
 	var dragMode = this.dragMode_;
-	var dragModes = com.qwirx.freebase.Grid.DragMode;
-	var col = e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL];
-	var row = e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW];
+	var dragModes = com.qwirx.grid.Grid.DragMode;
+	var col = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_COL];
+	var row = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_ROW];
 	
 	var newx2, newy2;
 
@@ -461,7 +531,7 @@ com.qwirx.freebase.Grid.prototype.handleDrag = function(e)
  * Makes a particular cell editable, cancelling any other that was
  * editable before.
  */
-com.qwirx.freebase.Grid.prototype.setEditableCell = function(cell)
+com.qwirx.grid.Grid.prototype.setEditableCell = function(cell)
 {
 	if (this.editableCellField_ &&
 		this.editableCellField_.getOriginalElement() != cell)
@@ -488,12 +558,12 @@ com.qwirx.freebase.Grid.prototype.setEditableCell = function(cell)
 	}
 };
 
-com.qwirx.freebase.Grid.prototype.logEvent = function(e)
+com.qwirx.grid.Grid.prototype.logEvent = function(e)
 {
-	var row = e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_ROW];
-	var col = e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_COL];
-	var cellType = e.target[com.qwirx.freebase.Grid.TD_ATTRIBUTE_TYPE];
-	var cellTypes = com.qwirx.freebase.Grid.CellType;
+	var row = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_ROW];
+	var col = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_COL];
+	var cellType = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE];
+	var cellTypes = com.qwirx.grid.Grid.CellType;
 	
 	if (cellType == cellTypes.ROW_HEAD ||
 		cellType == cellTypes.CORNER)
@@ -523,28 +593,28 @@ com.qwirx.freebase.Grid.prototype.logEvent = function(e)
  * Turns off cell selection by dragging, and allows text selection
  * again within the editable cell.
  */
-com.qwirx.freebase.Grid.prototype.handleMouseUp = function(e)
+com.qwirx.grid.Grid.prototype.handleMouseUp = function(e)
 {
 	this.logEvent(e);
-	com.qwirx.freebase.Grid.superClass_.handleMouseUp.call(this, e);
+	com.qwirx.grid.Grid.superClass_.handleMouseUp.call(this, e);
 
 	if (!this.isEnabled()) return;
-	this.dragMode_ = com.qwirx.freebase.Grid.DragMode.NONE;
+	this.dragMode_ = com.qwirx.grid.Grid.DragMode.NONE;
 	this.setAllowTextSelection(true);
 };
 
-com.qwirx.freebase.Grid.prototype.handleMouseOver = function(e)
+com.qwirx.grid.Grid.prototype.handleMouseOver = function(e)
 {
 	// this.logEvent(e);
-	com.qwirx.freebase.Grid.superClass_.handleMouseOver.call(this, e);
+	com.qwirx.grid.Grid.superClass_.handleMouseOver.call(this, e);
 
-	if (this.dragMode_ != com.qwirx.freebase.Grid.DragMode.NONE)
+	if (this.dragMode_ != com.qwirx.grid.Grid.DragMode.NONE)
 	{
 		// entering a different cell, update selection
 		this.handleDrag(e);
 	}
 	
-	if (this.dragMode_ == com.qwirx.freebase.Grid.DragMode.CELLS)
+	if (this.dragMode_ == com.qwirx.grid.Grid.DragMode.CELLS)
 	{
 		if (e.target == this.drag.origin)
 		{
@@ -552,7 +622,7 @@ com.qwirx.freebase.Grid.prototype.handleMouseOver = function(e)
 			// original selection, by just re-enabling text selection.
 
 			com.qwirx.freebase.log("restored selection, switching to TEXT mode");
-			this.dragMode_ = com.qwirx.freebase.Grid.DragMode.TEXT;
+			this.dragMode_ = com.qwirx.grid.Grid.DragMode.TEXT;
 			this.setAllowTextSelection(true);
 		}
 		else
@@ -564,19 +634,19 @@ com.qwirx.freebase.Grid.prototype.handleMouseOver = function(e)
 	}
 };
 
-com.qwirx.freebase.Grid.prototype.handleMouseOut = function(e)
+com.qwirx.grid.Grid.prototype.handleMouseOut = function(e)
 {
 	// this.logEvent(e);
-	com.qwirx.freebase.Grid.superClass_.handleMouseOut.call(this, e);
+	com.qwirx.grid.Grid.superClass_.handleMouseOut.call(this, e);
 
-	if (this.dragMode_ == com.qwirx.freebase.Grid.DragMode.TEXT &&
+	if (this.dragMode_ == com.qwirx.grid.Grid.DragMode.TEXT &&
 		e.target == this.drag.origin)
 	{
 		// leaving the cell where dragging started, disable text
 		// selection to avoid messy interaction with cell selection.
 
 		com.qwirx.freebase.log("saving selection, switching to CELLS mode");
-		this.dragMode_ = com.qwirx.freebase.Grid.DragMode.CELLS;
+		this.dragMode_ = com.qwirx.grid.Grid.DragMode.CELLS;
 		this.setAllowTextSelection(false);
 	}
 };
