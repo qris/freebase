@@ -531,22 +531,22 @@ com.qwirx.grid.Grid.prototype.handleDrag = function(e)
  * Makes a particular cell editable, cancelling any other that was
  * editable before.
  */
-com.qwirx.grid.Grid.prototype.setEditableCell = function(cell)
+com.qwirx.grid.Grid.prototype.setEditableCell = function(newCell)
 {
 	if (this.editableCellField_ &&
-		this.editableCellField_.getOriginalElement() != cell)
+		this.editableCellField_.getOriginalElement() != newCell)
 	{
 		this.editableCellField_.makeUneditable();
 		this.editableCellField_.dispose();
 		this.editableCellField_ = undefined;
 	}
 	
-	if (!this.editableCellField_)
+	if (newCell && !this.editableCellField_)
 	{
-		this.editableCellField_ = new goog.editor.SeamlessField(cell);
+		this.editableCellField_ = new goog.editor.SeamlessField(newCell);
 		this.editableCellField_.makeEditable();
-		cell.focus();
-		com.qwirx.freebase.log("set editable cell: " + cell);
+		newCell.focus();
+		com.qwirx.freebase.log("set editable cell: " + newCell);
 		
 		this.editableCellField_.addEventListener(
 			goog.events.EventType.MOUSEDOWN, 
@@ -624,6 +624,7 @@ com.qwirx.grid.Grid.prototype.handleMouseOver = function(e)
 			com.qwirx.freebase.log("restored selection, switching to TEXT mode");
 			this.dragMode_ = com.qwirx.grid.Grid.DragMode.TEXT;
 			this.setAllowTextSelection(true);
+			this.setEditableCell(e.target);
 		}
 		else
 		{
@@ -648,6 +649,7 @@ com.qwirx.grid.Grid.prototype.handleMouseOut = function(e)
 		com.qwirx.freebase.log("saving selection, switching to CELLS mode");
 		this.dragMode_ = com.qwirx.grid.Grid.DragMode.CELLS;
 		this.setAllowTextSelection(false);
+		this.setEditableCell(null);
 	}
 };
 

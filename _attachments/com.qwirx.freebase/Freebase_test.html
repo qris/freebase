@@ -989,10 +989,9 @@ function testGridHighlightModeCells()
 		getCell(grid, 0, 0));
 	assertSelection(grid, 'Selection should have changed with click',
 		0, 0, 0, 0);
-		
-	// simulate MOUSEOUT to change the drag mode from TEXT to CELLS
 	assertEquals(com.qwirx.grid.Grid.DragMode.TEXT, grid.dragMode_);
 	assertEquals(true, grid.isAllowTextSelection());
+		
 	// MOUSEOUT on a different cell is spurious and doesn't change mode
 	sendFakeMouseEvent(goog.events.EventType.MOUSEOUT, 0,
 		getCell(grid, 1, 0));
@@ -1002,11 +1001,18 @@ function testGridHighlightModeCells()
 		getCell(grid, 0, 1));
 	assertEquals(com.qwirx.grid.Grid.DragMode.TEXT, grid.dragMode_);
 	assertEquals(true, grid.isAllowTextSelection());
+	assertEquals("Original cell should still be editable",
+		"true", getCell(grid, 0, 0).contentEditable);
+
+	// simulate MOUSEOUT to change the drag mode from TEXT to CELLS
 	// this is the original starting cell, and leaving it does change mode
 	sendFakeMouseEvent(goog.events.EventType.MOUSEOUT, 0,
 		getCell(grid, 0, 0));
 	assertEquals(com.qwirx.grid.Grid.DragMode.CELLS, grid.dragMode_);
 	assertEquals(false, grid.isAllowTextSelection());
+	assertEquals("Original cell should no longer be editable",
+		"inherit", getCell(grid, 0, 0).contentEditable);
+
 	// entry into another cell has no effect
 	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0,
 		getCell(grid, 1, 1));
@@ -1017,11 +1023,16 @@ function testGridHighlightModeCells()
 		getCell(grid, 0, 0));
 	assertEquals(com.qwirx.grid.Grid.DragMode.TEXT, grid.dragMode_);
 	assertEquals(true, grid.isAllowTextSelection());
+	assertEquals("Original cell should be editable again",
+		"true", getCell(grid, 0, 0).contentEditable);
+
 	// re-exit from starting cell switches mode back to CELLS
 	sendFakeMouseEvent(goog.events.EventType.MOUSEOUT, 0,
 		getCell(grid, 0, 0));
 	assertEquals(com.qwirx.grid.Grid.DragMode.CELLS, grid.dragMode_);
 	assertEquals(false, grid.isAllowTextSelection());
+	assertEquals("Original cell should no longer be editable",
+		"inherit", getCell(grid, 0, 0).contentEditable);
 
 	sendFakeMouseEvent(goog.events.EventType.MOUSEOVER, 0,
 		getCell(grid, 0, 1));
