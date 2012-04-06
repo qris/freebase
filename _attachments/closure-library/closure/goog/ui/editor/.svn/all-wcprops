@@ -1,43 +1,49 @@
 K 25
 svn:wc:ra_dav:version-url
-V 46
-/svn/!svn/ver/948/trunk/closure/goog/ui/editor
+V 47
+/svn/!svn/ver/1565/trunk/closure/goog/ui/editor
 END
 linkdialog_test.html
 K 25
 svn:wc:ra_dav:version-url
-V 67
-/svn/!svn/ver/850/trunk/closure/goog/ui/editor/linkdialog_test.html
+V 68
+/svn/!svn/ver/1565/trunk/closure/goog/ui/editor/linkdialog_test.html
 END
 toolbarcontroller.js
 K 25
 svn:wc:ra_dav:version-url
-V 67
-/svn/!svn/ver/850/trunk/closure/goog/ui/editor/toolbarcontroller.js
+V 68
+/svn/!svn/ver/1472/trunk/closure/goog/ui/editor/toolbarcontroller.js
 END
 defaulttoolbar.js
 K 25
 svn:wc:ra_dav:version-url
-V 64
-/svn/!svn/ver/948/trunk/closure/goog/ui/editor/defaulttoolbar.js
+V 65
+/svn/!svn/ver/1472/trunk/closure/goog/ui/editor/defaulttoolbar.js
 END
 messages.js
 K 25
 svn:wc:ra_dav:version-url
-V 58
-/svn/!svn/ver/850/trunk/closure/goog/ui/editor/messages.js
+V 59
+/svn/!svn/ver/1292/trunk/closure/goog/ui/editor/messages.js
+END
+equationeditorokevent.js
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/1236/trunk/closure/goog/ui/editor/equationeditorokevent.js
 END
 tabpane.js
 K 25
 svn:wc:ra_dav:version-url
-V 57
-/svn/!svn/ver/850/trunk/closure/goog/ui/editor/tabpane.js
+V 58
+/svn/!svn/ver/1302/trunk/closure/goog/ui/editor/tabpane.js
 END
 toolbarfactory.js
 K 25
 svn:wc:ra_dav:version-url
-V 64
-/svn/!svn/ver/850/trunk/closure/goog/ui/editor/toolbarfactory.js
+V 65
+/svn/!svn/ver/1472/trunk/closure/goog/ui/editor/toolbarfactory.js
 END
 abstractdialog_test.html
 K 25
@@ -48,14 +54,20 @@ END
 bubble.js
 K 25
 svn:wc:ra_dav:version-url
-V 56
-/svn/!svn/ver/850/trunk/closure/goog/ui/editor/bubble.js
+V 57
+/svn/!svn/ver/1302/trunk/closure/goog/ui/editor/bubble.js
+END
+equationeditordialog.js
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/1302/trunk/closure/goog/ui/editor/equationeditordialog.js
 END
 linkdialog.js
 K 25
 svn:wc:ra_dav:version-url
-V 60
-/svn/!svn/ver/850/trunk/closure/goog/ui/editor/linkdialog.js
+V 61
+/svn/!svn/ver/1565/trunk/closure/goog/ui/editor/linkdialog.js
 END
 toolbarfactory_test.html
 K 25

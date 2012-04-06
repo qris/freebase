@@ -1,15 +1,15 @@
 10
 
 dir
-1205
+1581
 http://closure-library.googlecode.com/svn/trunk/closure/goog/useragent
 http://closure-library.googlecode.com/svn
 
 
 
-2011-07-23T01:45:10.000000Z
-1147
-joonlee@google.com
+2012-01-28T02:22:00.000000Z
+1552
+brenneman@google.com
 
 
 
@@ -134,11 +134,11 @@ file
 
 
 
-2011-06-19T11:08:56.000000Z
-f73323f105b7ed0310fcfc6f9722b7c5
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:46.911445Z
+06b18fdfff3ff05db1a3e65d632b235f
+2011-12-13T22:20:28.000000Z
+1472
+ccalabro@google.com
 has-props
 
 
@@ -160,7 +160,7 @@ has-props
 
 
 
-2736
+2779
 
 product.js
 file
@@ -230,17 +230,17 @@ has-props
 
 3875
 
-flash_test.html
+platform.js
 file
 
 
 
 
-2011-06-19T11:08:56.000000Z
-0b12a7a5618f195a32d6528d0db77088
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2011-08-03T23:09:20.867150Z
+74460c752bbedb834696b3c47adf9fab
+2011-07-23T01:45:10.000000Z
+1147
+joonlee@google.com
 has-props
 
 
@@ -262,41 +262,7 @@ has-props
 
 
 
-977
-
-useragent_test.html
-file
-
-
-
-
-2011-06-19T11:08:56.000000Z
-c68e600c916a3837ad2e25084acf1d57
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-10935
+2271
 
 adobereader_test.html
 file
@@ -332,17 +298,17 @@ has-props
 
 990
 
-platform.js
+useragent_test.html
 file
 
 
 
 
-2011-08-03T23:09:20.867150Z
-74460c752bbedb834696b3c47adf9fab
-2011-07-23T01:45:10.000000Z
-1147
-joonlee@google.com
+2011-06-19T11:08:56.000000Z
+c68e600c916a3837ad2e25084acf1d57
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
 has-props
 
 
@@ -364,7 +330,109 @@ has-props
 
 
 
-2271
+10935
+
+flash_test.html
+file
+
+
+
+
+2011-06-19T11:08:56.000000Z
+0b12a7a5618f195a32d6528d0db77088
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+977
+
+flash.js
+file
+
+
+
+
+2012-02-15T03:42:46.907445Z
+28e73d3f84f40271b4a1ca28d25b7093
+2012-01-27T23:46:49.000000Z
+1551
+nicksnyder@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4644
+
+useragent.js
+file
+
+
+
+
+2012-02-15T03:42:46.911445Z
+6e0c4001e0ba8338942c62449de07a95
+2012-01-28T02:22:00.000000Z
+1552
+brenneman@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+14332
 
 adobereader.js
 file
@@ -400,85 +468,17 @@ has-props
 
 2755
 
-useragent.js
-file
-
-
-
-
-2011-06-19T11:08:56.000000Z
-a0beb73fd7d356ac26e26a030602c6e6
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-14110
-
-flash.js
-file
-
-
-
-
-2011-06-19T11:08:56.000000Z
-9922b0e573f06fc54c0bdeb9e0e47c57
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3419
-
 picasa.js
 file
 
 
 
 
-2011-06-19T11:08:56.000000Z
-8c8693355c6e23f9aa4705725fdb52ff
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:46.911445Z
+877eca3ba65a61dd232bde48e97f006c
+2012-01-04T13:41:02.000000Z
+1499
+dskloet@google.com
 has-props
 
 
@@ -500,7 +500,7 @@ has-props
 
 
 
-3902
+3952
 
 iphoto.js
 file
@@ -508,11 +508,11 @@ file
 
 
 
-2011-06-19T11:08:56.000000Z
-e5f9a8b0f7f5dd9767b87c8eb712dc1a
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:46.911445Z
+55678578eb3c2ab17b6f02b54d652519
+2012-01-04T13:41:02.000000Z
+1499
+dskloet@google.com
 has-props
 
 
@@ -534,5 +534,5 @@ has-props
 
 
 
-2489
+2539
 

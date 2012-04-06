@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
-V 47
-/svn/!svn/ver/850/trunk/closure/goog/datasource
+V 48
+/svn/!svn/ver/1575/trunk/closure/goog/datasource
 END
 datamanager.js
 K 25
@@ -30,32 +30,32 @@ END
 jsdatasource.js
 K 25
 svn:wc:ra_dav:version-url
-V 63
-/svn/!svn/ver/850/trunk/closure/goog/datasource/jsdatasource.js
+V 64
+/svn/!svn/ver/1472/trunk/closure/goog/datasource/jsdatasource.js
 END
 jsxmlhttpdatasource.js
 K 25
 svn:wc:ra_dav:version-url
-V 70
-/svn/!svn/ver/850/trunk/closure/goog/datasource/jsxmlhttpdatasource.js
+V 71
+/svn/!svn/ver/1301/trunk/closure/goog/datasource/jsxmlhttpdatasource.js
 END
 datasource.js
 K 25
 svn:wc:ra_dav:version-url
-V 61
-/svn/!svn/ver/850/trunk/closure/goog/datasource/datasource.js
+V 62
+/svn/!svn/ver/1575/trunk/closure/goog/datasource/datasource.js
 END
 xmldatasource.js
 K 25
 svn:wc:ra_dav:version-url
-V 64
-/svn/!svn/ver/850/trunk/closure/goog/datasource/xmldatasource.js
+V 65
+/svn/!svn/ver/1472/trunk/closure/goog/datasource/xmldatasource.js
 END
 fastdatanode.js
 K 25
 svn:wc:ra_dav:version-url
-V 63
-/svn/!svn/ver/850/trunk/closure/goog/datasource/fastdatanode.js
+V 64
+/svn/!svn/ver/1472/trunk/closure/goog/datasource/fastdatanode.js
 END
 expr.js
 K 25

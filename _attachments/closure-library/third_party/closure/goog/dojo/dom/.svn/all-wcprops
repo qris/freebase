@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
-V 57
-/svn/!svn/ver/914/trunk/third_party/closure/goog/dojo/dom
+V 58
+/svn/!svn/ver/1536/trunk/third_party/closure/goog/dojo/dom
 END
 query_test.js
 K 25
@@ -12,12 +12,12 @@ END
 query.js
 K 25
 svn:wc:ra_dav:version-url
-V 66
-/svn/!svn/ver/850/trunk/third_party/closure/goog/dojo/dom/query.js
+V 67
+/svn/!svn/ver/1536/trunk/third_party/closure/goog/dojo/dom/query.js
 END
 query_test.html
 K 25
 svn:wc:ra_dav:version-url
-V 73
-/svn/!svn/ver/850/trunk/third_party/closure/goog/dojo/dom/query_test.html
+V 74
+/svn/!svn/ver/1434/trunk/third_party/closure/goog/dojo/dom/query_test.html
 END

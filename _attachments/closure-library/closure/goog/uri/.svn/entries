@@ -1,15 +1,15 @@
 10
 
 dir
-1205
+1581
 http://closure-library.googlecode.com/svn/trunk/closure/goog/uri
 http://closure-library.googlecode.com/svn
 
 
 
-2011-07-07T22:59:13.000000Z
-1106
-zunger@google.com
+2012-01-19T20:36:58.000000Z
+1529
+gboyer@google.com
 
 
 
@@ -66,11 +66,11 @@ file
 
 
 
-2011-08-03T23:09:20.883150Z
-64bac2b33e1112b53ade8857a6ed5e28
-2011-07-07T22:59:13.000000Z
-1106
-zunger@google.com
+2012-02-15T03:42:47.259445Z
+86cb7b3a72279ace8635f951649514e4
+2012-01-18T19:09:20.000000Z
+1527
+nicksantos@google.com
 has-props
 
 
@@ -92,7 +92,7 @@ has-props
 
 
 
-20137
+20277
 
 uri.js
 file
@@ -100,11 +100,11 @@ file
 
 
 
-2011-08-03T23:09:20.883150Z
-161e4192e944f58a15d07ecf9ff5c251
-2011-06-30T22:03:20.000000Z
-1085
-erikwright@google.com
+2012-02-15T03:42:47.259445Z
+5ea46a6e0cdc1375b0dea5a544d5fc20
+2011-12-13T22:20:28.000000Z
+1472
+ccalabro@google.com
 has-props
 
 
@@ -126,7 +126,7 @@ has-props
 
 
 
-42798
+42799
 
 utils.js
 file
@@ -134,11 +134,11 @@ file
 
 
 
-2011-08-03T23:09:20.883150Z
-6cad34ebcf4c9be7802b50d80bbe70ad
-2011-06-21T09:04:53.000000Z
-1061
-nicksay@google.com
+2012-02-15T03:42:47.259445Z
+efd0456b7001c6be52095bc0950df9e8
+2012-01-19T20:36:58.000000Z
+1529
+gboyer@google.com
 has-props
 
 
@@ -160,5 +160,5 @@ has-props
 
 
 
-32745
+33706
 

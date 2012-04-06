@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
 V 43
-/svn/!svn/ver/1087/trunk/closure/goog/array
+/svn/!svn/ver/1472/trunk/closure/goog/array
 END
 array_test.html
 K 25
@@ -13,5 +13,5 @@ array.js
 K 25
 svn:wc:ra_dav:version-url
 V 52
-/svn/!svn/ver/1087/trunk/closure/goog/array/array.js
+/svn/!svn/ver/1472/trunk/closure/goog/array/array.js
 END

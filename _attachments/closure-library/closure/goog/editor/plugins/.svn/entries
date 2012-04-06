@@ -1,15 +1,15 @@
 10
 
 dir
-1205
+1581
 http://closure-library.googlecode.com/svn/trunk/closure/goog/editor/plugins
 http://closure-library.googlecode.com/svn
 
 
 
-2011-07-21T23:12:40.000000Z
-1143
-bills@google.com
+2012-02-06T23:48:39.000000Z
+1565
+mkannan@google.com
 
 
 
@@ -66,11 +66,11 @@ file
 
 
 
-2011-06-19T11:10:05.000000Z
-264f77052217545e766bf7a71eb06703
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:53.179444Z
+6f0b642c60da9ccb3eb1163d56aed86d
+2011-10-12T17:53:53.000000Z
+1335
+dhawkey@google.com
 has-props
 
 
@@ -92,7 +92,75 @@ has-props
 
 
 
-14888
+16383
+
+equationeditorbubble.js
+file
+
+
+
+
+2012-02-15T03:42:53.175444Z
+8daa6f52e5b8531870a22086a26f79aa
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4145
+
+linkshortcutplugin.js
+file
+
+
+
+
+2012-02-15T03:42:53.175444Z
+5903fa66dcc65fe5fa2c229ae4d59d5e
+2011-12-17T00:27:15.000000Z
+1487
+mariakhomenko@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1723
 
 basictextformatter.js
 file
@@ -100,11 +168,11 @@ file
 
 
 
-2011-06-19T11:10:05.000000Z
-ca05c440f01f83e1a41881b4db40eb8b
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:53.179444Z
+4a0d715810e4efd3116d271c322df59a
+2011-11-12T00:28:26.000000Z
+1385
+nicksantos@google.com
 has-props
 
 
@@ -126,7 +194,7 @@ has-props
 
 
 
-64284
+64276
 
 equation
 dir
@@ -137,11 +205,11 @@ file
 
 
 
-2011-08-03T23:09:22.339150Z
-30f31b6a351d880205d1934412610423
-2011-07-21T23:12:40.000000Z
-1143
-bills@google.com
+2012-02-15T03:42:53.191444Z
+8ac86c60707a35ec9f4e02e62e22defc
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
 has-props
 
 
@@ -163,7 +231,7 @@ has-props
 
 
 
-10342
+6396
 
 undoredo.js
 file
@@ -171,11 +239,11 @@ file
 
 
 
-2011-06-19T11:10:05.000000Z
-a46fafed22fad9f427d814c8b63d6050
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:53.191444Z
+5a68b4389dea576250932ccc44302dd9
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
 has-props
 
 
@@ -197,7 +265,7 @@ has-props
 
 
 
-33048
+33030
 
 undoredostate.js
 file
@@ -239,11 +307,11 @@ file
 
 
 
-2011-06-19T11:10:05.000000Z
-a0db44481817ba6bdb8b9673bd897168
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:53.195444Z
+6973f563901769c756d08a2cdf63c474
+2012-02-06T23:48:39.000000Z
+1565
+mkannan@google.com
 has-props
 
 
@@ -265,7 +333,7 @@ has-props
 
 
 
-12982
+19419
 
 abstractbubbleplugin_test.html
 file
@@ -409,11 +477,11 @@ file
 
 
 
-2011-06-19T11:10:05.000000Z
-b371ca59e923693686a64745d999abfb
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:53.195444Z
+26743a54b92c46257d5c4242c45ad1a1
+2012-01-30T11:03:40.000000Z
+1553
+kiyono@google.com
 has-props
 
 
@@ -435,7 +503,7 @@ has-props
 
 
 
-16002
+18785
 
 linkdialogplugin.js
 file
@@ -443,11 +511,11 @@ file
 
 
 
-2011-06-19T11:10:05.000000Z
-79c42f1ad4392cb35fd4bd554e0524c8
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:53.195444Z
+24c9503bdcc604a6b4b8f84dd65677c4
+2012-02-06T23:48:39.000000Z
+1565
+mkannan@google.com
 has-props
 
 
@@ -469,7 +537,7 @@ has-props
 
 
 
-6804
+12914
 
 abstractbubbleplugin.js
 file
@@ -477,11 +545,11 @@ file
 
 
 
-2011-06-19T11:10:05.000000Z
-1395af29678f6f6a07ef7cd706eab098
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:53.199444Z
+bb31c40b82d15b6aae916aa4ca54fcc9
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
 has-props
 
 
@@ -503,7 +571,7 @@ has-props
 
 
 
-16750
+16738
 
 listtabhandler.js
 file
@@ -511,11 +579,11 @@ file
 
 
 
-2011-06-19T11:10:05.000000Z
-0b3ce34fc47b94773d6432eb67a798ea
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:53.199444Z
+997e70ebeaa42f85e3ea69c82e30bcf7
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
 has-props
 
 
@@ -537,7 +605,7 @@ has-props
 
 
 
-2034
+2030
 
 undoredomanager_test.html
 file
@@ -573,16 +641,50 @@ has-props
 
 11493
 
+abstractdialogplugin.js
+file
+
+
+
+
+2012-02-15T03:42:53.199444Z
+bd828eaba454be3db04148f162d28449
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+11419
+
 equationeditorplugin_test.html
 file
 
 
 
 
-2011-08-03T23:09:22.339150Z
-5956492e43e39bcb417a5f306cd9fbd5
-2011-07-21T23:12:40.000000Z
-1143
+2012-02-15T03:42:53.203444Z
+ec8cd03d539ae1834cb1e557ac58c9ee
+2011-08-19T16:22:39.000000Z
+1236
 bills@google.com
 has-props
 
@@ -605,41 +707,7 @@ has-props
 
 
 
-4112
-
-abstractdialogplugin.js
-file
-
-
-
-
-2011-06-19T11:10:05.000000Z
-3a2d86fdaf621297383e230d5dee0156
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-11423
+4064
 
 headerformatter_test.html
 file
@@ -681,11 +749,11 @@ file
 
 
 
-2011-06-19T11:10:05.000000Z
-3378d7b8713e84a41c76a6f2430f12c7
-2011-05-03T14:29:29.000000Z
-901
-bloom@google.com
+2012-02-15T03:42:53.203444Z
+0f95169887482ee14ab41bd885eb9088
+2012-01-30T11:03:40.000000Z
+1553
+kiyono@google.com
 has-props
 
 
@@ -707,7 +775,7 @@ has-props
 
 
 
-26805
+27040
 
 undoredo_test.html
 file
@@ -749,11 +817,11 @@ file
 
 
 
-2011-06-19T11:10:05.000000Z
-adf308e768a9fe63d99e36add4bf9831
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:53.207444Z
+8b027ebded20c9d567f52ce6294afbc0
+2011-12-17T00:27:15.000000Z
+1487
+mariakhomenko@google.com
 has-props
 
 
@@ -775,7 +843,7 @@ has-props
 
 
 
-14264
+17247
 
 undoredomanager.js
 file
@@ -817,11 +885,11 @@ file
 
 
 
-2011-06-19T11:10:05.000000Z
-7dc114a809e131b25df7d75c9b289b15
-2011-05-03T14:29:29.000000Z
-901
-bloom@google.com
+2012-02-15T03:42:53.207444Z
+7e4be2cbc462ed289bfde6b1e434b416
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
 has-props
 
 
@@ -843,7 +911,7 @@ has-props
 
 
 
-27416
+27410
 
 headerformatter.js
 file
@@ -851,11 +919,11 @@ file
 
 
 
-2011-06-19T11:10:05.000000Z
-b129125815ec6ab11a1dab80d66ce6d1
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:53.207444Z
+8fd83d2472a8b7c7b0a44d9821f8ba8e
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
 has-props
 
 
@@ -877,41 +945,7 @@ has-props
 
 
 
-2643
-
-abstracttabhandler_test.html
-file
-
-
-
-
-2011-06-19T11:10:05.000000Z
-d6f1b22c4a4ba01d81de2724aa515660
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2714
+2639
 
 removeformatting_test.html
 file
@@ -946,6 +980,40 @@ has-props
 
 
 35136
+
+abstracttabhandler_test.html
+file
+
+
+
+
+2011-06-19T11:10:05.000000Z
+d6f1b22c4a4ba01d81de2724aa515660
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2714
 
 loremipsum_test.html
 file
@@ -1055,11 +1123,11 @@ file
 
 
 
-2011-06-19T11:10:05.000000Z
-3bb54162397c3a5217ce11ddbe7a302f
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:53.211444Z
+9bca69d562b5ab095636db728effb9e9
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
 has-props
 
 
@@ -1081,7 +1149,7 @@ has-props
 
 
 
-28608
+28600
 
 abstracttabhandler.js
 file
@@ -1089,11 +1157,11 @@ file
 
 
 
-2011-06-19T11:10:05.000000Z
-60bf1d1b46e86ed00d65e6a44f37da41
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:53.211444Z
+1af7002c8cb26aa0af54d3ddb666e9f1
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
 has-props
 
 
@@ -1115,7 +1183,7 @@ has-props
 
 
 
-2591
+2587
 
 loremipsum.js
 file
@@ -1123,11 +1191,11 @@ file
 
 
 
-2011-06-19T11:10:05.000000Z
-f8143085a53b391f7bc961757e3e87da
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:53.211444Z
+12198a87b1db46685ef42d9ba5a286b9
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
 has-props
 
 
@@ -1149,7 +1217,7 @@ has-props
 
 
 
-5920
+5914
 
 tableeditor.js
 file
@@ -1157,11 +1225,11 @@ file
 
 
 
-2011-06-19T11:10:05.000000Z
-3b32ec841defc5e9c7f70c7245aa0b18
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:53.215444Z
+9ef89ba1cf52cb6075fa2261b3e7b526
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
 has-props
 
 
@@ -1183,7 +1251,7 @@ has-props
 
 
 
-17006
+15936
 
 blockquote_test.html
 file
@@ -1191,11 +1259,11 @@ file
 
 
 
-2011-06-19T11:10:05.000000Z
-c786189b7312c46c8fd6614509baf77f
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:53.215444Z
+2ae6bc9a8df3c6c6d8af93cd838c5441
+2011-10-12T17:53:53.000000Z
+1335
+dhawkey@google.com
 has-props
 
 
@@ -1217,7 +1285,41 @@ has-props
 
 
 
-4113
+6699
+
+linkshortcutplugin_test.html
+file
+
+
+
+
+2012-02-15T03:42:53.215444Z
+b316565905c5a39b6d8e20c1037c9c74
+2011-12-17T00:27:15.000000Z
+1487
+mariakhomenko@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2447
 
 emoticons.js
 file
@@ -1225,11 +1327,11 @@ file
 
 
 
-2011-06-19T11:10:05.000000Z
-9db30230ee807be578d041503d19c1f6
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:53.215444Z
+44e92ac17b15bacbdd25dead37549769
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
 has-props
 
 
@@ -1251,7 +1353,7 @@ has-props
 
 
 
-2493
+2489
 
 linkbubble_test.html
 file
@@ -1259,11 +1361,11 @@ file
 
 
 
-2011-06-19T11:10:05.000000Z
-b76fd15daceacc1224f679726b0e1d5c
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:53.215444Z
+3af47b1fd552f19540f7c9a3e5fbb273
+2011-12-01T01:12:36.000000Z
+1438
+danielwh@google.com
 has-props
 
 
@@ -1285,7 +1387,7 @@ has-props
 
 
 
-8793
+10757
 
 basictextformatter_test.html
 file
@@ -1361,11 +1463,11 @@ file
 
 
 
-2011-06-19T11:10:05.000000Z
-12a6e205d6bc89ada508b6a30ccbd61b
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:53.215444Z
+5c31bb0997994320dd229c721ca9e90d
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
 has-props
 
 
@@ -1387,5 +1489,5 @@ has-props
 
 
 
-3385
+3381
 

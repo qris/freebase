@@ -1,19 +1,19 @@
 K 25
 svn:wc:ra_dav:version-url
-V 49
-/svn/!svn/ver/850/trunk/closure/goog/ui/style/app
+V 50
+/svn/!svn/ver/1472/trunk/closure/goog/ui/style/app
 END
 primaryactionbuttonrenderer.js
 K 25
 svn:wc:ra_dav:version-url
-V 80
-/svn/!svn/ver/850/trunk/closure/goog/ui/style/app/primaryactionbuttonrenderer.js
+V 81
+/svn/!svn/ver/1302/trunk/closure/goog/ui/style/app/primaryactionbuttonrenderer.js
 END
 menubuttonrenderer.js
 K 25
 svn:wc:ra_dav:version-url
-V 71
-/svn/!svn/ver/850/trunk/closure/goog/ui/style/app/menubuttonrenderer.js
+V 72
+/svn/!svn/ver/1472/trunk/closure/goog/ui/style/app/menubuttonrenderer.js
 END
 buttonrenderer_test.html
 K 25
@@ -36,6 +36,6 @@ END
 buttonrenderer.js
 K 25
 svn:wc:ra_dav:version-url
-V 67
-/svn/!svn/ver/850/trunk/closure/goog/ui/style/app/buttonrenderer.js
+V 68
+/svn/!svn/ver/1472/trunk/closure/goog/ui/style/app/buttonrenderer.js
 END

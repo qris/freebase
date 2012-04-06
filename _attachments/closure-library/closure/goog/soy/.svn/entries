@@ -1,15 +1,15 @@
 10
 
 dir
-1205
+1581
 http://closure-library.googlecode.com/svn/trunk/closure/goog/soy
 http://closure-library.googlecode.com/svn
 
 
 
-2011-06-02T18:12:20.000000Z
-993
-chrishenry@google.com
+2011-12-19T23:47:22.000000Z
+1490
+ecattell@google.com
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2011-06-19T11:10:21.000000Z
-b1e213a3041222aaa5d17130839652c7
-2011-06-02T01:29:12.000000Z
-992
-chrishenry@google.com
+2012-02-15T03:42:55.211444Z
+a77962608939368b816110695d143d21
+2011-12-19T23:47:22.000000Z
+1490
+ecattell@google.com
 has-props
 
 
@@ -58,7 +58,7 @@ has-props
 
 
 
-5068
+5604
 
 soy_test.js
 file

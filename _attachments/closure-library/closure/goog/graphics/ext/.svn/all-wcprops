@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
 V 50
-/svn/!svn/ver/1024/trunk/closure/goog/graphics/ext
+/svn/!svn/ver/1302/trunk/closure/goog/graphics/ext
 END
 rectangle.js
 K 25
@@ -13,7 +13,7 @@ element.js
 K 25
 svn:wc:ra_dav:version-url
 V 61
-/svn/!svn/ver/1024/trunk/closure/goog/graphics/ext/element.js
+/svn/!svn/ver/1302/trunk/closure/goog/graphics/ext/element.js
 END
 coordinates.js
 K 25

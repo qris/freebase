@@ -1,15 +1,15 @@
 10
 
 dir
-1205
+1581
 http://closure-library.googlecode.com/svn/trunk/closure/goog/fx
 http://closure-library.googlecode.com/svn
 
 
 
-2011-08-03T16:19:23.000000Z
-1186
-pweis@google.com
+2012-01-26T22:06:30.000000Z
+1545
+ipi@google.com
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2011-08-03T23:09:21.551150Z
-e5dcd4bdbe3f4c842805c533832aa61d
-2011-07-15T18:24:58.000000Z
-1129
-mcudich@google.com
+2012-02-15T03:42:49.795445Z
+b1ba1fd91daaf44cfaa64b0a5ddc6f88
+2011-12-13T22:20:28.000000Z
+1472
+ccalabro@google.com
 has-props
 
 
@@ -58,19 +58,19 @@ has-props
 
 
 
-5109
+2441
 
-dragdropgroup_test.html
+cssspriteanimation_test.html
 file
 
 
 
 
-2011-06-19T11:09:34.000000Z
-d60db7a502844db9b0edc8815e396055
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:49.799445Z
+c01c6977478ccd382f30bd9297c3d829
+2011-12-13T22:20:28.000000Z
+1472
+ccalabro@google.com
 has-props
 
 
@@ -92,7 +92,7 @@ has-props
 
 
 
-5673
+2896
 
 easing.js
 file
@@ -128,14 +128,14 @@ has-props
 
 1377
 
-cssspriteanimation_test.html
+dragdropgroup_test.html
 file
 
 
 
 
 2011-06-19T11:09:34.000000Z
-3207a625a5dc1c48f6b8592694f1f317
+d60db7a502844db9b0edc8815e396055
 2011-04-12T20:35:47.000000Z
 850
 diegosalas@google.com
@@ -160,19 +160,19 @@ has-props
 
 
 
-2854
+5673
 
-dragger.js
+animation_test.html
 file
 
 
 
 
-2011-08-03T23:09:21.555151Z
-f4c937bb4edb2a57262c48e833a052e8
-2011-08-02T10:01:22.000000Z
-1182
-mkaeser@google.com
+2012-02-15T03:42:49.795445Z
+cdd9dcc46d52e0ea5c2ecd8b9068755b
+2011-10-03T10:41:25.000000Z
+1316
+steineldar@google.com
 has-props
 
 
@@ -194,7 +194,146 @@ has-props
 
 
 
-21098
+2836
+
+anim
+dir
+
+dragger.js
+file
+
+
+
+
+2012-02-15T03:42:49.799445Z
+1b1d95f3d14760e8a6300878073216c7
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+21096
+
+animationqueue_test.html
+file
+
+
+
+
+2012-02-15T03:42:49.799445Z
+497a8852ae8b982dd3e83821f3c3499a
+2011-11-02T11:16:27.000000Z
+1365
+steineldar@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9182
+
+fx.js
+file
+
+
+
+
+2012-02-15T03:42:49.803445Z
+0c126fc1b627defb8554ee01bf5338b4
+2012-01-04T13:41:02.000000Z
+1499
+dskloet@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1213
+
+abstractdragdrop_test.html
+file
+
+
+
+
+2012-02-15T03:42:49.803445Z
+aa28c027debe7cde4ca8d9ffc17405b6
+2012-01-18T17:19:59.000000Z
+1525
+klevy@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+21447
 
 draglistgroup_test.html
 file
@@ -230,17 +369,17 @@ has-props
 
 12817
 
-abstractdragdrop_test.html
+animation.js
 file
 
 
 
 
-2011-08-03T23:09:21.559151Z
-74f6e33cbf904fc4fdeeb71908c0021a
-2011-08-03T16:19:23.000000Z
-1186
-pweis@google.com
+2012-02-15T03:42:49.807445Z
+7dea940c079f22799098abc426da5fae
+2011-12-13T22:20:28.000000Z
+1472
+ccalabro@google.com
 has-props
 
 
@@ -262,109 +401,7 @@ has-props
 
 
 
-17817
-
-fx.js
-file
-
-
-
-
-2011-08-03T23:09:21.559151Z
-7b821b69f967ee242d29f2de98d49c18
-2011-06-29T01:41:51.000000Z
-1075
-chrishenry@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1171
-
-dom.js
-file
-
-
-
-
-2011-08-03T23:09:21.563150Z
-233cad5d6a60ebb1fd0741ae4bb18fe7
-2011-06-29T01:41:51.000000Z
-1075
-chrishenry@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-19212
-
-cssspriteanimation.js
-file
-
-
-
-
-2011-06-19T11:09:34.000000Z
-453f41395b46469e6be7837c1563b679
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3960
+11328
 
 dragdropgroup.js
 file
@@ -372,11 +409,11 @@ file
 
 
 
-2011-06-19T11:09:34.000000Z
-a9fc78229aa139774ee64e14f243e813
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:49.803445Z
+585d933d587c6058c0e41c095fab2f3b
+2011-12-13T22:20:28.000000Z
+1472
+ccalabro@google.com
 has-props
 
 
@@ -398,19 +435,19 @@ has-props
 
 
 
-3060
+3101
 
-animation.js
+cssspriteanimation.js
 file
 
 
 
 
-2011-08-03T23:09:21.563150Z
-182cdc10f714fd617699b9113e1b008d
-2011-07-15T18:24:58.000000Z
-1129
-mcudich@google.com
+2012-02-15T03:42:49.803445Z
+873e28cad6b1af7702a80ed9125a4305
+2011-12-13T22:20:28.000000Z
+1472
+ccalabro@google.com
 has-props
 
 
@@ -432,7 +469,41 @@ has-props
 
 
 
-17751
+3922
+
+dom.js
+file
+
+
+
+
+2012-02-15T03:42:49.807445Z
+2d841908f6f8a2489610f044eb9888f6
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+19194
 
 dragscrollsupport_test.html
 file
@@ -440,11 +511,11 @@ file
 
 
 
-2011-06-19T11:09:34.000000Z
-d4adfde4f9738d7d301c077c6cca90fa
-2011-04-18T22:34:08.000000Z
-869
-nicksantos@google.com
+2012-02-15T03:42:49.807445Z
+c45a1b60e7b00e80a4b11c4f04f7af7d
+2011-11-29T17:09:16.000000Z
+1429
+lyczak@google.com
 has-props
 
 
@@ -466,7 +537,7 @@ has-props
 
 
 
-11606
+12792
 
 animationqueue.js
 file
@@ -474,11 +545,11 @@ file
 
 
 
-2011-08-03T23:09:21.563150Z
-d0b410e6bf38a4d918df9d6d53965eb8
-2011-06-29T01:41:51.000000Z
-1075
-chrishenry@google.com
+2012-02-15T03:42:49.807445Z
+70894287f43c67875084636f4a4c0189
+2011-11-02T11:16:27.000000Z
+1365
+steineldar@google.com
 has-props
 
 
@@ -500,7 +571,41 @@ has-props
 
 
 
-8829
+7289
+
+transitionbase.js
+file
+
+
+
+
+2012-02-15T03:42:49.807445Z
+4a767af86e274ca2f403e3cf8fb594be
+2011-10-11T10:31:58.000000Z
+1331
+steineldar@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6234
 
 draglistgroup.js
 file
@@ -508,11 +613,11 @@ file
 
 
 
-2011-06-19T11:09:34.000000Z
-51da0bdfbdcbcaf51c50befdc0194690
-2011-06-15T14:44:02.000000Z
-1046
-pallosp@google.com
+2012-02-15T03:42:49.811445Z
+a935e964a4e04e111cfb69cc5d6d0d41
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
 has-props
 
 
@@ -534,7 +639,7 @@ has-props
 
 
 
-42921
+42919
 
 abstractdragdrop.js
 file
@@ -542,11 +647,11 @@ file
 
 
 
-2011-08-03T23:09:21.567150Z
-5b5743f966be77c3fba5034a028d6468
-2011-08-03T16:19:23.000000Z
-1186
-pweis@google.com
+2012-02-15T03:42:49.811445Z
+78583b8bccc2fc9f6866fd7f5ada1c70
+2012-01-18T17:19:59.000000Z
+1525
+klevy@google.com
 has-props
 
 
@@ -568,7 +673,7 @@ has-props
 
 
 
-45143
+46637
 
 dragscrollsupport.js
 file
@@ -576,11 +681,11 @@ file
 
 
 
-2011-06-19T11:09:34.000000Z
-128cdbc4052bbeaf63ea3f2edecada4b
-2011-06-10T12:08:17.000000Z
-1024
-pallosp@google.com
+2012-02-15T03:42:49.811445Z
+cf83c121a8b37be6e9bd0b95fc273c7e
+2011-11-29T17:09:16.000000Z
+1429
+lyczak@google.com
 has-props
 
 
@@ -602,7 +707,7 @@ has-props
 
 
 
-8509
+8951
 
 transition.js
 file
@@ -681,11 +786,11 @@ file
 
 
 
-2011-06-19T11:09:34.000000Z
-37cdebd599c2d9ec3b7c40bfa750d4e3
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:49.811445Z
+5ca5a2711c84dce53b55a0d0411b388f
+2011-12-13T22:20:28.000000Z
+1472
+ccalabro@google.com
 has-props
 
 
@@ -707,5 +812,5 @@ has-props
 
 
 
-1633
+1675
 

@@ -32,6 +32,7 @@
  * users encounter trouble because the label is deleted upon focus. For now we
  * set the "aria-label" attribute.
  *
+ * @author arv@google.com (Erik Arvidsson)
  * @see ../demos/labelinput.html
  */
 
@@ -121,6 +122,13 @@ goog.ui.LabelInput.prototype.decorateInternal = function(element) {
   goog.ui.LabelInput.superClass_.decorateInternal.call(this, element);
   if (!this.label_) {
     this.label_ = element.getAttribute('label') || '';
+  }
+
+  // Check if we're attaching to an element that already has focus.
+  if (goog.dom.getActiveElement(goog.dom.getOwnerDocument(element)) ==
+      element) {
+    this.hasFocus_ = true;
+    goog.dom.classes.remove(this.getElement(), this.LABEL_CLASS_NAME);
   }
 
   if (goog.ui.LabelInput.SUPPORTS_PLACEHOLDER_) {
@@ -220,7 +228,7 @@ goog.ui.LabelInput.prototype.detachEvents_ = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.LabelInput.prototype.disposeInternal = function() {
   goog.ui.LabelInput.superClass_.disposeInternal.call(this);
   this.detachEvents_();
@@ -384,8 +392,8 @@ goog.ui.LabelInput.prototype.clear = function() {
 goog.ui.LabelInput.prototype.reset = function() {
   if (this.hasChanged()) {
     this.clear();
+    this.check_();
   }
-  this.check_();
 };
 
 
@@ -524,6 +532,14 @@ goog.ui.LabelInput.prototype.setEnabled = function(enabled) {
   this.getElement().disabled = !enabled;
   goog.dom.classes.enable(this.getElement(),
       goog.getCssName(this.LABEL_CLASS_NAME, 'disabled'), !enabled);
+};
+
+
+/**
+ * @return {boolean} True if the label input is enabled, false otherwise.
+ */
+goog.ui.LabelInput.prototype.isEnabled = function() {
+  return !this.getElement().disabled;
 };
 
 

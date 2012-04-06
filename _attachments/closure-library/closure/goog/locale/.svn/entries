@@ -1,15 +1,15 @@
 10
 
 dir
-1205
+1581
 http://closure-library.googlecode.com/svn/trunk/closure/goog/locale
 http://closure-library.googlecode.com/svn
 
 
 
-2011-08-08T20:51:21.000000Z
-1197
-mimisun@google.com
+2012-01-20T22:42:57.000000Z
+1535
+cibu@google.com
 
 
 
@@ -66,11 +66,11 @@ file
 
 
 
-2011-06-19T11:08:56.000000Z
-bb78e3fba236a0a24d80ef9263293f5c
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:47.363445Z
+ac1825d9164d72db59e5edb0e8da5c99
+2011-11-14T17:58:19.000000Z
+1387
+nicksantos@google.com
 has-props
 
 
@@ -92,7 +92,7 @@ has-props
 
 
 
-4562
+4611
 
 genericfontnames.js
 file
@@ -304,11 +304,11 @@ file
 
 
 
-2011-08-14T08:51:51.466819Z
-e86dc4310f8856adc6675b2235a7389e
-2011-08-08T20:51:21.000000Z
-1197
-mimisun@google.com
+2012-02-15T03:42:47.363445Z
+7cf4fbb5e7fc690993421f41f94573e6
+2011-11-14T17:58:19.000000Z
+1387
+nicksantos@google.com
 has-props
 
 
@@ -330,7 +330,7 @@ has-props
 
 
 
-13558
+13607
 
 timezonedetection_test.html
 file
@@ -440,11 +440,11 @@ file
 
 
 
-2011-06-19T11:08:56.000000Z
-6d1f2dddc8fbc49fed9f34270a92d8d0
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:47.363445Z
+fa6cfda882862467fb4a5197ca50902e
+2012-01-20T22:42:57.000000Z
+1535
+cibu@google.com
 has-props
 
 
@@ -466,7 +466,7 @@ has-props
 
 
 
-20793
+22021
 
 countrylanguagenames_test.html
 file

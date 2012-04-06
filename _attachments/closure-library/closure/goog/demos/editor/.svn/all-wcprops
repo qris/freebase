@@ -1,13 +1,19 @@
 K 25
 svn:wc:ra_dav:version-url
 V 50
-/svn/!svn/ver/1143/trunk/closure/goog/demos/editor
+/svn/!svn/ver/1302/trunk/closure/goog/demos/editor
 END
 equationeditor.html
 K 25
 svn:wc:ra_dav:version-url
 V 70
 /svn/!svn/ver/1143/trunk/closure/goog/demos/editor/equationeditor.html
+END
+tableeditor.html
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/1276/trunk/closure/goog/demos/editor/tableeditor.html
 END
 seamlessfield.html
 K 25
@@ -18,26 +24,26 @@ END
 helloworlddialogplugin.js
 K 25
 svn:wc:ra_dav:version-url
-V 75
-/svn/!svn/ver/850/trunk/closure/goog/demos/editor/helloworlddialogplugin.js
+V 76
+/svn/!svn/ver/1302/trunk/closure/goog/demos/editor/helloworlddialogplugin.js
 END
 helloworld.js
 K 25
 svn:wc:ra_dav:version-url
-V 63
-/svn/!svn/ver/850/trunk/closure/goog/demos/editor/helloworld.js
+V 64
+/svn/!svn/ver/1302/trunk/closure/goog/demos/editor/helloworld.js
 END
 helloworlddialog.js
 K 25
 svn:wc:ra_dav:version-url
-V 69
-/svn/!svn/ver/850/trunk/closure/goog/demos/editor/helloworlddialog.js
+V 70
+/svn/!svn/ver/1302/trunk/closure/goog/demos/editor/helloworlddialog.js
 END
 deps.js
 K 25
 svn:wc:ra_dav:version-url
 V 58
-/svn/!svn/ver/1143/trunk/closure/goog/demos/editor/deps.js
+/svn/!svn/ver/1289/trunk/closure/goog/demos/editor/deps.js
 END
 field_basic.html
 K 25
@@ -49,7 +55,7 @@ equationeditor.js
 K 25
 svn:wc:ra_dav:version-url
 V 68
-/svn/!svn/ver/1143/trunk/closure/goog/demos/editor/equationeditor.js
+/svn/!svn/ver/1236/trunk/closure/goog/demos/editor/equationeditor.js
 END
 editor.html
 K 25

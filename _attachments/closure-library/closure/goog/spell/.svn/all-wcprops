@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
-V 42
-/svn/!svn/ver/850/trunk/closure/goog/spell
+V 43
+/svn/!svn/ver/1472/trunk/closure/goog/spell
 END
 spellcheck_test.html
 K 25
@@ -12,6 +12,6 @@ END
 spellcheck.js
 K 25
 svn:wc:ra_dav:version-url
-V 56
-/svn/!svn/ver/850/trunk/closure/goog/spell/spellcheck.js
+V 57
+/svn/!svn/ver/1472/trunk/closure/goog/spell/spellcheck.js
 END

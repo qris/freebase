@@ -1,15 +1,15 @@
 10
 
 dir
-1205
+1581
 http://closure-library.googlecode.com/svn/trunk/closure/goog/vec
 http://closure-library.googlecode.com/svn
 
 
 
-2011-07-28T22:29:12.000000Z
-1175
-benvanik@google.com
+2012-01-31T00:28:58.000000Z
+1554
+rover@google.com
 
 
 
@@ -32,112 +32,10 @@ file
 
 
 
-2011-08-03T23:09:21.687151Z
-fb6fdbec7bd7c8128e2c053ce5e51a78
-2011-07-28T22:29:12.000000Z
-1175
-benvanik@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-22513
-
-mat4.js
-file
-
-
-
-
-2011-08-03T23:09:21.687151Z
-2e54987d444ade98509142c57fad19e4
-2011-07-28T22:29:12.000000Z
-1175
-benvanik@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-46192
-
-float32array.js
-file
-
-
-
-
-2011-06-19T11:09:38.000000Z
-d34bdec3e2dc2e86d84a0e5170373f09
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3622
-
-quaternion_test.html
-file
-
-
-
-
-2011-06-19T11:09:38.000000Z
-2dc3d3dd6b02d964ad545225b81a5b98
-2011-04-21T16:58:57.000000Z
-879
+2012-02-15T03:42:50.143445Z
+2f73db29226d615552c9dae4c3aaf5b1
+2012-01-20T21:49:49.000000Z
+1533
 djfilip@google.com
 has-props
 
@@ -160,19 +58,19 @@ has-props
 
 
 
-3578
+27516
 
-vec.js
+mat4.js
 file
 
 
 
 
-2011-06-19T11:09:38.000000Z
-a4d502db7a7aa7b25b74ce4579429895
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.147445Z
+efd45e39e977a333030fd44efdc50c61
+2012-01-20T21:49:49.000000Z
+1533
+djfilip@google.com
 has-props
 
 
@@ -194,7 +92,143 @@ has-props
 
 
 
-1336
+52468
+
+float64array_test.html
+file
+
+
+
+
+2012-02-15T03:42:50.155445Z
+6f95c798f70c993185713c513a512ebe
+2012-01-20T18:01:03.000000Z
+1530
+djfilip@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1660
+
+float32array.js
+file
+
+
+
+
+2012-02-15T03:42:50.159445Z
+aad65adcc4e85dd99603aede01bb9d30
+2012-01-12T00:16:09.000000Z
+1516
+benvanik@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3611
+
+quaternion_test.html
+file
+
+
+
+
+2012-02-15T03:42:50.159445Z
+1d5724dbb29457d08e2e556aedc6b934
+2012-01-20T18:01:03.000000Z
+1530
+djfilip@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+7271
+
+vec.js
+file
+
+
+
+
+2012-02-15T03:42:50.159445Z
+1473132c99c8c50de864d58c186e8000
+2012-01-27T17:10:38.000000Z
+1546
+djfilip@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1675
 
 matrix3_test.html
 file
@@ -230,17 +264,17 @@ has-props
 
 10568
 
-matrix4_test.html
+float64array.js
 file
 
 
 
 
-2011-06-19T11:09:38.000000Z
-c7033f303537320ea45e961c13a8550a
-2011-05-20T00:10:21.000000Z
-949
-eparker@google.com
+2012-02-15T03:42:50.159445Z
+a1fccfbc3f6e4b7f950ab874173065c5
+2012-01-20T18:01:03.000000Z
+1530
+djfilip@google.com
 has-props
 
 
@@ -262,7 +296,75 @@ has-props
 
 
 
-21793
+3604
+
+matrix4_test.html
+file
+
+
+
+
+2012-02-15T03:42:50.163445Z
+21c8d5c71a4d6c51bffd311d49d2dafe
+2011-11-17T22:42:49.000000Z
+1406
+chernand@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+22067
+
+vec_array_perf.html
+file
+
+
+
+
+2012-02-15T03:42:50.163445Z
+03310e9389fe665bd3c994dedb7cba65
+2011-12-01T01:47:14.000000Z
+1440
+rover@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+12149
 
 vec_perf.html
 file
@@ -304,10 +406,10 @@ file
 
 
 
-2011-06-19T11:09:38.000000Z
-6ead1534a00b72aacfc28f591e805bc1
-2011-04-22T15:53:00.000000Z
-882
+2012-02-15T03:42:50.163445Z
+a38ae9f38456958e00c129d7922886f6
+2012-01-27T17:11:16.000000Z
+1547
 djfilip@google.com
 has-props
 
@@ -330,7 +432,7 @@ has-props
 
 
 
-1805
+1804
 
 quaternion.js
 file
@@ -338,11 +440,11 @@ file
 
 
 
-2011-08-03T23:09:21.687151Z
-f3a636c5328df1152eb2037002c39a8c
-2011-07-28T22:29:12.000000Z
-1175
-benvanik@google.com
+2012-02-15T03:42:50.167445Z
+c15d727e4e9a8f53707c5e1dd3a6448c
+2012-01-20T21:49:49.000000Z
+1533
+djfilip@google.com
 has-props
 
 
@@ -364,7 +466,75 @@ has-props
 
 
 
-10245
+16967
+
+vec2_test.html
+file
+
+
+
+
+2012-02-15T03:42:50.167445Z
+024947aa16eceb66ca77bf470573695e
+2012-01-31T00:28:58.000000Z
+1554
+rover@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6550
+
+vec3_test.html
+file
+
+
+
+
+2012-02-15T03:42:50.167445Z
+5de2810c20ee32ac1188b206322c07cf
+2012-01-20T18:01:03.000000Z
+1530
+djfilip@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+8121
 
 matrix3.js
 file
@@ -400,17 +570,17 @@ has-props
 
 21707
 
-vec3_test.html
+vec4_test.html
 file
 
 
 
 
-2011-06-19T11:09:38.000000Z
-1286460a05c3841310cab51744b4dbcb
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.167445Z
+45f5e362d6b285211697374981003093
+2012-01-20T18:01:03.000000Z
+1530
+djfilip@google.com
 has-props
 
 
@@ -432,7 +602,7 @@ has-props
 
 
 
-5597
+5988
 
 matrix4.js
 file
@@ -440,11 +610,11 @@ file
 
 
 
-2011-06-19T11:09:38.000000Z
-42d4aa1cd55650ecb4e5adb3cd04bfb6
-2011-05-31T14:55:40.000000Z
-981
-eparker@google.com
+2012-02-15T03:42:50.167445Z
+f3fb99c47148de56264ceafe7ed5432f
+2012-01-20T18:01:03.000000Z
+1530
+djfilip@google.com
 has-props
 
 
@@ -466,41 +636,7 @@ has-props
 
 
 
-45131
-
-vec4_test.html
-file
-
-
-
-
-2011-06-19T11:09:38.000000Z
-aaa797b956d79a3bab565a0e25b62139
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4954
+45161
 
 ray.js
 file
@@ -508,11 +644,11 @@ file
 
 
 
-2011-08-03T23:09:21.691150Z
-a3b86652bd762c11d2a434b28451cae0
-2011-06-27T22:44:59.000000Z
-1074
-eparker@google.com
+2012-02-15T03:42:50.167445Z
+1226a52896682be248829ce3ea3c3e4c
+2012-01-27T17:11:16.000000Z
+1547
+djfilip@google.com
 has-props
 
 
@@ -534,7 +670,7 @@ has-props
 
 
 
-2729
+2777
 
 mat3_test.html
 file
@@ -542,11 +678,11 @@ file
 
 
 
-2011-06-19T11:09:38.000000Z
-fef271d295c7666747642f68f55bb467
-2011-05-27T22:27:55.000000Z
-979
-eparker@google.com
+2012-02-15T03:42:50.167445Z
+fbc4b0c4bb33ace9295245583bb6007a
+2012-01-20T18:01:03.000000Z
+1530
+djfilip@google.com
 has-props
 
 
@@ -568,7 +704,7 @@ has-props
 
 
 
-10228
+11807
 
 mat4_test.html
 file
@@ -576,11 +712,11 @@ file
 
 
 
-2011-06-19T11:09:38.000000Z
-a0b0b5981aca886de4a886fdf56ef73c
-2011-06-10T18:36:17.000000Z
-1027
-chernand@google.com
+2012-02-15T03:42:50.171445Z
+72096c80e51b3d011cd985fb791578f1
+2012-01-20T18:01:03.000000Z
+1530
+djfilip@google.com
 has-props
 
 
@@ -602,7 +738,41 @@ has-props
 
 
 
-22387
+24436
+
+vec2.js
+file
+
+
+
+
+2012-02-15T03:42:50.171445Z
+5801eedaee8357b6deec8a7ab2eadd01
+2012-01-31T00:28:58.000000Z
+1554
+rover@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+11028
 
 float32array_test.html
 file
@@ -644,11 +814,11 @@ file
 
 
 
-2011-08-03T23:09:21.691150Z
-e663b51eb0f625f180d685b6691b3c26
-2011-07-28T22:29:12.000000Z
-1175
-benvanik@google.com
+2012-02-15T03:42:50.171445Z
+97e8b654d4b2858ce83d666522775040
+2012-01-20T21:49:49.000000Z
+1533
+djfilip@google.com
 has-props
 
 
@@ -670,7 +840,7 @@ has-props
 
 
 
-9406
+14260
 
 vec4.js
 file
@@ -678,11 +848,11 @@ file
 
 
 
-2011-08-03T23:09:21.691150Z
-839036485ff739d78fa9201564387b26
-2011-07-28T22:29:12.000000Z
-1175
-benvanik@google.com
+2012-02-15T03:42:50.171445Z
+11fc1323b212bc7b359e359746fa3abd
+2012-01-20T18:01:03.000000Z
+1530
+djfilip@google.com
 has-props
 
 
@@ -704,5 +874,5 @@ has-props
 
 
 
-9166
+12483
 

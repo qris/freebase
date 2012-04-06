@@ -15,6 +15,8 @@
 /**
  * @fileoverview Functions and objects for date representation and manipulation.
  *
+ * @author eae@google.com (Emil A Eklund)
+ * @author pallosp@google.com (Peter Pallos)
  */
 
 goog.provide('goog.date');
@@ -308,13 +310,13 @@ goog.date.setIso8601DateOnly_ = function(d, formatted) {
     return false;
   }
 
-  var year = parts[1];
-  var month = parts[2];
-  var date = parts[3];
-  var dayOfYear = parts[4];
-  var week = parts[5];
+  var year = Number(parts[1]);
+  var month = Number(parts[2]);
+  var date = Number(parts[3]);
+  var dayOfYear = Number(parts[4]);
+  var week = Number(parts[5]);
   // ISO weekdays start with 1, native getDay() values start with 0
-  var dayOfWeek = parts[6] || 1;
+  var dayOfWeek = Number(parts[6]) || 1;
 
   d.setFullYear(year);
 
@@ -416,9 +418,9 @@ goog.date.setIso8601TimeOnly_ = function(d, formatted) {
     return false;
   }
 
-  d.setHours(parts[1]);
-  d.setMinutes(parts[2] || 0);
-  d.setSeconds(parts[3] || 0);
+  d.setHours(Number(parts[1]));
+  d.setMinutes(Number(parts[2]) || 0);
+  d.setSeconds(Number(parts[3]) || 0);
   d.setMilliseconds(parts[4] ? parts[4] * 1000 : 0);
 
   if (offset != 0) {
@@ -1012,7 +1014,7 @@ goog.date.Date.prototype.setYear = function(year) {
 /**
  * Sets the month part of the date.
  *
- * TODO(user): Update type to goog.date.month.
+ * TODO(nnaze): Update type to goog.date.month.
  *
  * @param {number} month The month, where 0 = Jan, 11 = Dec.
  */

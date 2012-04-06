@@ -1,15 +1,15 @@
 10
 
 dir
-1205
+1581
 http://closure-library.googlecode.com/svn/trunk/closure/goog/proto
 http://closure-library.googlecode.com/svn
 
 
 
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2011-12-13T22:20:28.000000Z
+1472
+ccalabro@google.com
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2011-06-19T11:10:17.000000Z
-fec37079e1a4476d6ebc47ac89c97d6c
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:54.771444Z
+b0c8224f2c57537599e7ca7c944dcdcf
+2011-12-13T22:20:28.000000Z
+1472
+ccalabro@google.com
 has-props
 
 
@@ -58,7 +58,7 @@ has-props
 
 
 
-1858
+1900
 
 serializer_test.html
 file
@@ -100,11 +100,11 @@ file
 
 
 
-2011-06-19T11:10:17.000000Z
-9c80fcf0c44f95c5f1d64898f4c3e936
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:54.775444Z
+b020f22e3828da825c19169154acb308
+2011-12-13T22:20:28.000000Z
+1472
+ccalabro@google.com
 has-props
 
 
@@ -126,5 +126,5 @@ has-props
 
 
 
-1248
+1291
 

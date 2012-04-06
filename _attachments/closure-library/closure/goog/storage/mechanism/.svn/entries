@@ -1,15 +1,15 @@
 10
 
 dir
-1205
+1581
 http://closure-library.googlecode.com/svn/trunk/closure/goog/storage/mechanism
 http://closure-library.googlecode.com/svn
 
 
 
-2011-06-09T12:23:34.000000Z
-1014
-azzie@google.com
+2011-12-20T22:45:34.000000Z
+1493
+rakar@google.com
 
 
 
@@ -25,40 +25,6 @@ azzie@google.com
 
 
 0b95b8e8-c90f-11de-9d4f-f947ee5921c8
-
-errorcode.js
-file
-
-
-
-
-2011-06-19T11:08:59.000000Z
-8c1127fcae2eb93028bf9d9b73c6a009
-2011-04-26T23:28:59.000000Z
-891
-azzie@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-994
 
 mechanism.js
 file
@@ -94,17 +60,17 @@ has-props
 
 1498
 
-ieuserdata.js
+html5sessionstorage_test.html
 file
 
 
 
 
-2011-06-19T11:08:59.000000Z
-f56afa001f1fd69ac224db9159fb7f12
-2011-05-17T17:26:40.000000Z
-938
-azzie@google.com
+2012-02-15T03:42:47.575445Z
+6354a689d9fa8167ff9a4d8434cc7751
+2011-12-20T22:45:34.000000Z
+1493
+rakar@google.com
 has-props
 
 
@@ -126,109 +92,7 @@ has-props
 
 
 
-7959
-
-html5localstorage.js
-file
-
-
-
-
-2011-06-19T11:08:59.000000Z
-46a73b83345cf743c21d9abde7208ab6
-2011-05-13T19:08:02.000000Z
-927
-murz@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3802
-
-prefixedmechanism_test.js
-file
-
-
-
-
-2011-06-19T11:08:59.000000Z
-7653cc79a271d873b600a0d9dadb63cb
-2011-05-10T09:48:45.000000Z
-911
-azzie@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-4441
-
-prefixedmechanism.js
-file
-
-
-
-
-2011-06-19T11:08:59.000000Z
-131b7f3bdcf26e59eb124992cbd48dc8
-2011-05-17T17:26:40.000000Z
-938
-azzie@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2847
+2491
 
 iterablemechanism_test.js
 file
@@ -264,40 +128,6 @@ has-props
 
 2740
 
-mechanismfactory.js
-file
-
-
-
-
-2011-06-19T11:08:59.000000Z
-6664a1e91a1811fe4a885311166c499d
-2011-06-09T12:23:34.000000Z
-1014
-azzie@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3484
-
 iterablemechanism.js
 file
 
@@ -332,17 +162,51 @@ has-props
 
 2551
 
+html5webstorage.js
+file
+
+
+
+
+2012-02-15T03:42:47.575445Z
+eb5599c3f24b1d8b2b5fd211e2094daf
+2011-12-20T22:45:34.000000Z
+1493
+rakar@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4082
+
 ieuserdata_test.html
 file
 
 
 
 
-2011-06-19T11:08:59.000000Z
-eb72cdc2a129ed0243368c8d5d68f6b6
-2011-05-10T09:48:45.000000Z
-911
-azzie@google.com
+2012-02-15T03:42:47.575445Z
+a5270cc2ea56f5c895b9f201090ecfeb
+2011-12-20T22:45:34.000000Z
+1493
+rakar@google.com
 has-props
 
 
@@ -372,11 +236,11 @@ file
 
 
 
-2011-06-19T11:08:59.000000Z
-79551f9820225c55237a87f579903e1e
-2011-05-11T08:30:23.000000Z
-916
-azzie@google.com
+2012-02-15T03:42:47.575445Z
+34c4f6109e3166c6fb8ec8823ed07e94
+2011-12-20T22:45:34.000000Z
+1493
+rakar@google.com
 has-props
 
 
@@ -434,17 +298,17 @@ has-props
 
 2423
 
-mechanism_test.js
+html5sessionstorage.js
 file
 
 
 
 
-2011-06-19T11:08:59.000000Z
-69f96a04d3e1dc917e5c22902f0c4e51
-2011-05-11T08:30:23.000000Z
-916
-azzie@google.com
+2012-02-15T03:42:47.575445Z
+46c36e1907f0d4ab876eea595a88a049
+2011-12-20T22:45:34.000000Z
+1493
+rakar@google.com
 has-props
 
 
@@ -466,7 +330,7 @@ has-props
 
 
 
-5008
+1537
 
 mechanismfactory_test.html
 file
@@ -501,4 +365,242 @@ has-props
 
 
 2670
+
+errorcode.js
+file
+
+
+
+
+2011-06-19T11:08:59.000000Z
+8c1127fcae2eb93028bf9d9b73c6a009
+2011-04-26T23:28:59.000000Z
+891
+azzie@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+994
+
+ieuserdata.js
+file
+
+
+
+
+2012-02-15T03:42:47.575445Z
+d9051c2b6caeb9b5caa454fadce573a1
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+7947
+
+html5localstorage.js
+file
+
+
+
+
+2012-02-15T03:42:47.583445Z
+49209650904d2391b5e798e549b0fba1
+2011-12-20T22:45:34.000000Z
+1493
+rakar@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1409
+
+prefixedmechanism_test.js
+file
+
+
+
+
+2011-06-19T11:08:59.000000Z
+7653cc79a271d873b600a0d9dadb63cb
+2011-05-10T09:48:45.000000Z
+911
+azzie@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4441
+
+prefixedmechanism.js
+file
+
+
+
+
+2012-02-15T03:42:47.583445Z
+cac22216ddcd2627ceb2142d8efd17ba
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2839
+
+mechanismfactory.js
+file
+
+
+
+
+2012-02-15T03:42:47.583445Z
+cbffd14ddfbd42920f08ce981dd4cb05
+2011-12-20T22:45:34.000000Z
+1493
+rakar@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4340
+
+mechanism_test.js
+file
+
+
+
+
+2012-02-15T03:42:47.583445Z
+4f1d8eb540e3b25a4d9d39342a83a393
+2011-12-20T22:45:34.000000Z
+1493
+rakar@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+5029
 

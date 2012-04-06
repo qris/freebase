@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
 V 52
-/svn/!svn/ver/1121/trunk/closure/goog/testing/events
+/svn/!svn/ver/1579/trunk/closure/goog/testing/events
 END
 events.js
 K 25
@@ -18,8 +18,14 @@ END
 eventobserver.js
 K 25
 svn:wc:ra_dav:version-url
-V 68
-/svn/!svn/ver/850/trunk/closure/goog/testing/events/eventobserver.js
+V 69
+/svn/!svn/ver/1499/trunk/closure/goog/testing/events/eventobserver.js
+END
+onlinehandler_test.html
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/!svn/ver/1579/trunk/closure/goog/testing/events/onlinehandler_test.html
 END
 events_test.html
 K 25
@@ -38,4 +44,10 @@ K 25
 svn:wc:ra_dav:version-url
 V 75
 /svn/!svn/ver/850/trunk/closure/goog/testing/events/eventobserver_test.html
+END
+onlinehandler.js
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/1579/trunk/closure/goog/testing/events/onlinehandler.js
 END

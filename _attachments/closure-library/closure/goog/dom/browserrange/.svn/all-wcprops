@@ -1,13 +1,13 @@
 K 25
 svn:wc:ra_dav:version-url
 V 54
-/svn/!svn/ver/1063/trunk/closure/goog/dom/browserrange
+/svn/!svn/ver/1472/trunk/closure/goog/dom/browserrange
 END
 geckorange.js
 K 25
 svn:wc:ra_dav:version-url
-V 67
-/svn/!svn/ver/850/trunk/closure/goog/dom/browserrange/geckorange.js
+V 68
+/svn/!svn/ver/1302/trunk/closure/goog/dom/browserrange/geckorange.js
 END
 browserrange_test.html
 K 25
@@ -18,14 +18,14 @@ END
 w3crange.js
 K 25
 svn:wc:ra_dav:version-url
-V 65
-/svn/!svn/ver/850/trunk/closure/goog/dom/browserrange/w3crange.js
+V 66
+/svn/!svn/ver/1302/trunk/closure/goog/dom/browserrange/w3crange.js
 END
 ierange.js
 K 25
 svn:wc:ra_dav:version-url
 V 65
-/svn/!svn/ver/1063/trunk/closure/goog/dom/browserrange/ierange.js
+/svn/!svn/ver/1472/trunk/closure/goog/dom/browserrange/ierange.js
 END
 abstractrange.js
 K 25
@@ -42,12 +42,12 @@ END
 webkitrange.js
 K 25
 svn:wc:ra_dav:version-url
-V 68
-/svn/!svn/ver/850/trunk/closure/goog/dom/browserrange/webkitrange.js
+V 69
+/svn/!svn/ver/1302/trunk/closure/goog/dom/browserrange/webkitrange.js
 END
 operarange.js
 K 25
 svn:wc:ra_dav:version-url
-V 67
-/svn/!svn/ver/850/trunk/closure/goog/dom/browserrange/operarange.js
+V 68
+/svn/!svn/ver/1302/trunk/closure/goog/dom/browserrange/operarange.js
 END

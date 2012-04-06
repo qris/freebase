@@ -1,15 +1,15 @@
 10
 
 dir
-1205
+1581
 http://closure-library.googlecode.com/svn/trunk/third_party/closure/goog/silverlight
 http://closure-library.googlecode.com/svn
 
 
 
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2011-09-29T22:38:05.000000Z
+1310
+bolinfest@google.com
 
 
 
@@ -168,11 +168,11 @@ file
 
 
 
-2011-06-19T11:08:15.000000Z
-85207da77c84fb396c286618fbe4be77
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:45.851445Z
+93c59220fe41a6c6900a1f185ea0577a
+2011-09-29T22:38:05.000000Z
+1310
+bolinfest@google.com
 has-props
 
 
@@ -194,7 +194,7 @@ has-props
 
 
 
-8404
+8438
 
 AppManifest.xml
 file
@@ -236,11 +236,11 @@ file
 
 
 
-2011-06-19T11:08:15.000000Z
-a54c6defd12b339419fe56cf641a3082
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:45.851445Z
+32fd1bdadca1c3c00ff50149a66f99fd
+2011-09-29T22:38:05.000000Z
+1310
+bolinfest@google.com
 has-props
 
 
@@ -262,7 +262,7 @@ has-props
 
 
 
-23835
+23891
 
 ClosureClipboardButton.csproj
 file

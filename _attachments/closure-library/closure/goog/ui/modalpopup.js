@@ -19,12 +19,15 @@
 goog.provide('goog.ui.ModalPopup');
 
 goog.require('goog.Timer');
+goog.require('goog.asserts');
 goog.require('goog.dom');
+goog.require('goog.dom.TagName');
 goog.require('goog.dom.classes');
 goog.require('goog.dom.iframe');
 goog.require('goog.events');
 goog.require('goog.events.EventType');
 goog.require('goog.events.FocusHandler');
+goog.require('goog.fx.Transition');
 goog.require('goog.style');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.PopupBase.EventType');
@@ -112,7 +115,40 @@ goog.ui.ModalPopup.prototype.tabCatcherElement_ = null;
 
 
 /**
+ * Transition to show the popup.
+ * @type {goog.fx.Transition}
+ * @private
+ */
+goog.ui.ModalPopup.prototype.popupShowTransition_;
+
+
+/**
+ * Transition to hide the popup.
+ * @type {goog.fx.Transition}
+ * @private
+ */
+goog.ui.ModalPopup.prototype.popupHideTransition_;
+
+
+/**
+ * Transition to show the background.
+ * @type {goog.fx.Transition}
+ * @private
+ */
+goog.ui.ModalPopup.prototype.bgShowTransition_;
+
+
+/**
+ * Transition to hide the background.
+ * @type {goog.fx.Transition}
+ * @private
+ */
+goog.ui.ModalPopup.prototype.bgHideTransition_;
+
+
+/**
  * @return {string} Base CSS class for this component.
+ * @protected
  */
 goog.ui.ModalPopup.prototype.getCssClass = function() {
   return goog.getCssName('goog-modalpopup');
@@ -120,8 +156,17 @@ goog.ui.ModalPopup.prototype.getCssClass = function() {
 
 
 /**
- * Returns the background mask element so that more complicated things can be
- * done with the background region.  Renders if the DOM is not yet created.
+ * Returns the background iframe mask element, if any.
+ * @return {Element} The background iframe mask element.
+ * @protected
+ */
+goog.ui.ModalPopup.prototype.getBackgroundIframe = function() {
+  return this.bgIframeEl_;
+};
+
+
+/**
+ * Returns the background mask element.
  * @return {Element} The background mask element.
  */
 goog.ui.ModalPopup.prototype.getBackgroundElement = function() {
@@ -144,12 +189,7 @@ goog.ui.ModalPopup.prototype.createDom = function() {
 
   // Manages the DOM for background mask elements.
   this.manageBackgroundDom_();
-
-  // Creates tab catcher element. Added to document in enterDocument
-  this.tabCatcherElement_ = this.getDomHelper().createElement('span');
-  goog.style.showElement(this.tabCatcherElement_, false);
-  goog.dom.setFocusableTabIndex(this.tabCatcherElement_, true);
-  this.tabCatcherElement_.style.position = 'absolute';
+  this.createTabCatcher_();
 };
 
 
@@ -180,42 +220,41 @@ goog.ui.ModalPopup.prototype.manageBackgroundDom_ = function() {
 
 
 /**
- * Renders the background mask.
+ * Creates the tab catcher element.
  * @private
  */
-goog.ui.ModalPopup.prototype.renderBackground_ = function() {
-  if (this.bgIframeEl_) {
-    goog.dom.insertSiblingBefore(this.bgIframeEl_, this.getElement());
-  }
-  if (this.bgEl_) {
-    goog.dom.insertSiblingBefore(this.bgEl_, this.getElement());
+goog.ui.ModalPopup.prototype.createTabCatcher_ = function() {
+  // Creates tab catcher element.
+  if (!this.tabCatcherElement_) {
+    this.tabCatcherElement_ = this.getDomHelper().createElement('span');
+    goog.style.showElement(this.tabCatcherElement_, false);
+    goog.dom.setFocusableTabIndex(this.tabCatcherElement_, true);
+    this.tabCatcherElement_.style.position = 'absolute';
   }
 };
 
 
 /**
- * Removes the background mask from document.
+ * Renders the background mask.
  * @private
  */
-goog.ui.ModalPopup.prototype.removeBackground_ = function() {
+goog.ui.ModalPopup.prototype.renderBackground_ = function() {
+  goog.asserts.assert(!!this.bgEl_, 'Background element must not be null.');
   if (this.bgIframeEl_) {
-    goog.dom.removeNode(this.bgIframeEl_);
+    goog.dom.insertSiblingBefore(this.bgIframeEl_, this.getElement());
   }
-  if (this.bgEl_) {
-    goog.dom.removeNode(this.bgEl_);
-  }
+  goog.dom.insertSiblingBefore(this.bgEl_, this.getElement());
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.ModalPopup.prototype.canDecorate = function(element) {
   // Assume we can decorate any DIV.
-  return !!element && !!element.tagName && element.tagName == 'DIV' &&
-      goog.base(this, 'canDecorate', element);
+  return !!element && element.tagName == goog.dom.TagName.DIV;
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.ModalPopup.prototype.decorateInternal = function(element) {
   // Decorate the modal popup area element.
   goog.base(this, 'decorateInternal', element);
@@ -223,13 +262,14 @@ goog.ui.ModalPopup.prototype.decorateInternal = function(element) {
 
   // Create the background mask...
   this.manageBackgroundDom_();
+  this.createTabCatcher_();
 
   // Make sure the decorated modal popup is hidden.
   goog.style.showElement(this.getElement(), false);
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.ModalPopup.prototype.enterDocument = function() {
   this.renderBackground_();
   goog.base(this, 'enterDocument');
@@ -247,17 +287,17 @@ goog.ui.ModalPopup.prototype.enterDocument = function() {
 };
 
 
-/** @inheritDoc */
+/** @override */
 goog.ui.ModalPopup.prototype.exitDocument = function() {
   if (this.isVisible()) {
     this.setVisible(false);
   }
 
-  this.focusHandler_.dispose();
-  this.focusHandler_ = null;
+  goog.dispose(this.focusHandler_);
 
   goog.base(this, 'exitDocument');
-  this.removeBackground_();
+  goog.dom.removeNode(this.bgIframeEl_);
+  goog.dom.removeNode(this.bgEl_);
   goog.dom.removeNode(this.tabCatcherElement_);
 };
 
@@ -270,15 +310,41 @@ goog.ui.ModalPopup.prototype.exitDocument = function() {
 goog.ui.ModalPopup.prototype.setVisible = function(visible) {
   goog.asserts.assert(
       this.isInDocument(), 'ModalPopup must be rendered first.');
+
   if (visible == this.visible_) {
     return;
   }
+
+  if (this.popupShowTransition_) this.popupShowTransition_.stop();
+  if (this.bgShowTransition_) this.bgShowTransition_.stop();
+  if (this.popupHideTransition_) this.popupHideTransition_.stop();
+  if (this.bgHideTransition_) this.bgHideTransition_.stop();
 
   if (visible) {
     this.show_();
   } else {
     this.hide_();
   }
+};
+
+
+/**
+ * Sets the transitions to show and hide the popup and background.
+ * @param {!goog.fx.Transition} popupShowTransition Transition to show the
+ *     popup.
+ * @param {!goog.fx.Transition} popupHideTransition Transition to hide the
+ *     popup.
+ * @param {!goog.fx.Transition} bgShowTransition Transition to show
+ *     the background.
+ * @param {!goog.fx.Transition} bgHideTransition Transition to hide
+ *     the background.
+ */
+goog.ui.ModalPopup.prototype.setTransition = function(popupShowTransition,
+    popupHideTransition, bgShowTransition, bgHideTransition) {
+  this.popupShowTransition_ = popupShowTransition;
+  this.popupHideTransition_ = popupHideTransition;
+  this.bgShowTransition_ = bgShowTransition;
+  this.bgHideTransition_ = bgHideTransition;
 };
 
 
@@ -302,7 +368,16 @@ goog.ui.ModalPopup.prototype.show_ = function() {
   this.showPopupElement_(true);
   this.focus();
   this.visible_ = true;
-  this.dispatchEvent(goog.ui.PopupBase.EventType.SHOW);
+
+  if (this.popupShowTransition_ && this.bgShowTransition_) {
+    goog.events.listenOnce(
+        /** @type {goog.events.EventTarget} */ (this.popupShowTransition_),
+        goog.fx.Transition.EventType.END, this.onShow, false, this);
+    this.bgShowTransition_.play();
+    this.popupShowTransition_.play();
+  } else {
+    this.onShow();
+  }
 };
 
 
@@ -321,9 +396,23 @@ goog.ui.ModalPopup.prototype.hide_ = function() {
       this.getDomHelper().getWindow(), goog.events.EventType.RESIZE,
       this.resizeBackground_);
 
-  this.showPopupElement_(false);
+  // Set visibility to hidden even if there is a transition. This
+  // reduces complexity in subclasses who may want to override
+  // setVisible (such as goog.ui.Dialog).
   this.visible_ = false;
-  this.dispatchEvent(goog.ui.PopupBase.EventType.HIDE);
+
+  if (this.popupHideTransition_ && this.bgHideTransition_) {
+    goog.events.listenOnce(
+        /** @type {goog.events.EventTarget} */ (this.popupHideTransition_),
+        goog.fx.Transition.EventType.END, this.onHide, false, this);
+    this.bgHideTransition_.play();
+    // The transition whose END event you are listening to must be played last
+    // to prevent errors when disposing on hide event, which occur on browsers
+    // that do not support CSS3 transitions.
+    this.popupHideTransition_.play();
+  } else {
+    this.onHide();
+  }
 };
 
 
@@ -341,6 +430,27 @@ goog.ui.ModalPopup.prototype.showPopupElement_ = function(visible) {
   }
   goog.style.showElement(this.getElement(), visible);
   goog.style.showElement(this.tabCatcherElement_, visible);
+};
+
+
+/**
+ * Called after the popup is shown. If there is a transition, this
+ * will be called after the transition completed or stopped.
+ * @protected
+ */
+goog.ui.ModalPopup.prototype.onShow = function() {
+  this.dispatchEvent(goog.ui.PopupBase.EventType.SHOW);
+};
+
+
+/**
+ * Called after the popup is hidden. If there is a transition, this
+ * will be called after the transition completed or stopped.
+ * @protected
+ */
+goog.ui.ModalPopup.prototype.onHide = function() {
+  this.showPopupElement_(false);
+  this.dispatchEvent(goog.ui.PopupBase.EventType.HIDE);
 };
 
 
@@ -457,4 +567,22 @@ goog.ui.ModalPopup.prototype.focusElement_ = function() {
   } catch (e) {
     // Swallow this. IE can throw an error if the element can not be focused.
   }
+};
+
+
+/** @override */
+goog.ui.ModalPopup.prototype.disposeInternal = function() {
+  goog.dispose(this.popupShowTransition_);
+  this.popupShowTransition_ = null;
+
+  goog.dispose(this.popupHideTransition_);
+  this.popupHideTransition_ = null;
+
+  goog.dispose(this.bgShowTransition_);
+  this.bgShowTransition_ = null;
+
+  goog.dispose(this.bgHideTransition_);
+  this.bgHideTransition_ = null;
+
+  goog.base(this, 'disposeInternal');
 };

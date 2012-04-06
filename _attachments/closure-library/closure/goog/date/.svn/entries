@@ -1,15 +1,15 @@
 10
 
 dir
-1205
+1581
 http://closure-library.googlecode.com/svn/trunk/closure/goog/date
 http://closure-library.googlecode.com/svn
 
 
 
-2011-07-12T19:39:45.000000Z
-1111
-nnaze@google.com
+2012-01-25T23:58:35.000000Z
+1541
+abednego@google.com
 
 
 
@@ -66,11 +66,11 @@ file
 
 
 
-2011-06-19T11:09:38.000000Z
-0a41d97df0c8cbc7edd6ecf81018bbe8
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:49.595445Z
+c6f031a18fdb2d2fa764d5b68795f42c
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
 has-props
 
 
@@ -92,7 +92,7 @@ has-props
 
 
 
-5252
+5218
 
 daterange.js
 file
@@ -100,11 +100,11 @@ file
 
 
 
-2011-06-19T11:09:38.000000Z
-8f4d7de312f83a5978d87e06841daa53
-2011-04-15T22:44:50.000000Z
-865
-kuzmin@google.com
+2012-02-15T03:42:49.595445Z
+fd9f737fab70716dc3a6117ca80d50c5
+2012-01-25T23:58:35.000000Z
+1541
+abednego@google.com
 has-props
 
 
@@ -126,7 +126,7 @@ has-props
 
 
 
-12979
+13032
 
 relative.js
 file
@@ -134,11 +134,11 @@ file
 
 
 
-2011-06-19T11:09:38.000000Z
-d1f08c1a05d68402d5f5be2576b9f189
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:49.595445Z
+e0fa87ae916566ebac095958501f4fff
+2011-12-08T19:12:56.000000Z
+1461
+jacobly@google.com
 has-props
 
 
@@ -160,7 +160,7 @@ has-props
 
 
 
-13157
+13304
 
 date.js
 file
@@ -168,11 +168,11 @@ file
 
 
 
-2011-08-03T23:09:21.575151Z
-35eb0a5ff7abd4416ebca5f3a8e6082c
-2011-07-12T19:39:45.000000Z
-1111
-nnaze@google.com
+2012-02-15T03:42:49.595445Z
+9a8f2914a7f4b99035dc46b7148a57fd
+2012-01-04T13:41:02.000000Z
+1499
+dskloet@google.com
 has-props
 
 
@@ -194,7 +194,7 @@ has-props
 
 
 
-47341
+47501
 
 utcdatetime_test.html
 file
@@ -270,11 +270,11 @@ file
 
 
 
-2011-06-19T11:09:38.000000Z
-38e0275a7e22cefe556566c2ed5b9a34
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:49.595445Z
+c54aa13f452bdf3513b23f05143d22af
+2011-12-08T19:12:56.000000Z
+1461
+jacobly@google.com
 has-props
 
 
@@ -296,7 +296,7 @@ has-props
 
 
 
-4255
+5184
 
 datelike.js
 file

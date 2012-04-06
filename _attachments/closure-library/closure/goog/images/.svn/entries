@@ -1,7 +1,7 @@
 10
 
 dir
-1205
+1581
 http://closure-library.googlecode.com/svn/trunk/closure/goog/images
 http://closure-library.googlecode.com/svn
 
@@ -505,40 +505,6 @@ has-props
 
 1139
 
-plus.png
-file
-
-
-
-
-2011-06-19T11:09:13.650102Z
-58f862f50add913026dde5364fc66601
-2010-07-31T22:47:02.932650Z
-158
-nicholas.j.santos
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-239
-
 gears_paused.gif
 file
 
@@ -573,17 +539,17 @@ has-props
 
 93
 
-no_anchor_bubble_top.gif
+plus.png
 file
 
 
 
 
 2011-06-19T11:09:13.650102Z
-7875a21d2c17c4c8b594c478e55832dd
-2010-05-17T07:00:01.442076Z
-139
-dtbentley
+58f862f50add913026dde5364fc66601
+2010-07-31T22:47:02.932650Z
+158
+nicholas.j.santos
 has-props
 
 
@@ -605,7 +571,41 @@ has-props
 
 
 
-123
+239
+
+gears_offline.gif
+file
+
+
+
+
+2011-06-19T11:09:13.000000Z
+ca40bfdb653782ae8982d773ebfb97da
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+76
 
 left_anchor_bubble_bot.gif
 file
@@ -641,17 +641,17 @@ has-props
 
 431
 
-gears_offline.gif
+no_anchor_bubble_top.gif
 file
 
 
 
 
-2011-06-19T11:09:13.000000Z
-ca40bfdb653782ae8982d773ebfb97da
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2011-06-19T11:09:13.650102Z
+7875a21d2c17c4c8b594c478e55832dd
+2010-05-17T07:00:01.442076Z
+139
+dtbentley
 has-props
 
 
@@ -673,7 +673,7 @@ has-props
 
 
 
-76
+123
 
 hsva-sprite.gif
 file
@@ -777,14 +777,14 @@ has-props
 
 21680
 
-check.gif
+dropdn_disabled.gif
 file
 
 
 
 
 2011-06-19T11:09:13.000000Z
-6df1d736ee36c88a361c31524cab5539
+b69a61c02841c8bc238389767c96bee5
 2011-04-12T20:35:47.000000Z
 850
 diegosalas@google.com
@@ -809,7 +809,7 @@ has-props
 
 
 
-53
+51
 
 close_box.gif
 file
@@ -845,14 +845,14 @@ has-props
 
 65
 
-dropdn_disabled.gif
+check.gif
 file
 
 
 
 
 2011-06-19T11:09:13.000000Z
-b69a61c02841c8bc238389767c96bee5
+6df1d736ee36c88a361c31524cab5539
 2011-04-12T20:35:47.000000Z
 850
 diegosalas@google.com
@@ -877,7 +877,7 @@ has-props
 
 
 
-51
+53
 
 gears_bluedot.gif
 file

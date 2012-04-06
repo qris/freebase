@@ -1,15 +1,15 @@
 10
 
 dir
-1205
+1581
 http://closure-library.googlecode.com/svn/trunk/third_party/closure/goog/dojo/dom
 http://closure-library.googlecode.com/svn
 
 
 
-2011-05-10T23:18:51.000000Z
-914
-nnaze@google.com
+2012-01-23T22:43:16.000000Z
+1536
+jonfen@google.com
 
 
 
@@ -66,11 +66,11 @@ file
 
 
 
-2011-06-19T11:08:15.000000Z
-0bbd461db89c728f5d08d07ba8dfe136
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:45.723445Z
+136390fd66b2a2a366596c1782762462
+2012-01-23T22:43:16.000000Z
+1536
+jonfen@google.com
 has-props
 
 
@@ -92,7 +92,7 @@ has-props
 
 
 
-52865
+52862
 
 query_test.html
 file
@@ -100,11 +100,11 @@ file
 
 
 
-2011-06-19T11:08:15.000000Z
-c0608911ba18aa9570dd1ff2310d0f60
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:45.727445Z
+5b506c4132da428167bbd526789df5e2
+2011-11-30T22:16:21.000000Z
+1434
+chrishenry@google.com
 has-props
 
 
@@ -126,5 +126,5 @@ has-props
 
 
 
-1627
+1587
 

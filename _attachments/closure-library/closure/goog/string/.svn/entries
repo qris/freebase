@@ -1,15 +1,15 @@
 10
 
 dir
-1205
+1581
 http://closure-library.googlecode.com/svn/trunk/closure/goog/string
 http://closure-library.googlecode.com/svn
 
 
 
-2011-07-28T15:37:16.000000Z
-1172
-magnusrk@google.com
+2012-01-04T13:41:02.000000Z
+1499
+dskloet@google.com
 
 
 
@@ -25,6 +25,40 @@ magnusrk@google.com
 
 
 0b95b8e8-c90f-11de-9d4f-f947ee5921c8
+
+linkify.js
+file
+
+
+
+
+2012-02-15T03:42:54.947444Z
+0256764b0750f9e4e06285d78d69d170
+2011-12-01T01:00:04.000000Z
+1437
+danieldss@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6122
 
 stringformat_test.html
 file
@@ -66,11 +100,11 @@ file
 
 
 
-2011-06-19T11:10:17.000000Z
-ce5100f88ae748528b6301818adb79ad
-2011-05-25T14:38:16.000000Z
-965
-magnusrk@google.com
+2012-02-15T03:42:54.947444Z
+240a4defbd3fd2ea70cc00f6ae5310cb
+2011-11-23T17:10:17.000000Z
+1423
+dcs@google.com
 has-props
 
 
@@ -92,7 +126,7 @@ has-props
 
 
 
-39688
+40046
 
 stringbuffer_test.html
 file
@@ -134,11 +168,11 @@ file
 
 
 
-2011-06-19T11:10:17.000000Z
-e1cdf869920376f0537a84b964c02711
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:54.951444Z
+1d8668caf302fe58de48c3fdf3b696cb
+2012-01-04T13:41:02.000000Z
+1499
+dskloet@google.com
 has-props
 
 
@@ -160,7 +194,41 @@ has-props
 
 
 
-2984
+3027
+
+linkify_test.html
+file
+
+
+
+
+2012-02-15T03:42:54.947444Z
+ea4174208c63c8fdd34a747e87de7231
+2011-12-01T01:00:04.000000Z
+1437
+danieldss@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+10706
 
 string_test.html
 file
@@ -168,11 +236,11 @@ file
 
 
 
-2011-06-19T11:10:17.000000Z
-7b0ce4aa2e501be745c5c5bf8ec1376c
-2011-05-25T14:38:16.000000Z
-965
-magnusrk@google.com
+2012-02-15T03:42:54.951444Z
+61a5faeb3151a546256bec1d609483c3
+2011-11-23T17:10:17.000000Z
+1423
+dcs@google.com
 has-props
 
 
@@ -194,7 +262,7 @@ has-props
 
 
 
-34431
+36044
 
 stringformat.js
 file

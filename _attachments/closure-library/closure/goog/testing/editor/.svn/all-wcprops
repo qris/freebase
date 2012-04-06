@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
 V 52
-/svn/!svn/ver/1156/trunk/closure/goog/testing/editor
+/svn/!svn/ver/1302/trunk/closure/goog/testing/editor
 END
 dom_test.html
 K 25
@@ -25,7 +25,7 @@ testhelper.js
 K 25
 svn:wc:ra_dav:version-url
 V 66
-/svn/!svn/ver/1156/trunk/closure/goog/testing/editor/testhelper.js
+/svn/!svn/ver/1302/trunk/closure/goog/testing/editor/testhelper.js
 END
 dom.js
 K 25

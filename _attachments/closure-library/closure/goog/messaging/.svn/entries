@@ -1,15 +1,15 @@
 10
 
 dir
-1205
+1581
 http://closure-library.googlecode.com/svn/trunk/closure/goog/messaging
 http://closure-library.googlecode.com/svn
 
 
 
-2011-06-10T12:08:17.000000Z
-1024
-pallosp@google.com
+2012-02-07T22:09:46.000000Z
+1566
+nnaze@google.com
 
 
 
@@ -25,6 +25,40 @@ pallosp@google.com
 
 
 0b95b8e8-c90f-11de-9d4f-f947ee5921c8
+
+portchannel_test.html
+file
+
+
+
+
+2012-02-15T03:42:49.999445Z
+ac634dd21caa61ecd04fe67c4c6897aa
+2012-02-07T22:09:46.000000Z
+1566
+nnaze@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+11195
 
 messaging_test.html
 file
@@ -59,40 +93,6 @@ has-props
 
 
 1005
-
-portchannel_test.html
-file
-
-
-
-
-2011-06-19T11:09:38.000000Z
-89364eb68a3796299d92bc46fbdd0c4e
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-11199
 
 loggerclient_test.html
 file
@@ -134,11 +134,11 @@ file
 
 
 
-2011-06-19T11:09:38.000000Z
-23ee41d1068f00fa9ad8b553e9c22e88
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.003445Z
+8b2b88a2a998a8c27523115839813448
+2012-01-09T21:59:28.000000Z
+1506
+nicksantos@google.com
 has-props
 
 
@@ -160,7 +160,7 @@ has-props
 
 
 
-3004
+3090
 
 portcaller.js
 file
@@ -168,11 +168,11 @@ file
 
 
 
-2011-06-19T11:09:38.000000Z
-70874af453f7dff99b741b1c065ac2a1
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.003445Z
+70295385127ddadde04e8ca3b6cc1834
+2012-01-09T21:59:28.000000Z
+1506
+nicksantos@google.com
 has-props
 
 
@@ -194,7 +194,7 @@ has-props
 
 
 
-5728
+5784
 
 deferredchannel.js
 file
@@ -202,11 +202,11 @@ file
 
 
 
-2011-06-19T11:09:38.000000Z
-03dd684995f6218d55d023412b44f7ad
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.003445Z
+eaa82dc4cea96290c978efa6c17b6ff2
+2012-02-07T22:09:46.000000Z
+1566
+nnaze@google.com
 has-props
 
 
@@ -228,7 +228,7 @@ has-props
 
 
 
-2445
+2730
 
 multichannel_test.html
 file
@@ -270,11 +270,11 @@ file
 
 
 
-2011-06-19T11:09:38.000000Z
-cecea3b5bc27a3883dca7851c7a9e6d7
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.003445Z
+9e799abe40bb40e71ec5f4313fad27c7
+2012-01-27T21:01:52.000000Z
+1550
+piotrk@google.com
 has-props
 
 
@@ -296,75 +296,7 @@ has-props
 
 
 
-7855
-
-messaging.js
-file
-
-
-
-
-2011-06-19T11:09:38.000000Z
-07b06fff78bfc2c11f56b151c2cc03b6
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1196
-
-portchannel.js
-file
-
-
-
-
-2011-06-19T11:09:38.000000Z
-1a511a2e8cd01b6b1304eb7a91a062eb
-2011-05-19T23:37:42.000000Z
-948
-nicksantos@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-14459
+7979
 
 messagechannel.js
 file
@@ -400,14 +332,48 @@ has-props
 
 4660
 
-loggerclient.js
+portchannel.js
+file
+
+
+
+
+2012-02-15T03:42:50.003445Z
+5eb8c35a7ff5ab35294c9096e2fc01b9
+2012-02-07T22:09:46.000000Z
+1566
+nnaze@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+14527
+
+messaging.js
 file
 
 
 
 
 2011-06-19T11:09:38.000000Z
-8715e07f164a6c044a0eb1a06061bc07
+07b06fff78bfc2c11f56b151c2cc03b6
 2011-04-12T20:35:47.000000Z
 850
 diegosalas@google.com
@@ -432,19 +398,19 @@ has-props
 
 
 
-4178
+1196
 
-multichannel.js
+loggerclient.js
 file
 
 
 
 
-2011-06-19T11:09:38.000000Z
-6eb36473ceb4e2c5dbab7115a7cbfd8c
-2011-06-10T12:08:17.000000Z
-1024
-pallosp@google.com
+2012-02-15T03:42:50.003445Z
+5949abeee6617afed08789fc203e4f0a
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
 has-props
 
 
@@ -466,7 +432,7 @@ has-props
 
 
 
-8678
+4176
 
 abstractchannel_test.html
 file
@@ -474,11 +440,11 @@ file
 
 
 
-2011-06-19T11:09:38.000000Z
-9414e478b2d61f0610b14023552d4daf
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.003445Z
+608cd59eb159b224270766edcefe24c6
+2011-11-30T22:16:21.000000Z
+1434
+chrishenry@google.com
 has-props
 
 
@@ -500,7 +466,41 @@ has-props
 
 
 
-2190
+2124
+
+multichannel.js
+file
+
+
+
+
+2012-02-15T03:42:50.003445Z
+7e58c9c7abecf467ca31c33e4de2c981
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+8664
 
 portnetwork_test.html
 file
@@ -508,11 +508,11 @@ file
 
 
 
-2011-06-19T11:09:38.000000Z
-6c1e824d4303750d8931d677e97fe776
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.007445Z
+ba61fc4b09fab35a858ce9ec486903ec
+2011-11-30T22:16:21.000000Z
+1434
+chrishenry@google.com
 has-props
 
 
@@ -534,7 +534,7 @@ has-props
 
 
 
-1943
+1877
 
 portoperator_test.html
 file
@@ -542,11 +542,11 @@ file
 
 
 
-2011-06-19T11:09:38.000000Z
-2f3ad618447ae7c6db0578d90d3f5670
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.007445Z
+94d68a454f5b2b2000b9d3a428151774
+2011-11-30T22:16:21.000000Z
+1434
+chrishenry@google.com
 has-props
 
 
@@ -568,7 +568,41 @@ has-props
 
 
 
-3365
+3299
+
+respondingchannel_test.html
+file
+
+
+
+
+2012-02-15T03:42:50.007445Z
+80e472928fc89d0da1d296c02bd68288
+2012-01-14T09:12:26.000000Z
+1519
+wgrose@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4588
 
 abstractchannel.js
 file
@@ -576,11 +610,11 @@ file
 
 
 
-2011-06-19T11:09:38.000000Z
-c547c16803864a526f4a42919216242f
-2011-05-19T23:37:42.000000Z
-948
-nicksantos@google.com
+2012-02-15T03:42:50.007445Z
+9949ed2148d473b01aa9454580e49625
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
 has-props
 
 
@@ -602,7 +636,7 @@ has-props
 
 
 
-6396
+6384
 
 loggerserver_test.html
 file
@@ -681,11 +715,11 @@ file
 
 
 
-2011-06-19T11:09:38.000000Z
-f5a2c30febd665148e60cb64a6f977b2
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.007445Z
+398ddea0f1ec087674b9081b877afb9c
+2011-11-30T22:16:21.000000Z
+1434
+chrishenry@google.com
 has-props
 
 
@@ -707,7 +741,7 @@ has-props
 
 
 
-1512
+1446
 
 portoperator.js
 file
@@ -715,11 +749,11 @@ file
 
 
 
-2011-06-19T11:09:38.000000Z
-650e12093dc7f2c55c52431e70a8a990
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.007445Z
+06054ef29b402642cb970366caf87bac
+2012-01-09T21:59:28.000000Z
+1506
+nicksantos@google.com
 has-props
 
 
@@ -741,7 +775,7 @@ has-props
 
 
 
-6321
+6368
 
 deferredchannel_test.html
 file
@@ -749,11 +783,11 @@ file
 
 
 
-2011-06-19T11:09:38.000000Z
-4ecee0fd408737585608baf98a022075
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.007445Z
+80fc88ab6530a60292d74ee28b212368
+2011-11-30T22:16:21.000000Z
+1434
+chrishenry@google.com
 has-props
 
 
@@ -775,7 +809,41 @@ has-props
 
 
 
-3242
+3176
+
+respondingchannel.js
+file
+
+
+
+
+2012-02-15T03:42:50.011445Z
+26f1b99fd987ac71897a16dfaf8ec367
+2012-01-14T09:12:26.000000Z
+1519
+wgrose@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6916
 
 bufferedchannel_test.html
 file
@@ -783,11 +851,11 @@ file
 
 
 
-2011-06-19T11:09:38.000000Z
-61121df07da2326c13a05364ad6aa6fb
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.011445Z
+67e28e1ee8f4b249bc5b17f81a68b47d
+2012-01-27T21:01:52.000000Z
+1550
+piotrk@google.com
 has-props
 
 
@@ -809,5 +877,5 @@ has-props
 
 
 
-6917
+7061
 

@@ -1,15 +1,15 @@
 10
 
 dir
-1205
+1581
 http://closure-library.googlecode.com/svn/trunk/closure/goog/math
 http://closure-library.googlecode.com/svn
 
 
 
-2011-07-29T15:28:17.000000Z
-1177
-afavaro@google.com
+2012-01-04T13:41:02.000000Z
+1499
+dskloet@google.com
 
 
 
@@ -100,11 +100,11 @@ file
 
 
 
-2011-06-19T11:08:40.870101Z
-10246a3319195b69ef828100c9c7efb2
-2010-11-15T01:08:31.000000Z
-451
-ajp@google.com
+2012-02-15T03:42:46.727445Z
+c050d208b425794332d414ceaa169559
+2012-01-04T13:41:02.000000Z
+1499
+dskloet@google.com
 has-props
 
 
@@ -126,7 +126,7 @@ has-props
 
 
 
-8747
+9487
 
 coordinate3.js
 file
@@ -542,11 +542,11 @@ file
 
 
 
-2011-06-19T11:08:40.000000Z
-b0409aacc92cfb712bcd06ecd7a6eb2d
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:46.727445Z
+8c3a722a715c597dbab2352cec7a9534
+2012-01-04T13:41:02.000000Z
+1499
+dskloet@google.com
 has-props
 
 
@@ -568,7 +568,7 @@ has-props
 
 
 
-6969
+7932
 
 exponentialbackoff.js
 file
@@ -712,11 +712,11 @@ file
 
 
 
-2011-06-19T11:08:40.000000Z
-3468258a3b72b45bf3a2df964bb19515
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:46.727445Z
+5b20f9ce5d517ce8d6728274e0a41b05
+2011-09-28T09:35:25.000000Z
+1305
+yuvalr@google.com
 has-props
 
 
@@ -738,16 +738,16 @@ has-props
 
 
 
-4083
+4599
 
-coordinate.js
+line.js
 file
 
 
 
 
 2011-06-19T11:08:40.000000Z
-50db4807bf39ee355e377409f847aeaf
+43d12f97ddd663734b4442daec219fd7
 2011-04-12T20:35:47.000000Z
 850
 diegosalas@google.com
@@ -772,7 +772,7 @@ has-props
 
 
 
-3831
+5290
 
 vec3_test.html
 file
@@ -808,14 +808,14 @@ has-props
 
 4918
 
-line.js
+coordinate.js
 file
 
 
 
 
 2011-06-19T11:08:40.000000Z
-43d12f97ddd663734b4442daec219fd7
+50db4807bf39ee355e377409f847aeaf
 2011-04-12T20:35:47.000000Z
 850
 diegosalas@google.com
@@ -840,7 +840,7 @@ has-props
 
 
 
-5290
+3831
 
 matrix_test.html
 file
@@ -944,40 +944,6 @@ has-props
 
 22162
 
-rangeset_test.html
-file
-
-
-
-
-2011-06-19T11:08:40.000000Z
-efa43718aedc346f764712c27bc7b601
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-17483
-
 long.js
 file
 
@@ -1012,17 +978,17 @@ has-props
 
 23202
 
-vec3.js
+rangeset_test.html
 file
 
 
 
 
-2011-08-03T23:09:20.859150Z
-31e99e0fb7c05becd5b17e95954e4357
-2011-07-29T15:28:17.000000Z
-1177
-afavaro@google.com
+2012-02-15T03:42:46.731445Z
+9e5e250a9baaa3defde5844a76438eaf
+2011-10-19T19:05:19.000000Z
+1349
+brenneman@google.com
 has-props
 
 
@@ -1044,7 +1010,41 @@ has-props
 
 
 
-7787
+18561
+
+vec3.js
+file
+
+
+
+
+2012-02-15T03:42:46.731445Z
+91c1e8350172fa9ba30df9fb5431a7f3
+2012-01-04T13:41:02.000000Z
+1499
+dskloet@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+7792
 
 coordinate3_test.html
 file

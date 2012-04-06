@@ -21,10 +21,10 @@
 goog.provide('goog.ui.AutoComplete.Renderer');
 goog.provide('goog.ui.AutoComplete.Renderer.CustomRenderer');
 
+goog.require('goog.dispose');
 goog.require('goog.dom');
 goog.require('goog.dom.a11y');
 goog.require('goog.dom.classes');
-goog.require('goog.dispose');
 goog.require('goog.events.Event');
 goog.require('goog.events.EventTarget');
 goog.require('goog.events.EventType');
@@ -103,6 +103,14 @@ goog.ui.AutoComplete.Renderer = function(opt_parentNode, opt_customRenderer,
   this.rows_ = [];
 
   /**
+   * Array of the node divs that hold each result that is being displayed.
+   * @type {Array.<Element>}
+   * @protected
+   * @suppress {underscore}
+   */
+  this.rowDivs_ = [];
+
+  /**
    * The index of the currently highlighted row
    * @type {number}
    * @protected
@@ -137,7 +145,7 @@ goog.ui.AutoComplete.Renderer = function(opt_parentNode, opt_customRenderer,
    */
   this.rowClassName = goog.getCssName('ac-row');
 
-  // TODO(user): Remove this as soon as we remove references and ensure that
+  // TODO(gboyer): Remove this as soon as we remove references and ensure that
   // no groups are pushing javascript using this.
   /**
    * The old class name for active row.  This name is deprecated because its
@@ -228,6 +236,22 @@ goog.inherits(goog.ui.AutoComplete.Renderer, goog.events.EventTarget);
 
 
 /**
+ * The anchor element to position the rendered autocompleter against.
+ * @type {Element}
+ * @private
+ */
+goog.ui.AutoComplete.Renderer.prototype.anchorElement_;
+
+
+/**
+ * The element on which to base the width of the autocomplete.
+ * @type {Node}
+ * @private
+ */
+goog.ui.AutoComplete.Renderer.prototype.widthProvider_;
+
+
+/**
  * The delay before mouseover events are registered, in milliseconds
  * @type {number}
  */
@@ -240,6 +264,17 @@ goog.ui.AutoComplete.Renderer.DELAY_BEFORE_MOUSEOVER = 300;
  */
 goog.ui.AutoComplete.Renderer.prototype.getElement = function() {
   return this.element_;
+};
+
+
+/**
+ * Sets the width provider element. The provider is only used on redraw and as
+ * such will not automatically update on resize.
+ * @param {Node} widthProvider The element whose width should be mirrored.
+ */
+goog.ui.AutoComplete.Renderer.prototype.setWidthProvider =
+    function(widthProvider) {
+  this.widthProvider_ = widthProvider;
 };
 
 
@@ -287,6 +322,15 @@ goog.ui.AutoComplete.Renderer.prototype.setMenuFadeDuration =
 
 
 /**
+ * Sets the anchor element for the subsequent call to renderRows.
+ * @param {Element} anchor The anchor element.
+ */
+goog.ui.AutoComplete.Renderer.prototype.setAnchorElement = function(anchor) {
+  this.anchorElement_ = anchor;
+};
+
+
+/**
  * Render the autocomplete UI
  *
  * @param {Array} rows Matching UI rows.
@@ -315,6 +359,12 @@ goog.ui.AutoComplete.Renderer.prototype.dismiss = function() {
   }
   if (this.visible_) {
     this.visible_ = false;
+
+    // Clear ARIA popup role for the target input box.
+    if (this.target_) {
+      goog.dom.a11y.setState(this.target_, goog.dom.a11y.State.HASPOPUP, false);
+    }
+
     if (this.menuFadeDuration_ > 0) {
       goog.dispose(this.animation_);
       this.animation_ = new goog.fx.dom.FadeOutAndHide(this.element_,
@@ -333,6 +383,15 @@ goog.ui.AutoComplete.Renderer.prototype.dismiss = function() {
 goog.ui.AutoComplete.Renderer.prototype.show = function() {
   if (!this.visible_) {
     this.visible_ = true;
+
+    // Set ARIA roles and states for the target input box.
+    if (this.target_) {
+      goog.dom.a11y.setRole(this.target_, goog.dom.a11y.Role.COMBOBOX);
+      goog.dom.a11y.setState(
+          this.target_, goog.dom.a11y.State.AUTOCOMPLETE, 'list');
+      goog.dom.a11y.setState(this.target_, goog.dom.a11y.State.HASPOPUP, true);
+    }
+
     if (this.menuFadeDuration_ > 0) {
       goog.dispose(this.animation_);
       this.animation_ = new goog.fx.dom.FadeInAndShow(this.element_,
@@ -358,11 +417,11 @@ goog.ui.AutoComplete.Renderer.prototype.isVisible = function() {
  * @param {number} index Index of the item to highlight.
  */
 goog.ui.AutoComplete.Renderer.prototype.hiliteRow = function(index) {
-  var rowDiv = index >= 0 && index < this.element_.childNodes.length ?
+  var rowDiv = index >= 0 && index < this.rowDivs_.length ?
       this.rowDivs_[index] : undefined;
 
   var evtObj = {type: goog.ui.AutoComplete.EventType.ROW_HILITE,
-      rowNode: rowDiv};
+    rowNode: rowDiv};
   if (this.dispatchEvent(evtObj)) {
     this.hiliteNone();
     this.hilitedRow_ = index;
@@ -434,14 +493,6 @@ goog.ui.AutoComplete.Renderer.prototype.maybeCreateElement_ = function() {
 
     el.id = goog.ui.IdGenerator.getInstance().getNextUniqueId();
 
-    // Set ARIA roles and states for the target input box.
-    if (this.target_) {
-      goog.dom.a11y.setRole(this.target_, goog.dom.a11y.Role.COMBOBOX);
-      goog.dom.a11y.setState(
-          this.target_, goog.dom.a11y.State.AUTOCOMPLETE, 'list');
-      goog.dom.a11y.setState(this.target_, goog.dom.a11y.State.HASPOPUP, true);
-    }
-
     this.dom_.appendChild(this.parent_, el);
 
     // Add this object as an event handler
@@ -449,9 +500,6 @@ goog.ui.AutoComplete.Renderer.prototype.maybeCreateElement_ = function() {
                        this.handleClick_, false, this);
     goog.events.listen(el, goog.events.EventType.MOUSEDOWN,
                        this.handleMouseDown_, false, this);
-    goog.events.listen(this.dom_.getDocument(),
-                       goog.events.EventType.MOUSEDOWN,
-                       this.handleDocumentMousedown_, false, this);
     goog.events.listen(el, goog.events.EventType.MOUSEOVER,
                        this.handleMouseOver_, false, this);
   }
@@ -471,6 +519,11 @@ goog.ui.AutoComplete.Renderer.prototype.redraw = function() {
   // visible repositioning
   if (this.topAlign_) {
     this.element_.style.visibility = 'hidden';
+  }
+
+  if (this.widthProvider_) {
+    var width = this.widthProvider_.clientWidth + 'px';
+    this.element_.style.minWidth = width;
   }
 
   // Remove the current child nodes
@@ -503,9 +556,6 @@ goog.ui.AutoComplete.Renderer.prototype.redraw = function() {
     this.show();
   }
 
-  // Fix bug on Firefox on Mac where scrollbars can show through a floating div
-  this.preventMacScrollbarResurface_(this.element_);
-
   this.reposition();
 
   // Make the autocompleter unselectable, so that it
@@ -520,10 +570,12 @@ goog.ui.AutoComplete.Renderer.prototype.redraw = function() {
  */
 goog.ui.AutoComplete.Renderer.prototype.reposition = function() {
   if (this.target_ && this.reposition_) {
-    var topLeft = goog.style.getPageOffset(this.target_);
-    var locationNodeSize = goog.style.getSize(this.target_);
+    // TODO(user): Can we use MenuAnchoredPosition instead?
+    var anchorElement = this.anchorElement_ || this.target_;
+    var topLeft = goog.style.getPageOffset(anchorElement);
+    var locationNodeSize = goog.style.getSize(anchorElement);
     var viewSize = goog.style.getSize(goog.style.getClientViewportElement(
-            this.target_));
+        anchorElement));
     var elSize = goog.style.getSize(this.element_);
     topLeft.y = this.topAlign_ ? topLeft.y - elSize.height :
         topLeft.y + locationNodeSize.height;
@@ -570,9 +622,6 @@ goog.ui.AutoComplete.Renderer.prototype.disposeInternal = function() {
         this.handleClick_, false, this);
     goog.events.unlisten(this.element_, goog.events.EventType.MOUSEDOWN,
         this.handleMouseDown_, false, this);
-    goog.events.unlisten(this.dom_.getDocument(),
-        goog.events.EventType.MOUSEDOWN, this.handleDocumentMousedown_, false,
-        this);
     goog.events.unlisten(this.element_, goog.events.EventType.MOUSEOVER,
         this.handleMouseOver_, false, this);
     this.dom_.removeNode(this.element_);
@@ -584,24 +633,6 @@ goog.ui.AutoComplete.Renderer.prototype.disposeInternal = function() {
   delete this.parent_;
 
   goog.ui.AutoComplete.Renderer.superClass_.disposeInternal.call(this);
-};
-
-
-/**
- * Prevents scrollbars that are below the node from resurfacing through the
- * node. This is a known bug in Firefox on Mac.
- *
- * @param {Node} node The node to prevent scrollbars from resurfacing through.
- * @private
- */
-goog.ui.AutoComplete.Renderer.prototype.preventMacScrollbarResurface_ =
-    function(node) {
-  if (goog.userAgent.GECKO && goog.userAgent.MAC) {
-    node.style.width = '';
-    node.style.overflow = 'visible';
-    node.style.width = node.offsetWidth;
-    node.style.overflow = 'auto';
-  }
 };
 
 
@@ -651,7 +682,17 @@ goog.ui.AutoComplete.Renderer.prototype.hiliteMatchingText_ =
 
     // Create a regular expression to match a token at the beginning of a line
     // or preceeded by non-alpha-numeric characters
-    var re = new RegExp('(.*?)(^|\\W+)(' + token + ')', 'gi');
+    // NOTE(user): this used to have a (^|\\W+) clause where it now has \\b
+    // but it caused various browsers to hang on really long strings. It is
+    // also excessive, because .*?\W+ is the same as .*?\b since \b already
+    // checks that the character before the token is a non-word character
+    // (the only time the regexp is different is if token begins with a
+    // non-word character), and ^ matches the start of the line or following
+    // a line terminator character, which is also \W. The initial group cannot
+    // just be .*? as it will miss line terminators (which is what the \W+
+    // clause used to match). Instead we use [\s\S] to match every character,
+    // including line terminators.
+    var re = new RegExp('([\\s\\S]*?)\\b(' + token + ')', 'gi');
     var textNodes = [];
     var lastIndex = 0;
 
@@ -664,26 +705,25 @@ goog.ui.AutoComplete.Renderer.prototype.hiliteMatchingText_ =
       numMatches++;
       textNodes.push(match[1]);
       textNodes.push(match[2]);
-      textNodes.push(match[3]);
       lastIndex = re.lastIndex;
       match = re.exec(text);
     }
     textNodes.push(text.substring(lastIndex));
 
-    // Replace the tokens with bolded text.  Each set of three textNodes
-    // (starting at index idx) includes two nodes of text before the bolded
-    // token, then a third node (at idx + 2) consisting of what should be
+    // Replace the tokens with bolded text.  Each pair of textNodes
+    // (starting at index idx) includes a node of text before the bolded
+    // token, and a node (at idx + 1) consisting of what should be
     // enclosed in bold tags.
     if (textNodes.length > 1) {
       var maxNumToBold = !this.highlightAllTokens_ ? 1 : numMatches;
       for (var i = 0; i < maxNumToBold; i++) {
-        var idx = 3 * i;
+        var idx = 2 * i;
 
-        node.nodeValue = textNodes[idx] + textNodes[idx + 1];
+        node.nodeValue = textNodes[idx];
         var boldTag = this.dom_.createElement('b');
         boldTag.className = this.highlightedClassName;
         this.dom_.appendChild(boldTag,
-            this.dom_.createTextNode(textNodes[idx + 2]));
+            this.dom_.createTextNode(textNodes[idx + 1]));
         boldTag = node.parentNode.insertBefore(boldTag, node.nextSibling);
         node.parentNode.insertBefore(this.dom_.createTextNode(''),
             boldTag.nextSibling);
@@ -691,18 +731,18 @@ goog.ui.AutoComplete.Renderer.prototype.hiliteMatchingText_ =
       }
 
       // Append the remaining text nodes to the end.
-      var remainingTextNodes = goog.array.slice(textNodes, maxNumToBold * 3);
+      var remainingTextNodes = goog.array.slice(textNodes, maxNumToBold * 2);
       node.nodeValue = remainingTextNodes.join('');
     } else if (rest) {
       this.hiliteMatchingText_(node, rest);
     }
   } else {
-     var child = node.firstChild;
-     while (child) {
-       var nextChild = child.nextSibling;
-       this.hiliteMatchingText_(child, tokenOrArray);
-       child = nextChild;
-     }
+    var child = node.firstChild;
+    while (child) {
+      var nextChild = child.nextSibling;
+      this.hiliteMatchingText_(child, tokenOrArray);
+      child = nextChild;
+    }
   }
 };
 
@@ -712,7 +752,7 @@ goog.ui.AutoComplete.Renderer.prototype.hiliteMatchingText_ =
  * in hiliteMatchingText_.
  * @param {string|Array.<string>} tokenOrArray The token or array to get the
  *     regex string from.
- * @return {!string} The regex-ready token.
+ * @return {string} The regex-ready token.
  * @private
  */
 goog.ui.AutoComplete.Renderer.prototype.getTokenRegExp_ =
@@ -723,17 +763,18 @@ goog.ui.AutoComplete.Renderer.prototype.getTokenRegExp_ =
     return token;
   }
 
+  if (goog.isArray(tokenOrArray)) {
+    // Remove invalid tokens from the array, which may leave us with nothing.
+    tokenOrArray = goog.array.filter(tokenOrArray, function(str) {
+      return !goog.string.isEmptySafe(str);
+    });
+  }
+
   // If highlighting all tokens, join them with '|' so the regular expression
   // will match on any of them.
   if (this.highlightAllTokens_) {
     if (goog.isArray(tokenOrArray)) {
-      // Remove empty or whitespace entries from the array so the joined array
-      // will only contain valid tokens.
-      var tokenArray = goog.array.filter(tokenOrArray, function(str) {
-        return !goog.string.isEmptySafe(str);
-      });
-
-      tokenArray = goog.array.map(tokenArray, goog.string.regExpEscape);
+      var tokenArray = goog.array.map(tokenOrArray, goog.string.regExpEscape);
       token = tokenArray.join('|');
     } else {
       // Remove excess whitespace from the string so bars will separate valid
@@ -747,11 +788,19 @@ goog.ui.AutoComplete.Renderer.prototype.getTokenRegExp_ =
     // Not highlighting all matching tokens.  If tokenOrArray is a string, use
     // that as the token.  If it is an array, use the first element in the
     // array.
+    // TODO(user): why is this this way?. We should match against all
+    // tokens in the array, but only accept the first match.
     if (goog.isArray(tokenOrArray)) {
       token = tokenOrArray.length > 0 ?
           goog.string.regExpEscape(tokenOrArray[0]) : '';
     } else {
-      token = goog.string.regExpEscape(tokenOrArray);
+      // For the single-match string token, we refuse to match anything if
+      // the string begins with a non-word character, as matches by definition
+      // can only occur at the start of a word. (This also handles the
+      // goog.string.isEmptySafe(tokenOrArray) case.)
+      if (!/^\W/.test(tokenOrArray)) {
+        token = goog.string.regExpEscape(tokenOrArray);
+      }
     }
   }
 
@@ -826,35 +875,13 @@ goog.ui.AutoComplete.Renderer.prototype.handleClick_ = function(e) {
 
 
 /**
- * Handle the mousedown event and tell the AC not to dimiss.
+ * Handle the mousedown event and prevent the AC from losing focus.
  * @param {goog.events.Event} e Browser event object.
  * @private
  */
 goog.ui.AutoComplete.Renderer.prototype.handleMouseDown_ = function(e) {
-  this.dispatchEvent(goog.ui.AutoComplete.EventType.CANCEL_DISMISS);
   e.stopPropagation();
   e.preventDefault();
-};
-
-
-
-
-
-/**
- * Handles the user clicking on the document.
- * @param {Object} e The document click event.
- * @private
- */
-goog.ui.AutoComplete.Renderer.prototype.handleDocumentMousedown_ = function(e) {
-  // If the user clicks on the input element, we don't want to close the
-  // autocomplete, it makes more sense to just unselect the currently selected
-  // item.
-  if (this.target_ == e.target) {
-    this.hiliteNone();
-    e.stopPropagation();
-    return;
-  }
-  this.dispatchEvent(goog.ui.AutoComplete.EventType.DISMISS);
 };
 
 

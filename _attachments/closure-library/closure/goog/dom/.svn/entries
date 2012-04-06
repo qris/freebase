@@ -1,15 +1,15 @@
 10
 
 dir
-1205
+1581
 http://closure-library.googlecode.com/svn/trunk/closure/goog/dom
 http://closure-library.googlecode.com/svn
 
 
 
-2011-08-01T18:55:28.000000Z
-1179
-weitzman@google.com
+2012-02-09T17:13:31.000000Z
+1575
+nicksantos@google.com
 
 
 
@@ -32,11 +32,11 @@ file
 
 
 
-2011-06-19T11:09:47.000000Z
-8721e5e1dd88caf5586a208adaf602cf
-2011-06-14T00:20:38.000000Z
-1037
-melchang@google.com
+2012-02-15T03:42:50.799445Z
+7b062dcb22ac7e7b9665fed86e47bcdd
+2011-10-14T19:29:33.000000Z
+1341
+jlistf@google.com
 has-props
 
 
@@ -58,7 +58,7 @@ has-props
 
 
 
-2710
+2750
 
 multirange.js
 file
@@ -66,11 +66,11 @@ file
 
 
 
-2011-06-19T11:09:47.000000Z
-b9f3d4a716b9698a4fbeece03a2519bc
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.799445Z
+c04834a7cc4e1625ee6b218eea2f9e83
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
 has-props
 
 
@@ -92,7 +92,7 @@ has-props
 
 
 
-13739
+13685
 
 fontsizemonitor.js
 file
@@ -100,11 +100,11 @@ file
 
 
 
-2011-08-03T23:09:21.891151Z
-0c20619531d37c80d0cf47b95ac4bc48
-2011-06-30T22:59:46.000000Z
-1086
-sbills@google.com
+2012-02-15T03:42:50.799445Z
+5beba024091462fd3dd4cb5668533c1e
+2011-12-13T22:20:28.000000Z
+1472
+ccalabro@google.com
 has-props
 
 
@@ -126,7 +126,7 @@ has-props
 
 
 
-5306
+5302
 
 annotate.js
 file
@@ -168,11 +168,11 @@ file
 
 
 
-2011-08-03T23:09:21.891151Z
-5fc575af2f163f77356bf5458878ad2b
-2011-07-01T23:40:42.000000Z
-1093
-geoffh@google.com
+2012-02-15T03:42:50.803445Z
+ff3ff6286d7e2c05e344521206f0380e
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
 has-props
 
 
@@ -194,7 +194,7 @@ has-props
 
 
 
-16321
+16319
 
 tagname.js
 file
@@ -202,11 +202,11 @@ file
 
 
 
-2011-06-19T11:09:47.000000Z
-4233973d7080aa9ebe32260f9ba8d132
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.803445Z
+9ed6e087f41a950cc0deac257590a30e
+2012-01-11T00:49:08.000000Z
+1510
+benvanik@google.com
 has-props
 
 
@@ -228,7 +228,7 @@ has-props
 
 
 
-2553
+2589
 
 selection_test.html
 file
@@ -304,11 +304,11 @@ file
 
 
 
-2011-08-03T23:09:21.895151Z
-2730d0c3f06ae0d933ce1cc0bb242227
-2011-08-01T18:55:28.000000Z
-1179
-weitzman@google.com
+2012-02-15T03:42:50.803445Z
+b0291fb32a82d340734d2b6feb23960a
+2011-12-12T21:19:39.000000Z
+1471
+gaal@google.com
 has-props
 
 
@@ -330,7 +330,7 @@ has-props
 
 
 
-47601
+48734
 
 savedrange.js
 file
@@ -406,11 +406,11 @@ file
 
 
 
-2011-06-19T11:09:47.000000Z
-8d640460d4ddea031123ce863720bbb8
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.803445Z
+07623b6da4da6cefb1eb2fb5a5a8e693
+2012-02-09T12:32:33.000000Z
+1574
+pallosp@google.com
 has-props
 
 
@@ -432,7 +432,7 @@ has-props
 
 
 
-7090
+7720
 
 controlrange_test.html
 file
@@ -467,6 +467,40 @@ has-props
 
 
 7818
+
+dataset.js
+file
+
+
+
+
+2011-06-19T11:09:47.000000Z
+349661ed2164224a71487f9695417af4
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3120
 
 tagiterator.js
 file
@@ -505,51 +539,17 @@ has-props
 browserrange
 dir
 
-dataset.js
-file
-
-
-
-
-2011-06-19T11:09:47.000000Z
-349661ed2164224a71487f9695417af4
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-3120
-
 forms.js
 file
 
 
 
 
-2011-06-19T11:09:47.000000Z
-8da05243fa6c76193b2c128cfbcd5e49
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.803445Z
+d91858a31c151f3ee12865b9b8fe03b3
+2011-12-13T22:20:28.000000Z
+1472
+ccalabro@google.com
 has-props
 
 
@@ -571,7 +571,7 @@ has-props
 
 
 
-11207
+11335
 
 xml_test.html
 file
@@ -641,40 +641,6 @@ has-props
 
 4651
 
-iframe_test.html
-file
-
-
-
-
-2011-06-19T11:09:47.000000Z
-4ff1a911376f6578dbaafa503625f4b0
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-2459
-
 iter_test.html
 file
 
@@ -709,17 +675,17 @@ has-props
 
 2634
 
-nodeoffset.js
+iframe_test.html
 file
 
 
 
 
-2011-06-19T11:09:47.000000Z
-2232c9703a76665131361cac24bbe8cf
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.803445Z
+07710717a09b7d0998797628ca0fecd9
+2011-12-13T22:20:28.000000Z
+1472
+ccalabro@google.com
 has-props
 
 
@@ -741,7 +707,41 @@ has-props
 
 
 
-3139
+2501
+
+nodeoffset.js
+file
+
+
+
+
+2012-02-15T03:42:50.803445Z
+f20ca38661d115911894e4e5290080cf
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3137
 
 multirange_test.html
 file
@@ -777,6 +777,40 @@ has-props
 
 1897
 
+browserfeature.js
+file
+
+
+
+
+2012-02-15T03:42:50.803445Z
+98392ff4818aabe10ca5e80e9856c4d8
+2011-12-12T21:19:39.000000Z
+1471
+gaal@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2236
+
 nodeiterator.js
 file
 
@@ -810,108 +844,6 @@ has-props
 
 
 2868
-
-browserfeature.js
-file
-
-
-
-
-2011-06-19T11:09:47.000000Z
-2f60cc4ba2a3725a580739961c8c2471
-2011-06-14T04:10:07.000000Z
-1038
-gboyer@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-1996
-
-annotate_test.html
-file
-
-
-
-
-2011-06-19T11:09:47.000000Z
-badc6f550e531cc3e6a86c9913e45939
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-6771
-
-fontsizemonitor_test.html
-file
-
-
-
-
-2011-06-19T11:09:47.000000Z
-e783dcec29fae5ab964c841ecbcdb5a1
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
-has-props
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-8603
 
 xml.js
 file
@@ -947,17 +879,17 @@ has-props
 
 6899
 
-a11y_test.html
+fontsizemonitor_test.html
 file
 
 
 
 
-2011-08-03T23:09:21.895151Z
-f7f36c4738842cc06f9374adb54b1a7e
-2011-07-01T23:40:42.000000Z
-1093
-geoffh@google.com
+2012-02-15T03:42:50.803445Z
+06f6393ed91eaa831a1d1982f7d53957
+2011-12-13T22:20:28.000000Z
+1472
+ccalabro@google.com
 has-props
 
 
@@ -979,10 +911,78 @@ has-props
 
 
 
-4605
+8643
+
+annotate_test.html
+file
+
+
+
+
+2011-06-19T11:09:47.000000Z
+badc6f550e531cc3e6a86c9913e45939
+2011-04-12T20:35:47.000000Z
+850
+diegosalas@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+6771
 
 pattern
 dir
+
+a11y_test.html
+file
+
+
+
+
+2012-02-15T03:42:50.807445Z
+a82e500df6f20c306ba04d2b14b2127f
+2011-12-13T22:20:28.000000Z
+1472
+ccalabro@google.com
+has-props
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+4647
 
 dom_quirks_test.html
 file
@@ -990,11 +990,11 @@ file
 
 
 
-2011-06-19T11:09:47.000000Z
-0537d485a374e0d5d6aef7a2944993cf
-2011-06-14T00:20:38.000000Z
-1037
-melchang@google.com
+2012-02-15T03:42:50.807445Z
+7745e462af25e40891fa469e96651610
+2011-10-14T19:29:33.000000Z
+1341
+jlistf@google.com
 has-props
 
 
@@ -1016,7 +1016,7 @@ has-props
 
 
 
-2711
+2751
 
 savedrange_test.html
 file
@@ -1126,11 +1126,11 @@ file
 
 
 
-2011-06-19T11:09:47.000000Z
-bdcbffcb30fea3a788fbbf4093f63555
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.807445Z
+c9a4c29109ea281dc34f99d48f41054e
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
 has-props
 
 
@@ -1152,7 +1152,7 @@ has-props
 
 
 
-7027
+7015
 
 dataset_test.html
 file
@@ -1228,11 +1228,11 @@ file
 
 
 
-2011-08-03T23:09:21.899150Z
-220cbcaf0065592932cd233a78ef454a
-2011-08-01T18:55:28.000000Z
-1179
-weitzman@google.com
+2012-02-15T03:42:50.807445Z
+88a5d93ee68dae76a96e7706705d71fa
+2012-02-09T17:13:31.000000Z
+1575
+nicksantos@google.com
 has-props
 
 
@@ -1254,7 +1254,7 @@ has-props
 
 
 
-81554
+82805
 
 abstractrange.js
 file
@@ -1296,11 +1296,11 @@ file
 
 
 
-2011-06-19T11:09:47.000000Z
-cf1b0af0ec48018ff126502d417b5e1b
-2011-06-10T12:08:17.000000Z
-1024
-pallosp@google.com
+2012-02-15T03:42:50.807445Z
+ff858bb6471c2c9cef44e75350c20ff4
+2011-12-13T22:20:28.000000Z
+1472
+ccalabro@google.com
 has-props
 
 
@@ -1322,7 +1322,7 @@ has-props
 
 
 
-6968
+7011
 
 range_test.html
 file
@@ -1466,11 +1466,11 @@ file
 
 
 
-2011-06-19T11:09:47.000000Z
-b7c7e958ce25a3b96acd51dd5ec65464
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.807445Z
+071c26effad172534001fe7612e183a0
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
 has-props
 
 
@@ -1492,7 +1492,7 @@ has-props
 
 
 
-2363
+2357
 
 range.js
 file
@@ -1568,11 +1568,11 @@ file
 
 
 
-2011-06-19T11:09:47.000000Z
-b9dc042504291e9908f8bdb9370f81c1
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.811445Z
+58b4da66be4cab5f653353aa008aed7b
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
 has-props
 
 
@@ -1594,7 +1594,7 @@ has-props
 
 
 
-12922
+12866
 
 classes.js
 file
@@ -1602,11 +1602,11 @@ file
 
 
 
-2011-06-19T11:09:47.000000Z
-7057cb16ab133452e16583e297e4c8c0
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.811445Z
+5e9676b7b21427bb13165402aeaa88e6
+2012-02-09T12:32:33.000000Z
+1574
+pallosp@google.com
 has-props
 
 
@@ -1628,7 +1628,7 @@ has-props
 
 
 
-7460
+7361
 
 savedcaretrange.js
 file
@@ -1670,11 +1670,11 @@ file
 
 
 
-2011-06-19T11:09:47.000000Z
-72ae58d4b45a226677937d64b41cf7c0
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.811445Z
+6ad32025552e699e6281ffc9ddaaf0d0
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
 has-props
 
 
@@ -1696,7 +1696,7 @@ has-props
 
 
 
-17487
+17437
 
 textrangeiterator_test.html
 file
@@ -1738,11 +1738,11 @@ file
 
 
 
-2011-06-19T11:09:47.000000Z
-6eb8bfd16f5cf5cc2a7bad4a417ac0fc
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.811445Z
+35246f87be47d3ea957e8a27b7afb6f0
+2011-12-13T22:20:28.000000Z
+1472
+ccalabro@google.com
 has-props
 
 
@@ -1764,7 +1764,7 @@ has-props
 
 
 
-4550
+4595
 
 iter.js
 file
@@ -1772,11 +1772,11 @@ file
 
 
 
-2011-06-19T11:09:47.000000Z
-dc13b987e3de994b91128aa7557b172b
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.811445Z
+9e3afc08b72440a9f45c22b5c0edcf52
+2011-09-27T00:20:47.000000Z
+1302
+bmccann@google.com
 has-props
 
 
@@ -1798,7 +1798,7 @@ has-props
 
 
 
-3535
+3531
 
 tagname_test.html
 file
@@ -1806,11 +1806,11 @@ file
 
 
 
-2011-06-19T11:09:47.000000Z
-5e9c050b6e38e5cd7be148e3ee3f7d87
-2011-04-12T20:35:47.000000Z
-850
-diegosalas@google.com
+2012-02-15T03:42:50.811445Z
+019975c80797c6bffafdda9560c4fcb0
+2012-01-11T00:49:08.000000Z
+1510
+benvanik@google.com
 has-props
 
 

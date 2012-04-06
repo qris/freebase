@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
 V 44
-/svn/!svn/ver/1113/trunk/closure/goog/module
+/svn/!svn/ver/1578/trunk/closure/goog/module
 END
 module.js
 K 25
@@ -18,20 +18,20 @@ END
 modulemanager_test.html
 K 25
 svn:wc:ra_dav:version-url
-V 67
-/svn/!svn/ver/850/trunk/closure/goog/module/modulemanager_test.html
+V 68
+/svn/!svn/ver/1578/trunk/closure/goog/module/modulemanager_test.html
 END
 basemoduleloader.js
 K 25
 svn:wc:ra_dav:version-url
-V 63
-/svn/!svn/ver/850/trunk/closure/goog/module/basemoduleloader.js
+V 64
+/svn/!svn/ver/1302/trunk/closure/goog/module/basemoduleloader.js
 END
 moduleinfo_test.html
 K 25
 svn:wc:ra_dav:version-url
-V 64
-/svn/!svn/ver/850/trunk/closure/goog/module/moduleinfo_test.html
+V 65
+/svn/!svn/ver/1434/trunk/closure/goog/module/moduleinfo_test.html
 END
 moduleloadcallback_test.html
 K 25
@@ -42,14 +42,14 @@ END
 moduleloader.js
 K 25
 svn:wc:ra_dav:version-url
-V 59
-/svn/!svn/ver/850/trunk/closure/goog/module/moduleloader.js
+V 60
+/svn/!svn/ver/1452/trunk/closure/goog/module/moduleloader.js
 END
 modulemanager.js
 K 25
 svn:wc:ra_dav:version-url
 V 61
-/svn/!svn/ver/1113/trunk/closure/goog/module/modulemanager.js
+/svn/!svn/ver/1578/trunk/closure/goog/module/modulemanager.js
 END
 basemodule.js
 K 25
@@ -66,8 +66,8 @@ END
 moduleinfo.js
 K 25
 svn:wc:ra_dav:version-url
-V 57
-/svn/!svn/ver/850/trunk/closure/goog/module/moduleinfo.js
+V 58
+/svn/!svn/ver/1444/trunk/closure/goog/module/moduleinfo.js
 END
 moduleloadcallback.js
 K 25
@@ -78,6 +78,6 @@ END
 moduleloader_test.html
 K 25
 svn:wc:ra_dav:version-url
-V 66
-/svn/!svn/ver/850/trunk/closure/goog/module/moduleloader_test.html
+V 67
+/svn/!svn/ver/1434/trunk/closure/goog/module/moduleloader_test.html
 END

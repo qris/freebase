@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
 V 24
-/svn/!svn/ver/1202/trunk
+/svn/!svn/ver/1581/trunk
 END
 LICENSE
 K 25
@@ -12,14 +12,14 @@ END
 AUTHORS
 K 25
 svn:wc:ra_dav:version-url
-V 31
-/svn/!svn/ver/850/trunk/AUTHORS
+V 32
+/svn/!svn/ver/1328/trunk/AUTHORS
 END
 alltests.js
 K 25
 svn:wc:ra_dav:version-url
 V 36
-/svn/!svn/ver/1180/trunk/alltests.js
+/svn/!svn/ver/1579/trunk/alltests.js
 END
 all_tests.html
 K 25
