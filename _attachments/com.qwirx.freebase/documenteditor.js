@@ -5,6 +5,7 @@ goog.provide('com.qwirx.freebase.DocumentEditor');
 goog.require('goog.ui.Control');
 goog.require('goog.ui.CustomButton');
 goog.require('com.qwirx.grid.Grid');
+goog.require('com.qwirx.grid.SimpleDatasource');
 
 com.qwirx.freebase.CLOSE_BUTTON_RENDERER =
 	goog.ui.ControlRenderer.getCustomRenderer(goog.ui.CustomButtonRenderer,
@@ -108,7 +109,9 @@ com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
 				columnsGridInfo[i + 1] = {caption: document.columns[i].name};
 			}
 			
-			var grid = this.grid_ = new com.qwirx.grid.Grid(columnsGridInfo);
+			var datasource = this.dataSource_ = 
+				new com.qwirx.grid.SimpleDatasource(columnsGridInfo, []);
+			var grid = this.grid_ = new com.qwirx.grid.Grid(datasource);
 			grid.addClassName('fb-datagrid');
 			grid.render(editorControl);
 			
@@ -122,7 +125,7 @@ com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
 						var result = all_results.rows[r].value;
 						var columnCells = self.getGridColumnData(result,
 							numCols);
-						var rowIndex = grid.appendRow(columnCells);
+						datasource.appendRow(columnCells);
 					}
 				});
 		}
@@ -360,6 +363,11 @@ com.qwirx.freebase.DocumentEditor.prototype.getDataGrid = function()
 	return this.grid_;
 };
 
+com.qwirx.freebase.DocumentEditor.prototype.getDataSource = function()
+{
+	return this.dataSource_;
+};
+
 /**
  * Converts a document (a model object) into the cell data that should
  * be displayed in the grid for this document.
@@ -418,24 +426,6 @@ com.qwirx.freebase.DocumentEditor.prototype.getGridColumnData =
 	return columnCells;
 };
 
-/**
- * Binary search on a sorted tree (actually any BaseNode) to find the
- * correct insertion point to maintain sort order.
- */
-com.qwirx.freebase.DocumentEditor.prototype.gridRowIdSearch =
-	function(grid, compareRowFn, target)
-{
-	return com.qwirx.freebase.binarySearch(
-		function countFn()
-		{
-			return grid.getRowCount();
-		},
-		function compareFn(atIndex)
-		{
-			return compareRowFn(target, grid.getRow(atIndex).getColumns());
-		});
-};
-
 com.qwirx.freebase.DocumentEditor.prototype.gridRowIdCompare = function(a, b)
 {
 	var ta = a[0].value;
@@ -451,23 +441,23 @@ com.qwirx.freebase.DocumentEditor.prototype.gridRowIdCompare = function(a, b)
 com.qwirx.freebase.DocumentEditor.prototype.onDocumentSaved = function(event)
 {
 	var document = event.getDocument();
-	var grid = this.grid_;
+	var gridDataSource = this.dataSource_;
 	
-	if (grid)
+	if (gridDataSource)
 	{
 		var newRowData = this.getGridColumnData(document);
-		var rowIndex = this.gridRowIdSearch(grid,
+		var rowIndex = gridDataSource.binarySearch(
 			this.gridRowIdCompare, newRowData);
 		
 		if (rowIndex >= 0)
 		{
-			grid.updateRow(rowIndex, newRowData);
+			gridDataSource.updateRow(rowIndex, newRowData);
 		}
 		else
 		{
 			// row should not exist yet, so newRowIndex < 0
 			rowIndex = ~rowIndex;
-			grid.insertRowAt(newRowData, rowIndex);
+			gridDataSource.insertRow(rowIndex, newRowData);
 		}
 	}
 

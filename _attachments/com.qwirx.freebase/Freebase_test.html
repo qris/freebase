@@ -493,6 +493,8 @@ goog.dom.appendChild(document.body, domContainer);
 
 function setUp()
 {
+	goog.dom.removeChildren(domContainer);
+	
 	mockFreebase = new MockFreebase();
 	Cat = Model('Cat', mockFreebase, [{name: 'name', type: 'String'},
 		{name: 'age', type: 'Number'}]);
@@ -814,38 +816,37 @@ function testFreebaseGuiRun()
 	}
 
 	// data grid should have been updated
-	var grid = editor.getDataGrid();
-	assertEquals(4, grid.getRowCount());
+	var ds = editor.getDataSource();
+	assertEquals(4, ds.getRowCount());
 
-	function assertGridRow(rowIndex, modelObject)
+	function assertDataSourceRow(rowIndex, modelObject)
 	{
-		var row = grid.getRow(rowIndex).getColumns();
+		var row = ds.getRow(rowIndex);
 		assertEquals(modelObject._id,  row[0].value);
 		assertEquals(modelObject.name, row[1].value);
 		assertEquals("" + modelObject.age, row[2].value);
 	}
 
-	function assertAllCatsGrid()
+	function assertAllCatsData()
 	{	
 		for (var i = 0; i < allCatIds.length; i++)
 		{
 			var expectedCat = allCatsMap[allCatIds[i]];
-			assertGridRow(i, expectedCat);
+			assertDataSourceRow(i, expectedCat);
 		}
 	}		
 	
 	// happy birthday Etcetera! Who knows?
 	etc.age = 1;
 	mockFreebase.save(etc, function(){});
-	assertAllCatsGrid();
+	assertAllCatsData();
 	
 	// close and reopen the Cat editor, check that it works when
 	// documents already exist at open time
 	editor.close();
 	editor = assertCallback(function(c)	
 		{ gui.openDocument(Cat.getId(), c); })[0];
-	grid = editor.getDataGrid();
-	assertAllCatsGrid();
+	assertAllCatsData();
 	
 	// try opening a document
 	editor.close();
@@ -927,7 +928,7 @@ function getCell(grid, x, y)
 	}
 	else
 	{
-		return grid.getRow(y).getColumns()[x].tableCell;
+		return grid.rows_[y].getColumns()[x].tableCell;
 	}
 }
 
@@ -939,22 +940,35 @@ function assertSelection(grid, message, x1, y1, x2, y2)
 	var actual = goog.object.clone(grid.drag);
 	goog.object.remove(actual, 'origin');
 	assertObjectEquals(message, expected, actual);
+	var scroll = grid.scrollOffset_;
 	
 	// check that row and column CSS classes match expectations
-	for (var y = 0; y < grid.getRowCount(); y++)
+	for (var y = 0; y < grid.getVisibleRowCount(); y++)
 	{
-		var rowElement = grid.rowElements_[y];
-		assertEquals(message + ": wrong highlight status for row " + y,
-			/* should this row be highlighted? */
-			y >= Math.min(y1, y2) && y <= Math.max(y1, y2),
-			/* is it actually highlighted? */
-			goog.dom.classes.has(rowElement, 'highlight'));
+		var rowElement = grid.rows_[y].getRowElement();
+		var dataRow = y + scroll.y;
+		var shouldBeVisible = (dataRow < grid.dataSource_.getRowCount());
+		
+		assertEquals(message + ": wrong visible status for " +
+			"grid row " + y + ", data row " + dataRow,
+			shouldBeVisible, goog.style.isElementShown(rowElement));
+		
+		if (shouldBeVisible)
+		{
+			assertEquals(message + ": wrong highlight status for " +
+				"grid row " + y + ", data row " + dataRow,
+				/* should this row be highlighted? */
+				dataRow >= Math.min(y1, y2) &&
+				dataRow <= Math.max(y1, y2),
+				/* is it actually highlighted? */
+				goog.dom.classes.has(rowElement, 'highlight'));
+		}		
 	}
 
 	var builder = new goog.string.StringBuffer();
 	for (var x = Math.min(x1, x2); x <= Math.max(x1, x2) && x1 >= 0; x++)
 	{
-		builder.append('table#' + grid.getElement().id + ' > ' +
+		builder.append('table#' + grid.dataTable_.id + ' > ' +
 			'tr.highlight > td.col_' + x + ' { background: #ddf; }');
 	}
 	assertEquals(message, builder.toString(), grid.highlightStyles_.innerHTML);
@@ -969,7 +983,7 @@ function assertGetGrid()
 	
 	var grid = editor.grid_;
 	assertEquals('Grid should have been populated with some cats',
-		2, grid.getRowCount());
+		2, grid.getVisibleRowCount());
 	assertSelection(grid, 'No cells should be selected initially',
 		-1, -1, -1, -1);
 
@@ -1196,13 +1210,13 @@ function testGridInsertRowAt()
 	var editor = assertCallback(function(c) { gui.openDocument(Cat.getId(), c); })[0];
 	var grid = editor.grid_;
 	assertEquals('Grid should have been populated with some cats',
-		2, grid.getRowCount());
+		2, editor.getDataSource().getRowCount());
 	
 	// insert a row between two others
-	grid.insertRowAt([{value: "unidentified"}, {value: "flying"},
-		{value: "object"}], 1);
-	assertEquals('Grid row count should have been updated',
-		3, grid.getRowCount());
+	editor.getDataSource().insertRow(1,
+		[{value: "unidentified"}, {value: "flying"}, {value: "object"}]);
+	assertEquals('Data source row count should have been updated',
+		3, editor.getDataSource().getRowCount());
 	
 	var allCats = assertCallback(function(c)
 		// { mockFreebase.listAll(true, c); })[0].rows;
@@ -1217,9 +1231,9 @@ function testGridInsertRowAt()
 	
 	function assertCellContentsAndSelection(rowIndex, contents)
 	{
-		assertEquals(contents, grid.getRow(rowIndex).getColumns()[0].value);
-		assertEquals(rowIndex, grid.getRow(rowIndex).getRowIndex());
-		var cell = grid.getRow(rowIndex).getColumns()[0].tableCell;
+		assertEquals(contents, grid.rows_[rowIndex].getColumns()[0].value);
+		assertEquals(rowIndex, grid.rows_[rowIndex].getRowIndex());
+		var cell = grid.rows_[rowIndex].getColumns()[0].tableCell;
 		assertEquals(rowIndex,
 			cell[com.qwirx.grid.Grid.TD_ATTRIBUTE_ROW].getRowIndex());
 		sendFakeMouseEvent(goog.events.EventType.MOUSEDOWN, 0, cell);
@@ -1232,36 +1246,214 @@ function testGridInsertRowAt()
 	assertCellContentsAndSelection(2, allCatIds[1]);
 }
 
-function testLargeGridDataSource()
+function initGrid(datasource)
 {
-	var TestDataSource = function()
-	{
-	};
-	
-	TestDataSource.prototype.getRow = function(rowIndex)
-	{
-		return [{value: "" + rowIndex}];
-	};
-
-	TestDataSource.prototype.getRowCount = function()
-	{
-		return 100000;
-	};
-	
-	TestDataSource.prototype.getColumns = function()
-	{
-		return [{caption: 'Row Index'}];
-	};
-	
-	ds = new TestDataSource();
-
 	// goog.style.setHeight(domContainer, 300);
 	domContainer.style.height = '300px';
 	domContainer.style.overflow = 'hidden';
 	
-	var grid = new com.qwirx.grid.Grid(ds);
+	var grid = new com.qwirx.grid.Grid(datasource);
 	grid.addClassName('fb-datagrid');
 	grid.render(domContainer);
+
+	// grid should initially display the top left corner
+	assertObjectEquals({x: 0, y: 0}, grid.scrollOffset_);
+	
+	// a click which doesn't change the row selection should not
+	// cause an error
+	assertSelection(grid, "initial state should be no selection",
+		-1, -1, -1, -1);
+	
+	return grid;
+}
+
+function assertGridContents(grid, data)
+{
+	self.assertEquals('Wrong number of rows in grid',
+		data.length, grid.getVisibleRowCount());
+
+	for (var rowIndex = 0; rowIndex < data.length; rowIndex++)
+	{
+		var rowData = data[rowIndex];
+		for (var colIndex = 0; colIndex < rowData.length; colIndex++)
+		{
+			var cell = grid.rows_[rowIndex].getColumns()[colIndex].tableCell;
+			self.assertEquals('Wrong value for row ' + rowIndex +
+				' column ' + colIndex,
+				rowData[colIndex].value.toString(), cell.innerHTML);
+		}
+	}
+}
+
+function testGridDataSourceEvents()
+{
+	var columns = [{caption: 'ID'}, {caption: 'Name'}];
+	var data = [
+		[{value: 1}, {value: 'John'}],
+		[{value: 2}, {value: 'James'}],
+		[{value: 5}, {value: 'Peter'}],
+	];
+	var ds = new com.qwirx.grid.SimpleDatasource(columns, data);
+	var grid = initGrid(ds);
+
+	assertGridContents(grid, data);
+	
+	ds.appendRow([{value: 7}, {value: 'Paul'}]);
+	data.push([{value: 7}, {value: 'Paul'}]);
+	assertGridContents(grid, data);
+	
+	ds.insertRow(1, [{value: 8}, {value: 'Duke'}]);
+	data.splice(1, 0, [{value: 8}, {value: 'Duke'}]);
+	assertGridContents(grid, data);
+	
+	var oldValue = data[1][1].value;
+	data[1][1].value = 'Atreides'
+	self.assertNotEquals('The data source should contain a ' +
+		'deep copy of the data, not affected by external changed',
+		'Atreides', ds.getRow(1)[1].value);
+
+	data[1][1] = {value: 'Leto'}
+	self.assertNotEquals('The data source should contain a ' +
+		'deep copy of the data, not affected by external changed',
+		'Leto', ds.getRow(1)[1].value);
+	data[1][1].value = oldValue;
+	
+	ds.updateRow(2, [{value: 9}, {value: 'Iago'}]);
+	data.splice(2, 1, [{value: 9}, {value: 'Iago'}]);
+	assertGridContents(grid, data);
+}	
+
+function testLargeGridDataSource()
+{
+	var TestDataSource = function()
+	{
+		this.requestedRows = [];
+		this.rowCount = 10000;
+	};
+	
+	goog.inherits(TestDataSource, com.qwirx.grid.Datasource);
+
+	// http://station.woj.com/2010/02/javascript-random-seed.html
+	function random(max, seed)
+	{
+		if (!seed)
+		{
+			seed = new Date().getTime();
+		}
+		seed = (seed*9301+49297) % 233280;
+		return seed % max;
+	}
+	
+	TestDataSource.prototype.getRow = function(rowIndex)
+	{
+		this.requestedRows.push(rowIndex);
+		return [
+			{value: "" + rowIndex},
+			{value: "" + random(1000, rowIndex)}
+		];
+	};
+
+	TestDataSource.prototype.getRowCount = function()
+	{
+		return this.rowCount;
+	};
+
+	TestDataSource.prototype.setRowCount = function(newRowCount)
+	{
+		this.rowCount = newRowCount;
+		this.dispatchEvent(com.qwirx.grid.Datasource.Events.ROW_COUNT_CHANGE);
+	};
+	
+	TestDataSource.prototype.getColumns = function()
+	{
+		return [{caption: 'Row Index'}, {caption: 'Random Number'}];
+	};
+	
+	var ds = new TestDataSource();
+	var grid = initGrid(ds);
+	
+	function range(a, b)
+	{
+		var array = [];
+		for (var i = 0; i <= (b - a); i++)
+		{
+			array[i] = a + i;
+		}
+		return array;
+	}
+	
+	var gridRows = grid.getVisibleRowCount();
+	assertObjectEquals(range(0, gridRows - 1), ds.requestedRows);
+	
+	var scrollbar = grid.scrollBar_;
+	assertNotNull(scrollbar);
+	assertEquals(0, scrollbar.getMinimum());
+	assertEquals(ds.getRowCount() - gridRows + 1, scrollbar.getMaximum());
+	// slider is inverted, so the maximum value is at the top
+	assertEquals(scrollbar.getMaximum(), scrollbar.getValue());
+	assertEquals(0, scrollbar.getExtent());
+
+	ds.requestedRows = [];
+	scrollbar.setValue(0); // slider is inverted, so 0 is at the bottom
+	assertObjectEquals({x: 0, y: ds.getRowCount() - gridRows + 1},
+		grid.scrollOffset_);
+	assertObjectEquals(range(ds.getRowCount() - gridRows + 1,
+		ds.getRowCount() - 1), ds.requestedRows);
+	
+	grid.setSelection(1, 1, 2, 4);
+	assertSelection(grid, "setSelection method should change selection",
+		1, 1, 2, 4);
+
+	ds.requestedRows = [];
+	scrollbar.setValue(ds.getRowCount() - gridRows - 1); // 2 from the top
+	assertObjectEquals(range(2, gridRows + 1), ds.requestedRows);
+	assertObjectEquals({x: 0, y: 2}, grid.scrollOffset_);
+	assertSelection(grid, "scrolling should not have changed selection",
+		1, 1, 2, 4);
+
+	// Shrink the row count a bit, check that scrollbar is adjusted
+	grid.setSelection(1, 1, 2, 4);
+	ds.requestedRows = [];
+	ds.setRowCount(gridRows * 2); // but the first two are offscreen
+	assertEquals("row count change should have reset scrollbar maximum",
+		ds.getRowCount() - gridRows + 1, scrollbar.getMaximum());
+	assertEquals("row count change should have adjusted scrollbar " +
+		"value to maintain position 2 rows down from the top",
+		scrollbar.getMaximum() - 2, scrollbar.getValue());
+	assertObjectEquals(range(2, gridRows + 1), ds.requestedRows);
+	assertObjectEquals({x: 0, y: 2}, grid.scrollOffset_);
+		
+	// Shrink the row count to less than the selection, check that
+	// scrollbar is adjusted (maximum should be 0) and selection
+	// truncated to new row count.
+	grid.setSelection(1, 1, 2, gridRows + 2);
+	ds.requestedRows = [];
+	
+	// Test that setting datasource rows to fewer than visible rows
+	// disables scrolling. It must be fewer, because the last row
+	// may be only partially visible, so you might have to scroll
+	// to see it.
+	ds.setRowCount(gridRows - 1); // but the first two are offscreen
+	assertEquals("row count change should have reset scrollbar " +
+		"maximum to zero, as scrolling is no longer possible",
+		0, scrollbar.getMaximum());
+	assertEquals("row count change should have adjusted scrollbar " +
+		"value to 0 to stay between minimum and maximum",
+		0, scrollbar.getValue());
+	assertSelection(grid, "shrinking datasource should have shrunk " +
+		"selection", 1, 1, 2, gridRows - 2);
+	
+	// the grid scroll offset is left at 2, no longer matching the
+	// scroll position, to avoid a visual jump
+	assertObjectEquals({x: 0, y: 2}, grid.scrollOffset_);
+	assertObjectEquals(range(2, gridRows - 2), ds.requestedRows);
+	
+	// but any attempt to set the value should cause the grid's
+	// scroll offset to jump back to 0
+	ds.requestedRows = [];
+	grid.scrollBar_.dispatchEvent(goog.ui.Component.EventType.CHANGE);
+	assertObjectEquals({x: 0, y: 0}, grid.scrollOffset_);
+	assertObjectEquals(range(0, gridRows - 2), ds.requestedRows);	
 }
 
 </script>

@@ -1,7 +1,12 @@
 goog.provide('com.qwirx.grid.Grid');
-goog.require('com.qwirx.loader');
+goog.provide('com.qwirx.grid.Datasource');
+goog.provide('com.qwirx.grid.Datasource.Events');
+goog.provide('com.qwirx.grid.Datasource.RowEvent');
+goog.provide('com.qwirx.grid.SimpleDatasource');
 
+goog.require('com.qwirx.loader');
 goog.require('goog.ui.Control');
+goog.require('goog.ui.Slider');
 goog.require('goog.editor.SeamlessField');
 
 var
@@ -15,30 +20,144 @@ com.qwirx.freebase.log = function(var_args)
 	}
 };
 
-com.qwirx.grid.Grid = function(columns_or_datasource, opt_renderer)
+com.qwirx.grid.Datasource = goog.nullFunction;
+
+goog.inherits(com.qwirx.grid.Datasource, goog.events.EventTarget);
+
+com.qwirx.grid.Datasource.Events = {
+	ROW_COUNT_CHANGE: 'ROW_COUNT_CHANGE',
+	ROWS_INSERT: 'ROWS_INSERT',
+	ROWS_UPDATE: 'ROWS_UPDATE',
+};
+
+/**
+ * A base class for events that affect specific rows of a
+ * data source. The row indexes are passed as an array.
+ */
+ 
+com.qwirx.grid.Datasource.RowEvent = function(type, rowIndexes)
+{
+	goog.events.Event.call(this, type);
+	this.rowIndexes_ = rowIndexes;
+};
+
+goog.inherits(com.qwirx.grid.Datasource.RowEvent, goog.events.Event);
+
+com.qwirx.grid.Datasource.RowEvent.prototype.getAffectedRows =
+	function()
+{
+	return this.rowIndexes_;
+};
+
+/**
+ * Binary search on a sorted tree (actually any BaseNode) to find the
+ * correct insertion point to maintain sort order.
+ */
+com.qwirx.grid.Datasource.prototype.binarySearch =
+	function(compareRowFn, target)
+{
+	var ds = this;
+	
+	return com.qwirx.freebase.binarySearch(
+		function countFn()
+		{
+			return ds.getRowCount();
+		},
+		function compareFn(atIndex)
+		{
+			return compareRowFn(target, ds.getRow(atIndex));
+		});
+};
+
+/**
+ * A simple data source for the grid component.
+ * @todo replace with goog.ds.DataNode.
+ */
+
+com.qwirx.grid.SimpleDatasource = function(columns, data)
+{
+	this.columns_ = goog.array.clone(columns);
+	this.data_ = goog.array.clone(data);
+};
+
+goog.inherits(com.qwirx.grid.SimpleDatasource,
+	com.qwirx.grid.Datasource);
+
+com.qwirx.grid.SimpleDatasource.prototype.getColumns = function()
+{
+	return this.columns_;
+};
+
+com.qwirx.grid.SimpleDatasource.prototype.getRowCount = function()
+{
+	return this.data_.length;
+};
+
+com.qwirx.grid.SimpleDatasource.prototype.getRow = function(rowIndex)
+{
+	return this.data_[rowIndex];
+};
+
+com.qwirx.grid.SimpleDatasource.prototype.insertRow = 
+	function(rowIndex, newRowData)
+{
+	this.data_.splice(rowIndex, 0, newRowData);
+	this.dispatchEvent(new com.qwirx.grid.Datasource.RowEvent(
+		com.qwirx.grid.Datasource.Events.ROWS_INSERT, [rowIndex]));
+};
+
+com.qwirx.grid.SimpleDatasource.prototype.appendRow = 
+	function(newRowData)
+{
+	this.insertRow(this.data_.length, newRowData);
+};
+
+com.qwirx.grid.SimpleDatasource.prototype.updateRow = 
+	function(rowIndex, newRowData)
+{
+	this.data_.splice(rowIndex, 1, newRowData);
+	this.dispatchEvent(new com.qwirx.grid.Datasource.RowEvent(
+		com.qwirx.grid.Datasource.Events.ROWS_UPDATE, [rowIndex]));
+};
+
+/**
+ * A grid component which displays data loaded from an underlying
+ * data source.
+ * @todo change the data source to a goog.ds.DataNode.
+ */
+com.qwirx.grid.Grid = function(datasource, opt_renderer)
 {
 	opt_renderer = opt_renderer || com.qwirx.grid.Grid.RENDERER;
 	goog.ui.Control.call(this, null, opt_renderer);
 	
-	if (columns_or_datasource.getRow)
-	{
-		this.dataSource_ = columns_or_datasource;
-		this.columns_ = columns_or_datasource.getColumns().slice(0); // copy
-	}
-	else
-	{
-		this.columns_ = columns_or_datasource.slice(0); // copy
-	}
+	this.dataSource_ = datasource;
+	var self = this;
+	
+	datasource.addEventListener(
+		com.qwirx.grid.Datasource.Events.ROW_COUNT_CHANGE,
+		function(e) { self.handleDataSourceRowCountChange(e); });
+	datasource.addEventListener(
+		com.qwirx.grid.Datasource.Events.ROWS_INSERT,
+		function(e) { self.handleDataSourceRowsEvent(e,
+			self.handleRowInsert); });
+	datasource.addEventListener(
+		com.qwirx.grid.Datasource.Events.ROWS_UPDATE,
+		function(e) { self.handleDataSourceRowsEvent(e,
+			self.handleRowUpdate); });
 	
 	// focusing a grid isn't very useful and looks ugly in Chrome
 	this.setSupportedState(goog.ui.Component.State.FOCUSED, false);
 	
-	this.drag = { origin: undefined, x1: -1, y1: -1, x2: -1, y2: -1 };
+	this.drag = com.qwirx.grid.Grid.NO_SELECTION;
 	
 	this.scrollOffset_ = { x: 0, y: 0 };
 };
 
 goog.inherits(com.qwirx.grid.Grid, goog.ui.Control);
+
+com.qwirx.grid.Grid.NO_SELECTION = {
+	origin: undefined, x1: -1, y1: -1, x2: -1, y2: -1
+};
 
 com.qwirx.grid.Grid.RENDERER = goog.ui.ControlRenderer.getCustomRenderer(
 	goog.ui.ControlRenderer, 'fb-grid');
@@ -64,11 +183,53 @@ com.qwirx.grid.Grid.prototype.render = function(opt_parentElement)
 
 com.qwirx.grid.Grid.prototype.createDom = function()
 {
-	this.element_ = this.dom_.createDom('table',
+	this.element_ = this.dom_.createDom('div',
 		this.getRenderer().getClassNames(this).join(' '));
-	this.element_.id = goog.string.createUniqueString();
+	
+	/*
+	var outerRow = this.dom_.createDom('tr', 'fb-grid-outer-tr');
+	this.element_.appendChild(outerRow);
+	
+	var dataCell = this.dom_.createDom('td', 'fb-grid-data-td');
+	outerRow.appendChild(dataCell);
+	*/
 
-	var columns = this.columns_;
+	var scrollBarOuterDiv = this.dom_.createDom('div', 'fb-grid-scroll-v');
+	this.element_.appendChild(scrollBarOuterDiv);
+
+	/*
+	var scrollBarTable = this.dom_.createDom('table');
+	scrollBarOuterDiv.appendChild(scrollBarTable);
+
+	var scrollBarTr = this.dom_.createDom('tr');
+	scrollBarTable.appendChild(scrollBarTr);
+
+	var scrollBarTd = this.dom_.createDom('td');
+	scrollBarTr.appendChild(scrollBarTd);
+
+	var scrollBarInnerDiv = this.dom_.createDom('div');
+	scrollBarTd.appendChild(scrollBarInnerDiv);
+	*/
+	
+	var dataDiv = this.dom_.createDom('div', 'fb-grid-data');
+	this.element_.appendChild(dataDiv);
+	
+	this.scrollBar_ = new goog.ui.Slider;
+	// this.scrollBar_.decorate(scrollBarTd);
+	this.scrollBar_.decorate(scrollBarOuterDiv);
+	this.scrollBar_.setOrientation(goog.ui.Slider.Orientation.VERTICAL);
+	this.scrollBar_.setMaximum(this.dataSource_.getRowCount());
+
+	// Scrollbar value is inverted: the maximum value is at the top,
+	// which is where we want to be initially.
+	this.scrollBar_.setValue(this.dataSource_.getRowCount(), 0);
+
+	this.dataTable_ = this.dom_.createDom('table',
+		{'class': 'fb-grid-data-table'});
+	this.dataTable_.id = goog.string.createUniqueString();
+	dataDiv.appendChild(this.dataTable_);
+
+	var columns = this.dataSource_.getColumns().slice(0); // copy
 	var numCols = columns.length;
 
 	var cornerCell = this.dom_.createDom('th', {});
@@ -86,13 +247,13 @@ com.qwirx.grid.Grid.prototype.createDom = function()
 		colHeadingCells.push(column.getIdentityNode());
 	}
 	
-	this.headerRow_ = this.dom_.createDom('tr', {},
-		colHeadingCells);
-	this.element_.appendChild(this.headerRow_);
-	
+	this.headerRow_ = this.dom_.createDom('tr', {}, colHeadingCells);
+	this.dataTable_.appendChild(this.headerRow_);
+
 	this.rows_ = [];
-	this.rowElements_ = [];
 	this.highlightStyles_ = goog.style.installStyles('', this.element_);
+	
+	this.scrollOffset_ = {x: 0, y: 0};
 };
 
 /**
@@ -115,10 +276,10 @@ com.qwirx.grid.Grid.prototype.enterDocument = function()
 	
 	for (var i = 0; i < this.dataSource_.getRowCount(); i++)
 	{
-		this.appendRow(this.dataSource_.getRow(i));
+		this.handleRowInsert(i, this.dataSource_.getRow(i));
 
 		// stolen from goog.style.scrollIntoContainerView 
-		var element = this.rowElements_[i];
+		var element = this.rows_[i].getRowElement();
 		var elementPos = goog.style.getPageOffset(element);
 		if (elementPos.y + element.clientHeight >
 			containerPos.y + container.clientHeight + containerBorder.top)
@@ -128,12 +289,29 @@ com.qwirx.grid.Grid.prototype.enterDocument = function()
 			break;
 		}
 		
-		if (elementPos.y + element.clientHeight > 10000)
+		if (i > 1000 || elementPos.y + element.clientHeight > 10000)
 		{
 			// emergency brakes!
-			break;
+			throw new Exception("Emergency brakes!");
 		}
 	}
+	
+	// Scrollbar value is inverted: the maximum value is at the top,
+	// which is where we want to be initially.
+	
+	// The rows have just been updated and we don't need to update
+	// them again, so we delay setting the scroll event handler
+	// until after we've done this.
+	
+	this.scrollBar_.setMaximum(this.dataSource_.getRowCount() -
+		this.getVisibleRowCount() + 1);
+	this.scrollBar_.setValue(this.scrollBar_.getMaximum());
+
+	var self = this;
+	this.scrollBar_.addEventListener(goog.ui.Component.EventType.CHANGE,
+		function(e) {
+			self.handleScrollEvent(e);
+	});
 };
 
 com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE =
@@ -175,14 +353,35 @@ com.qwirx.grid.Grid.Column.prototype.getIdentityNode = function()
  * Row is a class, not a static index, to allow renumbering and
  * dynamically numbering large grids quickly.
  */
-com.qwirx.grid.Grid.Row = function(grid, columns)
+com.qwirx.grid.Grid.Row = function(grid, rowIndex, columns)
 {
 	this.grid_= grid;
 	this.columns_ = columns;
+	
 	var th = this.tableCell_ = grid.dom_.createDom('th', {}, '');
 	th[com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE] =
 		com.qwirx.grid.Grid.CellType.ROW_HEAD;
 	th[com.qwirx.grid.Grid.TD_ATTRIBUTE_ROW] = this;
+
+	var cells = [th];
+	
+	var numCols = columns.length;
+	for (var i = 0; i < numCols; i++)
+	{
+		var column = columns[i];
+		var cssClasses = 'col_' + i;
+		var td = column.tableCell = grid.dom_.createDom('td', cssClasses,
+			column.value.toString());
+			
+		td[com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE] =
+			com.qwirx.grid.Grid.CellType.MIDDLE;
+		td[com.qwirx.grid.Grid.TD_ATTRIBUTE_COL] = grid.columns_[i];
+		td[com.qwirx.grid.Grid.TD_ATTRIBUTE_ROW] = this;
+			
+		cells.push(td);
+	}
+	
+	this.tableRowElement_ = grid.dom_.createDom('tr', {}, cells);
 };
 
 /**
@@ -197,7 +396,13 @@ com.qwirx.grid.Grid.Row.prototype.getIdentityNode = function()
 
 com.qwirx.grid.Grid.Row.prototype.getRowIndex = function()
 {
-	return goog.array.indexOf(this.grid_.rows_, this);
+	return goog.array.indexOf(this.grid_.rows_, this) +
+		this.grid_.scrollOffset_.y;
+};
+
+com.qwirx.grid.Grid.Row.prototype.getRowElement = function()
+{
+	return this.tableRowElement_;
 };
 
 com.qwirx.grid.Grid.Row.prototype.getColumns = function()
@@ -205,49 +410,104 @@ com.qwirx.grid.Grid.Row.prototype.getColumns = function()
 	return this.columns_;
 };
 
-com.qwirx.grid.Grid.prototype.insertRowAt = function(columns, newRowIndex)
+com.qwirx.grid.Grid.prototype.handleDataSourceRowCountChange = function(e)
 {
-	var numCols = columns.length;
-	var row = new com.qwirx.grid.Grid.Row(this, columns);
-	this.rows_.splice(newRowIndex, 0, row);
-
-	var cells = [row.getIdentityNode()];
+	var rowCount = this.dataSource_.getRowCount();
+	var newVal = 0;
+	var newMax = 0;
 	
-	for (var i = 0; i < numCols; i++)
+	if (rowCount < this.getVisibleRowCount())
 	{
-		var column = columns[i];
-		var cssClasses = 'col_' + i;
-		var td = column.tableCell = this.dom_.createDom('td', cssClasses,
-			column.value);
-			
-		td[com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE] =
-			com.qwirx.grid.Grid.CellType.MIDDLE;
-		td[com.qwirx.grid.Grid.TD_ATTRIBUTE_COL] =
-			this.columns_[i];
-		td[com.qwirx.grid.Grid.TD_ATTRIBUTE_ROW] = row;
-			
-		cells.push(td);
+		// set the maximum to 0 to disable scrolling
+	}
+	else
+	{
+		newMax = rowCount - this.getVisibleRowCount() + 1;
+		newVal = newMax - this.scrollOffset_.y;
+	}
+
+	// if the maximum is reduced to less than the current value,
+	// the value will be adjusted to match it, which will trigger
+	// a refreshAll(), so we suppress that by muting events.
+	this.scrollBar_.rangeModel.setMute(true);
+	this.scrollBar_.setMaximum(newMax);
+	
+	// setValue will reset the mute flag, so we can't suppress it,
+	// so let's take advantage of it to call refreshAll for us.
+	// this.scrollBar_.setValue(newVal);
+	this.scrollBar_.rangeModel.setMute(false);
+
+	if (this.scrollBar_.getValue() != newVal)
+	{
+		// triggers a refreshAll.
+		this.scrollBar_.setValue(newVal);
+	}
+	else
+	{
+		// setting the scrollbar value to the same value will not
+		// trigger a refreshAll, but we need it to show/hide rows.
+		this.refreshAll();
 	}
 	
-	var newTableRow = this.dom_.createDom('tr', {}, cells);
-	goog.dom.insertChildAt(this.element_, newTableRow,
-		newRowIndex + 1 /* for header row */);
+	this.oldSelection_ = this.drag;
 	
-	this.rowElements_.splice(newRowIndex, 0, newTableRow);
+	// if the highlighted range is completely outside the new
+	// valid row range, reset it to defaults.
+	if (this.drag.y1 >= rowCount && this.drag.y2 >= rowCount)
+	{
+		this.drag = com.qwirx.grid.Grid.NO_SELECTION;
+	}
+	// if only the upper limit is outside the range, reset it
+	// to be within the range.
+	else if (this.drag.y2 > this.drag.y1 && this.drag.y2 > rowCount)
+	{
+		this.drag.y2 = rowCount - 1;
+	}
+	else if (this.drag.y1 > this.drag.y2 && this.drag.y1 > rowCount)
+	{
+		this.drag.y1 = rowCount - 1;
+	}
+	
+	this.updateSelection_(false);
+}
+
+com.qwirx.grid.Grid.prototype.handleDataSourceRowsEvent =
+	function(event, handler)
+{
+	var rowIndexes = event.getAffectedRows();
+	for (var i = 0; i < rowIndexes.length; i++)
+	{
+		handler.call(this, rowIndexes[i], 
+			this.dataSource_.getRow(rowIndexes[i]));
+	}
 };
 
+com.qwirx.grid.Grid.prototype.handleRowInsert =
+	function(newRowIndex, columns)
+{
+	var numCols = columns.length;
+	var row = new com.qwirx.grid.Grid.Row(this, newRowIndex, columns);
+	this.rows_.splice(newRowIndex, 0, row);
+
+	goog.dom.insertChildAt(this.dataTable_, row.getRowElement(),
+		newRowIndex + 1 /* for header row */);
+};
+
+/*
 com.qwirx.grid.Grid.prototype.appendRow = function(columns)
 {
 	var newRowIndex = this.getRowCount();
 	this.insertRowAt(columns, newRowIndex);
 	return newRowIndex;
 };
+*/
 
 /**
  * Replace the existing contents of the existing row identified by
  * rowIndex with the new contents in the array of columns provided.
  */
-com.qwirx.grid.Grid.prototype.updateRow = function(rowIndex, columns)
+com.qwirx.grid.Grid.prototype.handleRowUpdate = function(rowIndex,
+	columns)
 {
 	var oldRow = this.rows_[rowIndex];
 	var numCols = columns.length;
@@ -261,7 +521,7 @@ com.qwirx.grid.Grid.prototype.updateRow = function(rowIndex, columns)
 	}
 };
 
-com.qwirx.grid.Grid.prototype.getRowCount = function()
+com.qwirx.grid.Grid.prototype.getVisibleRowCount = function()
 {
 	return this.rows_.length;
 };
@@ -271,10 +531,12 @@ com.qwirx.grid.Grid.prototype.getColumnCount = function()
 	return this.columns_.length;
 };
 
+/*
 com.qwirx.grid.Grid.prototype.getRow = function(rowIndex)
 {
 	return this.rows_[rowIndex];
 };
+*/
 
 com.qwirx.grid.Grid.CellType = {
 	COLUMN_HEAD: "COLUMN_HEAD",
@@ -304,13 +566,18 @@ com.qwirx.grid.Grid.prototype.handleMouseDown = function(e)
 	
 	for (var y = oldy1; y <= oldy2 && oldy1 >= 0; y++)
 	{
-		this.highlightRow(y, false);
+		this.rows_[y].setHighlighted(false);
 	}
 
 	var type = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE];
 	var col = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_COL];
 	var row = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_ROW];
 
+	if (this.drag == com.qwirx.grid.Grid.NO_SELECTION)
+	{
+		this.drag = {};
+	}
+	
 	this.drag.origin = e.target;
 	
 	if (type == com.qwirx.grid.Grid.CellType.COLUMN_HEAD)
@@ -320,7 +587,7 @@ com.qwirx.grid.Grid.prototype.handleMouseDown = function(e)
 		this.dragMode_ = com.qwirx.grid.Grid.DragMode.COLUMNS;
 		this.drag.x1 = this.drag.x2 = col.getColumnIndex();
 		this.drag.y1 = 0;
-		this.drag.y2 = this.getRowCount() - 1;
+		this.drag.y2 = this.dataSource_.getRowCount() - 1;
 	}
 	else if (type == com.qwirx.grid.Grid.CellType.ROW_HEAD)
 	{
@@ -340,9 +607,16 @@ com.qwirx.grid.Grid.prototype.handleMouseDown = function(e)
 		this.drag.y1 = this.drag.y2 = row.getRowIndex();
 	}
 	
-	for (var y = this.drag.y1; y <= this.drag.y2; y++)
+	if (this.drag.y1 >= 0)
 	{
-		this.highlightRow(y, true);
+		for (var y = this.drag.y1; y <= this.drag.y2; y++)
+		{
+			this.rows_[y].setHighlighted(true);
+		}
+	}
+	else
+	{
+		// nothing to highlight
 	}
 	
 	this.createHighlightRule_();
@@ -368,16 +642,16 @@ com.qwirx.grid.Grid.prototype.createHighlightRule_ = function()
 	// no cell selected
 	for (var x = x1; x <= x2 && x1 >= 0; x++)
 	{
-		builder.append('table#' + this.element_.id + ' > ' +
+		builder.append('table#' + this.dataTable_.id + ' > ' +
 			'tr.highlight > td.col_' + x + ' { background: #ddf; }');
 	}
 	
 	goog.style.setStyles(this.highlightStyles_, builder.toString());
 };
 
-com.qwirx.grid.Grid.prototype.highlightRow = function(rowIndex, enable)
+com.qwirx.grid.Grid.Row.prototype.setHighlighted = function(enable)
 {
-	this.getRenderer().enableClassName(this.rowElements_[rowIndex],
+	this.grid_.getRenderer().enableClassName(this.getRowElement(),
 		'highlight', enable);
 };
 
@@ -437,94 +711,92 @@ com.qwirx.grid.Grid.prototype.handleDrag = function(e)
 	var col = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_COL];
 	var row = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_ROW];
 	
-	var newx2, newy2;
+	this.oldSelection_ = goog.object.clone(this.drag);
 
 	// compute the new x2 and y2 using the above table
 	if (dragMode == dragModes.ROWS)
 	{
-		newx2 = this.getColumnCount() - 1;
+		this.drag.x2 = this.getColumnCount() - 1;
 	}
 	else if (cellType == cellTypes.ROW_HEAD)
 	{
-		newx2 = this.scrollOffset_.x;
+		this.drag.x2 = this.scrollOffset_.x;
 	}
 	else if (col)
 	{
-		newx2 = col.getColumnIndex();
+		this.drag.x2 = col.getColumnIndex();
 	}
 	else
 	{
-		newx2 = this.drag.x2;
+		// no change to x2
 	}
 	
 	if (dragMode == dragModes.COLUMNS)
 	{
-		newy2 = this.getRowCount() - 1;
+		this.drag.y2 = this.dataSource_.getRowCount() - 1;
 	}
 	else if (cellType == cellTypes.COLUMN_HEAD)
 	{
-		newy2 = this.scrollOffset_.y;
+		this.drag.y2 = this.scrollOffset_.y;
 	}
 	else if (row)
 	{
-		newy2 = row.getRowIndex();
+		this.drag.y2 = row.getRowIndex();
 	}
 	else
 	{
-		newy2 = this.drag.y2;
+		// no change to y2
 	}
 	
-	com.qwirx.freebase.log("dragging: selection changed from " +
-		this.drag.x2 + "," + this.drag.y2 + " to " +
-		newx2 + "," + newy2);
+	this.updateSelection_(false);
+};
 
+com.qwirx.grid.Grid.prototype.setSelection = function(x1, y1, x2, y2)
+{
+	this.oldSelection_ = goog.object.clone(this.drag);
+	this.drag.x1 = x1;
+	this.drag.x2 = x2;
+	this.drag.y1 = y1;
+	this.drag.y2 = y2;
+	this.updateSelection_(false);
+};
+
+com.qwirx.grid.Grid.prototype.updateSelection_ = function(force)
+{	
+	var oldSel = this.oldSelection_;
+	var newSel = this.drag;
+
+	if (!force && oldSel)
+	{
+		com.qwirx.freebase.log("selection changed from " +
+			oldSel.x2 + "," + oldSel.y2 + " to " +
+			newSel.x2 + "," + newSel.y2);
+	}
+		
 	// changes to y2 are handled by (un)highlighting rows.
 	
-	if (newy2 != this.drag.y2)
+	if (force || newSel.y1 != oldSel.y1 || newSel.y2 != oldSel.y2)
 	{
-		var oldymin = Math.min(this.drag.y1, this.drag.y2);
-		var oldymax = Math.max(this.drag.y1, this.drag.y2);
-		var newymin = Math.min(this.drag.y1, newy2);
-		var newymax = Math.max(this.drag.y1, newy2);
+		var ymin = Math.min(newSel.y1, newSel.y2);
+		var ymax = Math.max(newSel.y1, newSel.y2);
 
-		// If selection is above y1 and moving down, unselect any rows between
-		// the old and new minima.
-		for (var y = oldymin; y < newymin; y++)
+		for (var gridRow = 0; gridRow < this.rows_.length; gridRow++)
 		{
-			this.highlightRow(y, false);
+			var dataRow = this.scrollOffset_.y + gridRow;
+			this.rows_[gridRow].setHighlighted(dataRow >= ymin &&
+				dataRow <= ymax);
 		}
-	
-		// If selection is above y1 and moving up, select any rows between
-		// the new and old minima.
-		for (var y = newymin; y < oldymin; y++)
-		{
-			this.highlightRow(y, true);
-		}
-	
-		// If selection is below y1 and moving down, select any rows between
-		// the old and new maxima.
-		for (var y = oldymax + 1; y <= newymax; y++)
-		{
-			this.highlightRow(y, true);
-		}
-	
-		// If selection is below y1 and moving up, unselect any rows between
-		// the new and old maxima.
-		for (var y = newymax + 1; y <= oldymax; y++)
-		{
-			this.highlightRow(y, false);
-		}
-
-		this.drag.y2 = newy2;
 	}	
 
 	// changes to x2 are handled by rewriting the highlight rule.
 
-	if (newx2 != this.drag.x2)
+	if (force || newSel.x1 != oldSel.x1 || newSel.x2 != oldSel.x2)
 	{
-		this.drag.x2 = newx2;
 		this.createHighlightRule_();
 	}
+	
+	this.drag = newSel;
+	delete this.oldSelection_;
 };
 
 /**
@@ -595,8 +867,17 @@ com.qwirx.grid.Grid.prototype.logEvent = function(e)
  */
 com.qwirx.grid.Grid.prototype.handleMouseUp = function(e)
 {
-	this.logEvent(e);
 	com.qwirx.grid.Grid.superClass_.handleMouseUp.call(this, e);
+
+	var cellType = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE];
+	
+	if (!cellType)
+	{
+		// event probably triggered by the scrollbar?
+		return;
+	}
+	
+	this.logEvent(e);
 
 	if (!this.isEnabled()) return;
 	this.dragMode_ = com.qwirx.grid.Grid.DragMode.NONE;
@@ -605,8 +886,17 @@ com.qwirx.grid.Grid.prototype.handleMouseUp = function(e)
 
 com.qwirx.grid.Grid.prototype.handleMouseOver = function(e)
 {
-	// this.logEvent(e);
 	com.qwirx.grid.Grid.superClass_.handleMouseOver.call(this, e);
+
+	var cellType = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE];
+	
+	if (!cellType)
+	{
+		// event probably triggered by the scrollbar?
+		return;
+	}
+
+	// this.logEvent(e);
 
 	if (this.dragMode_ != com.qwirx.grid.Grid.DragMode.NONE)
 	{
@@ -640,6 +930,14 @@ com.qwirx.grid.Grid.prototype.handleMouseOut = function(e)
 	// this.logEvent(e);
 	com.qwirx.grid.Grid.superClass_.handleMouseOut.call(this, e);
 
+	var cellType = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE];
+	
+	if (!cellType)
+	{
+		// event probably triggered by the scrollbar?
+		return;
+	}
+
 	if (this.dragMode_ == com.qwirx.grid.Grid.DragMode.TEXT &&
 		e.target == this.drag.origin)
 	{
@@ -651,5 +949,39 @@ com.qwirx.grid.Grid.prototype.handleMouseOut = function(e)
 		this.setAllowTextSelection(false);
 		this.setEditableCell(null);
 	}
+};
+
+com.qwirx.grid.Grid.prototype.refreshAll = function()
+{
+	var len = this.rows_.length;
+	
+	for (var i = 0; i < len; i++)
+	{
+		var dataRow = i + this.scrollOffset_.y;
+		var visible = (dataRow < this.dataSource_.getRowCount());
+		this.rows_[i].setVisible(visible);
+		
+		if (visible)
+		{
+			var columns = this.dataSource_.getRow(dataRow);
+			this.handleRowUpdate(i, columns);
+		}
+	}	
+};
+
+com.qwirx.grid.Grid.Row.prototype.setVisible = function(visible)
+{
+	this.grid_.renderer_.setVisible(this.getRowElement(), visible);
+};
+
+com.qwirx.grid.Grid.prototype.handleScrollEvent = function(e)
+{
+	this.scrollOffset_.y = e.target.getMaximum() - e.target.getValue();
+	com.qwirx.freebase.log("scroll offset changed to " + 
+		this.scrollOffset_.y + " for " + e.target.getMaximum() + "," +
+			e.target.getValue());
+	this.refreshAll();
+	// in case highlighted rows have scrolled up or down:
+	this.updateSelection_(true);
 };
 
