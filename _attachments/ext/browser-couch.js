@@ -912,9 +912,9 @@ var BrowserCouch = function(opts){
         throw new Error('finished callback not provided');
         
       // SameDomainDB implements view() itself (on the server)
-      if ('view' in this.storage)
+      if ('view' in storage)
       {
-      	return this.storage.view(options);
+      	return storage.view(options);
       }
 
       // Maximum number of items to process before giving the UI a chance
