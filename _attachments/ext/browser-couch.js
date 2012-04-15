@@ -863,14 +863,14 @@ var BrowserCouch = function(opts){
     // however if there is no ID, then one will be created.
     //
     self.post = function(data, cb, options){
-      var _t = this
+      var _t = this;
       if (!data._id)
         bc.ModuleLoader.require('UUID', function(){
           data._id = new UUID().createUUID();
-          _t.put(data, function(){cb(data._id)}, options);
+          _t.put(data, function(){cb(data)}, options);
         });
       else{  
-        _t.put(data, function(){cb(data._id)}, options)
+        _t.put(data, function(){cb(data)}, options);
       }
     }
 
