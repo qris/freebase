@@ -715,17 +715,17 @@ var BrowserCouch = function(opts){
   // A wrapper for a map-like data structure.  
   //
   bc._Dictionary = function BC__Dictionary() {
-    var dict = {};
+    this.dict_ = {};
     var keys = [];
 
     function regenerateKeys() {
       keys = [];
-      for (key in dict)
+      for (key in this.dict_)
         keys.push(key);
     }
 
     this.has = function Dictionary_has(key) {
-      return (key in dict);
+      return (key in this.dict_);
     };
 
     this.getKeys = function Dictionary_getKeys() {
@@ -733,25 +733,25 @@ var BrowserCouch = function(opts){
     };
 
     this.get = function Dictionary_get(key) {
-      return dict[key];
+      return this.dict_[key];
     };
 
     this.values = function(){
       var res = [];
-      for (var d in dict){
-        res.push(dict[d]);
+      for (var d in this.dict_){
+        res.push(this.dict_[d]);
       }
       return res;
     }
     
     this.set = function Dictionary_set(key, value) {
-      if (!(key in dict))
+      if (!(key in this.dict_))
         keys.push(key);
-      dict[key] = value;
+      this.dict_[key] = value;
     };
 
     this.remove = function Dictionary_delete(key) {
-      delete dict[key];
+      delete this.dict_[key];
 
       // TODO: If we're in JS 1.6 and have Array.indexOf(), we
       // shouldn't have to rebuild the key index like this.
@@ -759,16 +759,16 @@ var BrowserCouch = function(opts){
     };
 
     this.clear = function Dictionary_clear() {
-      dict = {};
+      this.dict_ = {};
       keys = [];
     };
 
     this.pickle = function Dictionary_pickle() {
-      return dict;
+      return this.dict_;
     };
 
     this.unpickle = function Dictionary_unpickle(obj) {
-      dict = obj;
+      this.dict_ = obj;
       regenerateKeys();
     };
   }
@@ -786,26 +786,26 @@ var BrowserCouch = function(opts){
   bc.BrowserDatabase = function(options, cb) {
     var self = {},
         dbName = 'BrowserCouch_DB_' + options.name,
-        dict = new bc._Dictionary(),
         syncManager, 
         storage = options.storage;
-        
+    self.dict_ = new bc._Dictionary();
+    
     function commitToStorage(cb)
     {
-      options.storage.put(dbName, dict.pickle(), cb || function(){});  
+      options.storage.put(dbName, self.dict_.pickle(), cb || function(){});  
     }
     
     self.chgs = []; //TODO - this is until I get seq working.
    
     self.wipe = function DB_wipe(cb) {
-      dict.clear();
+      this.dict_.clear();
       commitToStorage(cb);
     };
 
     self.get = function DB_get(id, cb) {
       cb = cb || function(){}
-      if (dict.has(id))
-        cb(dict.get(id));
+      if (this.dict_.has(id))
+        cb(this.dict_.get(id));
       else
         cb(null);
     };
@@ -831,7 +831,7 @@ var BrowserCouch = function(opts){
         }
         if(options && (!options.noSync))
           self.chgs.push(obj)
-        dict.set(obj._id, obj);
+        self.dict_.set(obj._id, obj);
         
         //If new object 
         self.seq +=1;
@@ -938,7 +938,7 @@ var BrowserCouch = function(opts){
 
       mapReducer.map(
         options.map,
-        dict,
+        this.dict_,
         progress,
         chunkSize,
         function(mapResult) {
@@ -957,14 +957,14 @@ var BrowserCouch = function(opts){
     };
     
     self.getChanges = function(cb){
-      cb({results: dict.values()});
+      cb({results: this.dict_.values()});
     }
       
     storage.get(
       dbName,
       function(obj) {
         if (obj)
-          dict.unpickle(obj);
+          self.dict_.unpickle(obj);
         cb(self);
       });
     
