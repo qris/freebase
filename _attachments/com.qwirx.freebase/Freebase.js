@@ -55,23 +55,166 @@ com.qwirx.freebase.FunctionStringifier = function(key, value)
 	}
 };
 
-/*
-com.qwirx.freebase.Freebase = function(database)
+com.qwirx.freebase.Freebase = function()
 {
-	this.database = database;
+	this.app = {models: {}};
 };
 
 goog.inherits(com.qwirx.freebase.Freebase, goog.events.EventTarget);
-*/
 
-com.qwirx.freebase.Freebase.getTableId = function(table_name)
+com.qwirx.freebase.Freebase.prototype.instantiateModel_ = 
+	function(object)
+{
+	var table = object[com.qwirx.freebase.Freebase.TABLE_FIELD];
+	var model = this.app.models[table];
+	
+	if (table && model)
+	{
+		// call the constructor to build a model object
+		// from the database record
+		return new model(object);
+	}
+	else
+	{
+		return object;
+	}
+};
+
+com.qwirx.freebase.Freebase.prototype.getTableId = function(table_name)
 {
 	return '_design/' + table_name;
 };
 
-com.qwirx.freebase.Freebase.isTableId = function(object_id)
+com.qwirx.freebase.Freebase.prototype.isTableId = function(object_id)
 {
 	return object_id.indexOf('_design/') == 0;
+};
+
+com.qwirx.freebase.Freebase.prototype.getDocumentId = goog.abstractMethod;
+
+com.qwirx.freebase.Freebase.prototype.setDocumentId = goog.abstractMethod;
+
+com.qwirx.freebase.Freebase.prototype.prepareObjectForSave_ = 
+	function(object)
+{
+	var document;
+	
+	if (object.toDocument)
+	{
+		document = object.toDocument();
+	}
+	else
+	{
+		document = object;
+	}
+	
+	if (document.modelName)
+	{
+		this.setDocumentId(document,
+			this.getTableId(document.modelName));
+	}
+	
+	return document;
+};
+
+com.qwirx.freebase.Freebase.prototype.saveOrCreate_ = 
+	function(object, failIfExists, implementation,
+		onSuccess, onError)
+{
+	onError = onError || this.defaultOnErrorHandler_;
+
+	var document = this.prepareObjectForSave_(object);
+	var self = this;
+	
+	implementation.call(this, document,
+		function save_onSuccess(updated_document)
+		{
+			/* The implementation should have assigned _id and _rev
+			 * to the document object already, but not to the Model
+			 * (if any) which it never saw.
+			 */
+			if (object.setId)
+			{
+				object.setId(self.getDocumentId(updated_document));
+			}
+			else
+			{
+				object._id = self.getDocumentId(updated_document);
+			}
+			
+			object._rev = updated_document._rev;
+			
+			if (document.modelName)
+			{
+				self.app.models[document.modelName] = 
+					object.fromDocument(document, self);
+			}
+
+			self.dispatchEvent(new DocumentSaved(object));
+			onSuccess(object);
+		},
+		onError);
+};
+
+com.qwirx.freebase.Freebase.prototype.saveReal_ = goog.abstractMethod;
+
+/**
+ * Saves the provided object into the Freebase database. An ID will
+ * be assigned, either by the getObjectId() method if it's a Model
+ * or TableDocument, or by the database. Calls _saveReal() which
+ * must be overridden by a concrete subclass to implement the actual
+ * saving.
+ */
+com.qwirx.freebase.Freebase.prototype.save = 
+	function(object, onSuccess, onError)
+{
+	this.saveOrCreate_(object, false, this.saveReal_, onSuccess,
+		onError);
+};
+
+/**
+ * Create a new document. If the _id property is set and a document
+ * with this ID already exists, this method will report an error
+ * instead of replacing it.
+ */
+com.qwirx.freebase.Freebase.prototype.createReal$_ = goog.abstractMethod;
+
+com.qwirx.freebase.Freebase.prototype.create$ = 
+	function(object, onSuccess, onError)
+{
+	this.saveOrCreate_(object, true, this.createReal$_, onSuccess,
+		onError);
+};
+
+com.qwirx.freebase.Freebase.prototype.deleteReal_ = goog.abstractMethod;
+
+/**
+ * Deletes the supplied object from the Freebase database.
+ */
+com.qwirx.freebase.Freebase.prototype.deleteDoc = 
+	function(object, onSuccess, onError)
+{
+	onError = onError || this.defaultOnErrorHandler_;
+
+	var document = this.prepareObjectForSave_(object);
+	var self = this;
+
+	this.deleteReal_(object, 
+		function Freebase_deleteDoc_onSuccess(result)
+		{
+			if (document.modelName)
+			{
+				delete self.app.models[document.modelName];
+			}
+			
+			onSuccess.call(self, result);
+		}, onError);
+};
+
+com.qwirx.freebase.Freebase.prototype.defaultOnErrorHandler_ = 
+	function(freebase, object, exception)
+{
+	throw exception;
 };
 
 com.qwirx.freebase.Freebase.INTERNAL_FIELD_PREFIX = "$";
@@ -108,7 +251,6 @@ com.qwirx.freebase.DocumentSaved.prototype.getDocument = function()
  */
 com.qwirx.freebase.TableDocument = function(name, columns)
 {
-	this._id = com.qwirx.freebase.Freebase.getTableId(name);
 	this.name = name;
 	this.columns = columns;
 	
@@ -129,7 +271,8 @@ com.qwirx.freebase.ModelBase = function modelObjectConstructor()
 {
 };
 
-com.qwirx.freebase.ModelBase.findAll = function(params, successCallback, errorCallback)
+com.qwirx.freebase.ModelBase.findAll = function(params, successCallback,
+	errorCallback)
 {
 	var self = this;
 	
@@ -158,14 +301,22 @@ com.qwirx.freebase.ModelBase.findAll = function(params, successCallback, errorCa
 };
 
 /**
- * Returns the unique identifier of this model in the database, whether
- * or not the model has actually been saved in the database. The format
- * of the ID will depend on the kind of database that the model is
- * constructed for.
+ * Returns the unique identifier of this model in the database. This
+ * is only defined if the Model has been saved already, and its format
+ * will depend on the kind of database that the model is saved in.
  */
 com.qwirx.freebase.ModelBase.getId = function()
 {
-	return com.qwirx.freebase.Freebase.getTableId(this.modelName);
+	return this._id;
+};
+
+/**
+ * Sets the unique identifier of this model after being saved in
+ * the database.
+ */
+com.qwirx.freebase.ModelBase.setId = function(newId)
+{
+	this._id = newId;
 };
 
 /**
@@ -173,11 +324,11 @@ com.qwirx.freebase.ModelBase.getId = function()
  * Document, from which the class can be reconstructed with
  * Model.fromDocument(doc).
  */
- 
 com.qwirx.freebase.ModelBase.toDocument = function()
 {
 	return {
 		_id: this.getId(),
+		_rev: this._rev, // needed to update models in CouchDB
 		modelName: this.modelName,
 		columns: this.columns,
 		views: {
@@ -209,17 +360,24 @@ com.qwirx.freebase.ModelBase.prototype.toDocument = function()
  * class for the new model. It's not an instance of Model, so don't
  * call it with new Model(), just Model().
  *
- * Note: these Model classes are NOT saved in the database. They can't be,
- * because they contain functions. However, a document that describes them
- * should be saved in the database, which includes the view that allows
- * selecting all objects of that Model. Freebase will construct the Model
- * class for any model documents stored in the database when opening the
- * database, and add them to its app.models namespace.
+ * Note: these Model classes are NOT directly saved in the database.
+ * They can't be, because they contain functions. However, you should
+ * still save them using FreeBase.save() or create$(), which will
+ * detect that a Model is being saved, convert it to a document,
+ * and set its ID property to the ID of the document, which may be
+ * special ID (e.g. _design/ModelName) depending on the database
+ * backend. The document may also contain a view called "all", which
+ * allows efficient searching for all instances of the Model.
  *
  * Newly created Models should have their model documents saved in the
- * database with myFreebase.save(myModel.toDocument()) before saving any
- * objects that refer to them. This will add the new model to the
- * app.models namespace.
+ * database with myFreebase.save(MyModel) before saving any objects
+ * of their class. This will add the new model to the app.models
+ * namespace.
+ *
+ * Freebase will construct the Model class for any model documents
+ * stored in the database when opening the database, and add them to
+ * its app.models namespace.
+ *
  */
 com.qwirx.freebase.Model = function(modelName, freebase, columns)
 {
@@ -272,9 +430,10 @@ com.qwirx.freebase.Model = function(modelName, freebase, columns)
  * Construct a Model from a Model Document, as returned by
  * ModelBase.toDocument and/or stored in the database.
  */
-com.qwirx.freebase.Model.fromDocument = function(document, freebase)
+com.qwirx.freebase.ModelBase.fromDocument = function(document, freebase)
 {
-	return Model(document.modelName, freebase, document.columns);
+	return com.qwirx.freebase.Model(document.modelName, freebase,
+		document.columns);
 };
 
 /*
@@ -353,13 +512,43 @@ com.qwirx.freebase.DocumentArea.prototype.getDocCell = function()
 	return this.docCell_;
 }
 
+com.qwirx.freebase.Exception = function()
+{
+	if (Error.captureStackTrace)
+	{
+		Error.captureStackTrace(this, this.constructor);
+	}
+};
+
+com.qwirx.freebase.DuplicateException = function(savingObject,
+	existingObject)
+{
+	com.qwirx.freebase.Exception.call(this);
+	this.saving_   = savingObject;
+	this.existing_ = existingObject;
+};
+
+goog.inherits(com.qwirx.freebase.DuplicateException,
+	com.qwirx.freebase.Exception);
+
+com.qwirx.freebase.DuplicateException.prototype.toString = function()
+{
+	return "Failed to create object " + this.saving_ + ": " +
+		"an object with the same ID already exists in the database: " +
+		this.existing_;
+};
+
 com.qwirx.freebase.ConflictException = function(object, expectedRev,
 	actualRev)
 {
+	com.qwirx.freebase.Exception.call(this);
 	this.object_      = object;
 	this.expectedRev_ = expectedRev;
 	this.actualRev_   = actualRev;
 };
+
+goog.inherits(com.qwirx.freebase.ConflictException,
+	com.qwirx.freebase.Exception);
 
 com.qwirx.freebase.ConflictException.prototype.toString = function()
 {
@@ -369,6 +558,21 @@ com.qwirx.freebase.ConflictException.prototype.toString = function()
 		"it has revision " + this.actualRev_ + " instead, which " +
 		"probably means that the one in the database was modified by " +
 		"someone else inbetween.";
+};
+
+com.qwirx.freebase.NonexistentException = function(object)
+{
+	com.qwirx.freebase.Exception.call(this);
+	this.object_ = object;
+};
+
+goog.inherits(com.qwirx.freebase.NonexistentException,
+	com.qwirx.freebase.Exception);
+
+com.qwirx.freebase.NonexistentException.prototype.toString = function()
+{
+	return "Failed to delete an object because it doesn't exist " +
+		" in this database: " + this.object_;
 };
 
 com.qwirx.freebase.Freebase.Gui = function(database)

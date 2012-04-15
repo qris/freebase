@@ -10,9 +10,12 @@ Based on goog.array.array_test.html from Google Closure
 <script src="calculated_deps.js"></script>
 <script src="Freebase.deps.js"></script>
 <script src="Freebase.js"></script>
+<script src="../ext/uuid.js"></script>
+<script src="../ext/browser-couch.js"></script>
 <script type="text/javascript">
 	goog.require('com.qwirx.freebase.Freebase');
 	goog.require('com.qwirx.freebase.TableDocument');
+	goog.require('com.qwirx.freebase.BrowserCouchBase');
 	goog.require('goog.dom.NodeIterator');
 	goog.require('goog.testing.PropertyReplacer');
 	goog.require('goog.testing.jsunit');
@@ -209,13 +212,6 @@ function testFreebaseConstructor()
 }
 */
 
-function testFreebaseTableId()
-{
-	var expected = '_design/Foobar';
-	assertEquals(Freebase.getTableId('Foobar'), expected);
-	assertEquals(Freebase.isTableId(expected), true);
-}
-
 function testTableDocumentConstructor()
 {
 	var name = 'Foobar';
@@ -223,7 +219,7 @@ function testTableDocumentConstructor()
 		{name: "bar", type: Number}];
 	var td = new TableDocument(name, cols);
 	assertEquals(td.constructor, TableDocument);
-	assertEquals(td._id, Freebase.getTableId(name));
+	assertUndefined(td._id); // assigned on save
 	assertEquals(td.name, name);
 	assertEquals(td.columns, cols);
 	
@@ -238,20 +234,22 @@ function testTableDocumentConstructor()
 
 function MockFreebase()
 {
+	com.qwirx.freebase.Freebase.call(this);
 	this.objectStore = {};
-	this.app = {models: {}};
 }
 
-goog.inherits(MockFreebase, goog.events.EventTarget);
+goog.inherits(MockFreebase, com.qwirx.freebase.Freebase);
 
+/*
 MockFreebase.prototype.deepCopy =  function(object, opt_stringifier)
 {
 	return JSON.parse(JSON.stringify(object));
 };
+*/
 
 MockFreebase.prototype.get = function(documentId, onSuccess, onError)
 {
-	return this._get(documentId, /* auto instantiate */ true, onSuccess,
+	return this.get_(documentId, /* auto instantiate */ true, onSuccess,
 		onError);
 };
 
@@ -262,7 +260,7 @@ MockFreebase.prototype.get = function(documentId, onSuccess, onError)
  */
 MockFreebase.prototype.findAll =  function(designName, onSuccess, onError)
 {
-	var results = this._get('_design/' + designName + '/_view/all',
+	var results = this.get_('_design/' + designName + '/_view/all',
 		/* auto instantiate */ true,
 		function(results)
 		{
@@ -279,31 +277,14 @@ MockFreebase.prototype.findAll =  function(designName, onSuccess, onError)
 
 MockFreebase.prototype.listAll = function(fetchDocuments, onSuccess, onError)
 {
-	return this._get('_all_docs' + (fetchDocuments ? '?include_docs=true' : ''),
+	return this.get_('_all_docs' + (fetchDocuments ? '?include_docs=true' : ''),
 		/* auto instantiate */ false, onSuccess, onError);
 };
 
 MockFreebase.prototype.view = function(designId, viewName, onSuccess, onError)
 {
-	return this._get(designId + '/_view/' + viewName,
+	return this.get_(designId + '/_view/' + viewName,
 		/* auto instantiate */ false, onSuccess, onError);
-};
-
-MockFreebase.prototype.instantiateModel_ = function(object)
-{
-	var table = object[com.qwirx.freebase.Freebase.TABLE_FIELD];
-	var model = this.app.models[table];
-	
-	if (table && model)
-	{
-		// call the constructor to build a model object
-		// from the database record
-		return new model(object);
-	}
-	else
-	{
-		return object;
-	}
 };
 
 function sortByProperty(name)
@@ -325,9 +306,11 @@ function sortByProperty(name)
 	};
 }
 
-MockFreebase.prototype._get = function(uri, autoInstantiate, onSuccess,
+MockFreebase.prototype.get_ = function(uri, autoInstantiate, onSuccess,
 	onError)
 {
+	onError = onError || this.defaultOnErrorHandler_;
+
 	var viewIndex = uri.indexOf('/_view/');
 	var emitted = [];
 	var self = this;
@@ -429,18 +412,12 @@ MockFreebase.prototype._get = function(uri, autoInstantiate, onSuccess,
 		}
 	}
 	
-	foundRows.sort(sortByProperty('id'));
+	foundRows.sort(sortByProperty('key'));
 	onSuccess({total_rows: foundRows.length, offset: 0, rows: foundRows});
 };
 
-MockFreebase.prototype.save = function(object, onSuccess, onError)
+MockFreebase.prototype.saveReal_ = function(object, onSuccess, onError)
 {
-	if (object._id && object._id.indexOf('_design/') == 0 && object.modelName)
-	{
-		this.app.models[object.modelName] = com.qwirx.freebase.Model(
-			object.modelName, this, object.columns);
-	}
-	
 	if (!object._id)
 	{
 		object._id = "mock_" + Math.random().toString().substring(2);
@@ -459,26 +436,51 @@ MockFreebase.prototype.save = function(object, onSuccess, onError)
 	
 	this.objectStore[object._id] = {
 		revision: object._rev,
-		json: JSON.stringify(goog.object.clone(object))
+		json: JSON.stringify(goog.object.clone(object)),
+		deleted: object._deleted || false,
 	};
 	
-	// com.qwirx.freebase.FunctionStringifier);
-	this.dispatchEvent(new DocumentSaved(object));
 	onSuccess(object);
 };
 
-MockFreebase.prototype.create$ = function(object, onSuccess, onError)
+MockFreebase.prototype.createReal$_ = function(object, onSuccess, onError)
 {
-	if (object._id && this.objectStore[object._id])
+	if (object._id && this.objectStore[object._id] && 
+		!this.objectStore[object._id].deleted)
 	{
-		onError(this, document, new Error("Failed to create document: " +
-			"already exists: " + object._id));
+		onError(this, object,
+			new com.qwirx.freebase.DuplicateException(object,
+				this.objectStore[object._id]));
 	}
 	else
 	{
-		this.save(object, onSuccess, onError);
+		this.saveReal_(object, onSuccess, onError);
 	}
-}
+};
+
+MockFreebase.prototype.deleteReal_ = function(object, onSuccess, onError)
+{
+	if (object._id && this.objectStore[object._id])
+	{
+		object._deleted = true;
+		this.saveReal_(object, onSuccess, onError);
+	}
+	else
+	{
+		onError(this, object,
+			new com.qwirx.freebase.NonexistentException(object));
+	}
+};
+
+MockFreebase.prototype.getDocumentId = function(document)
+{
+	return document._id;
+};
+
+MockFreebase.prototype.setDocumentId = function(document, newId)
+{
+	document._id = newId;
+};
 
 MockFreebase.prototype.attachEvent = function()
 {
@@ -498,7 +500,7 @@ function setUp()
 	mockFreebase = new MockFreebase();
 	Cat = Model('Cat', mockFreebase, [{name: 'name', type: 'String'},
 		{name: 'age', type: 'Number'}]);
-	mockFreebase.create$(Cat.toDocument(), function(){});
+	mockFreebase.create$(Cat, function(){});
 	
 	old = new Cat({name: "Old Deuteronomy", age: 82});
 	mockFreebase.save(old, function(){});
@@ -526,21 +528,56 @@ function assertCallback(f)
 	
 	f(c);
 	
-	assertTrue(calledBack);
+	assertTrue("Callback was not called as expected", calledBack);
 	return result;
 }
 
-function testMockFreebaseApi()
+function assertFreebaseApi(fb)
 {
+	var expected = '_design/Foobar';
+	assertEquals(fb.getTableId('Foobar'), expected);
+	assertEquals(fb.isTableId(expected), true);
+	
+	var test = Model('test', fb, []);
+	
+	// deleteDoc should throw an exception because it's not saved yet
+	var exception = assertThrows("Database should reject deleting " +
+		"an object that it doesn't contain",
+		function() { fb.deleteDoc(test, function(){}); });
+	goog.asserts.assertInstanceof(exception,
+		com.qwirx.freebase.NonexistentException,
+		"Wrong type of exception was thrown by attempting " +
+		"to delete a nonexistent object");
+	
+	// test that Freebase.save() and Freebase.create() call the
+	// callback with the ID of the saved document, not the whole
+	// document.
+	var result = assertCallback(function(c) { fb.save(test, c); })[0];
+	assertObjectEquals(test, result);
+	
+	// deleteDoc does not really delete the document, but it sets its
+	// _deleted flag, which we interpret as allowing us to recreate
+	// the document.
+	var result = assertCallback(function f(c) {fb.deleteDoc(test, c);})[0];
+	assertTrue(result._deleted);
+	var result = assertCallback(function f(c) {fb.get(test._id, c);})[0];
+	assertTrue(result._deleted);
+	
+	result = assertCallback(function(c) { fb.create$(test, c); })[0];
+	assertObjectEquals(test, result);
+	assertCallback(function f(c) {fb.deleteDoc(test, c);});
+
 	var expectedCatDoc = Cat.toDocument();
-	expectedCatDoc._rev = mockFreebase.objectStore[Cat.toDocument()._id].revision;
+	var actualCatDoc = assertCallback(
+		function(c) { fb.get(Cat.getId(), c); })[0];
+	expectedCatDoc._rev = actualCatDoc._rev;
 	expectedCatDoc = JSON.stringify(expectedCatDoc);
-	assertObjectEquals('The Cat Model should have been saved in the ' +
-		'database by setUp()', expectedCatDoc, 
-		mockFreebase.objectStore[Cat.toDocument()._id].json);
+	actualCatDoc = JSON.stringify(actualCatDoc);
+	assertEquals('The Cat Model should have been saved in the ' +
+		'database by setUp()', expectedCatDoc, actualCatDoc);
 	assertObjectEquals('The reconstructed Model class should be ' +
 		'identical to the one that produced the Model Document',
-		Cat, mockFreebase.app.models.Cat);
+		Cat, fb.app.models.Cat);
 
 	var foo = {_id: 'foo', job: 'Foo'};
 	var bar = {job: 'Bar'};
@@ -555,52 +592,84 @@ function testMockFreebaseApi()
 		}
 	};
 	
-	assertCallback(function(c) { mockFreebase.create$(foo, c); });
-	assertThrows('Database should reject saving a second copy ' +
+	assertCallback(function(c) { fb.create$(foo, c); });
+	var exception = assertThrows('Database should reject saving a second copy ' +
 		'of the document', function()
 		{
-			mockFreebase.create$(foo, function(){});
+			fb.create$(foo, function(){});
 		});
+	goog.asserts.assertInstanceof(exception,
+		com.qwirx.freebase.DuplicateException,
+		"Wrong type of exception was thrown by attempting " +
+		"to create a duplicate object");
 
-	assertCallback(function(c) { mockFreebase.create$(bar, c); })[0];
-	assertCallback(function(c) { mockFreebase.create$(baz, c); })[0];
+	assertCallback(function(c) { fb.create$(bar, c); })[0];
+	assertCallback(function(c) { fb.create$(baz, c); })[0];
 	var noNewModelsOnlyCat = {Cat: Cat};
 	assertObjectEquals("Should not be any new app models at this point",
-		noNewModelsOnlyCat, mockFreebase.app.models);
-	assertCallback(function(c) { mockFreebase.create$(jobs, c); });
+		noNewModelsOnlyCat, fb.app.models);
+	assertCallback(function(c) { fb.create$(jobs, c); });
 	assertObjectEquals("Should still be no models (jobs is not really a model)",
-		noNewModelsOnlyCat, mockFreebase.app.models);
+		noNewModelsOnlyCat, fb.app.models);
 	assertObjectEquals(foo, 
-		assertCallback(function(c) { mockFreebase.get(foo._id, c) })[0]);
+		assertCallback(function(c) { fb.get(foo._id, c) })[0]);
 	
 	// returns all three objects, because jobs.views.map.all doesn't discriminate
 	assertObjectEquals([foo, bar, baz].sort(sortByProperty('_id')),
-		assertCallback(function(c) { mockFreebase.findAll('Jobs', c); })[0]);
+		assertCallback(function(c) { fb.findAll('Jobs', c); })[0]);
 	
-	assertObjectEquals({
-		total_rows: 3, offset: 0, rows: [
+	result = assertCallback(function(c) { fb.view(jobs._id, 'all', c); })[0];
+	assertObjectEquals([
 			{id: foo._id, key: foo._id, value: foo},
 			{id: bar._id, key: bar._id, value: bar},
 			{id: baz._id, key: baz._id, value: baz}
-		].sort(sortByProperty('id'))},
-		assertCallback(function(c) { mockFreebase.view(jobs._id, 'all', c); })[0]);
-	assertObjectEquals({
-		total_rows: 3, offset: 0, rows: [
+		].sort(sortByProperty('key')),
+		result.rows);
+	result = assertCallback(function(c) { fb.view(jobs._id, 'name', c); })[0];
+	assertObjectEquals([
 			{id: foo._id, key: foo.job, value: foo},
 			{id: bar._id, key: bar.job, value: bar},
 			{id: baz._id, key: baz.job, value: baz}
-		].sort(sortByProperty('id'))},
-		assertCallback(function(c) { mockFreebase.view(jobs._id, 'name', c); })[0]);
-	assertObjectEquals({
-		total_rows: 1, offset: 0, rows: [
-			{id: foo._id, key: null, value: foo},
-		]},
-		assertCallback(function(c) { mockFreebase.view(jobs._id, 'foo', c); })[0]);
-	assertObjectEquals({
-		total_rows: 1, offset: 0, rows: [
-			{id: bar._id, key: bar._id, value: null},
-		]},
-		assertCallback(function(c) { mockFreebase.view(jobs._id, 'bar', c); })[0]);
+		].sort(sortByProperty('key')),
+		result.rows);
+	result = assertCallback(function(c) { fb.view(jobs._id, 'foo', c); })[0];
+	assertObjectEquals([{id: foo._id, key: null, value: foo}],
+		result.rows);
+	result = assertCallback(function(c) { fb.view(jobs._id, 'bar', c); })[0];
+	assertObjectEquals([{id: bar._id, key: bar._id, value: null}],
+		result.rows);
+}
+
+function testMockFreebaseApi()
+{
+	var expectedCatDoc = Cat.toDocument();
+	expectedCatDoc._rev = 
+		mockFreebase.objectStore[Cat.getId()].revision;
+	expectedCatDoc = JSON.stringify(expectedCatDoc);
+	assertObjectEquals('The Cat Model should have been saved in the ' +
+		'database by setUp()', expectedCatDoc, 
+		mockFreebase.objectStore[Cat.getId()].json);
+
+	assertFreebaseApi(mockFreebase);
+}
+
+function testBrowserCouchBaseApi()
+{
+	var bc = BrowserCouch("blarg", {
+		storage: new BrowserCouch.FakeStorage()
+		});
+	var bcb = new com.qwirx.freebase.BrowserCouchBase(bc);
+	assertCallback(function f(c) { bcb.create$(Cat, c); });
+
+	/*	
+	old = new Cat({name: "Old Deuteronomy", age: 82});
+	assertCallback(function f(c) { fb.create$(old, c); });
+	
+	etc = new Cat({name: "Etcetera", age: 0});
+	assertCallback(function f(c) { fb.create$(etc, c); });
+	*/
+	
+	assertFreebaseApi(bcb);
 }
 
 function testModelBuilder()
@@ -622,7 +691,7 @@ function testModelBuilder()
 	};
 	
 	// must save the model before calling findAll
-	mockFreebase.create$(Foobar.toDocument(), function(){});
+	mockFreebase.create$(Foobar, function(){});
 	Foobar.findAll({}, collectResults);
 	assertObjectEquals([], results);
 	
@@ -634,8 +703,8 @@ function testModelBuilder()
 	mockFreebase.save(frob, function(){});
 	assertNotNull(frob._id);
 	assertEquals("Foobar", frob[Freebase.TABLE_FIELD]);
-	assertEquals("toDocument should not be saved in the model object",
-		undefined, frob.toDocument().toDocument);
+	assertUndefined("toDocument should not be saved in the model object",
+		frob.toDocument().toDocument);
 	
 	mockFreebase.findAll(Foobar.modelName, collectResults);
 	assertObjectEquals("Database findAll method should instantiate each " +
@@ -648,7 +717,7 @@ function testModelBuilder()
 	var e = assertThrows('Database should reject saving a second copy ' +
 		'of the model document', function()
 		{
-			mockFreebase.create$(Model(name, mockFreebase, cols).toDocument(),
+			mockFreebase.create$(Model(name, mockFreebase, cols),
 				function(){});
 		});
 
@@ -735,13 +804,13 @@ function testFreebaseGuiRun()
 		'of an existing model', 'age', etc.constructor.columns[1].name);
 
 	var badgerDoc = Badger.toDocument();
-	mockFreebase.create$(badgerDoc, function(){}, fail);
+	mockFreebase.create$(Badger, function(){}, fail);
 	assertNotNull('Badger should be in the database after saving it',
-		mockFreebase.objectStore[Badger.toDocument()._id]);
+		mockFreebase.objectStore[Badger.getId()]);
 	assertTreeContents(gui.navigator_, mockFreebase, "Tree should have " +
 		"been updated with the new model document, correctly sorted");
 
-	mockFreebase.save(badgerDoc, function(){});
+	mockFreebase.save(Badger, function(){});
 	assertTreeContents(gui.navigator_, mockFreebase,
 		'Save should not create a duplicate tree node');
 	
@@ -1454,6 +1523,31 @@ function testLargeGridDataSource()
 	grid.scrollBar_.dispatchEvent(goog.ui.Component.EventType.CHANGE);
 	assertObjectEquals({x: 0, y: 0}, grid.scrollOffset_);
 	assertObjectEquals(range(0, gridRows - 2), ds.requestedRows);	
+}
+
+function testBrowserCouchBase()
+{
+	var MockBrowserCouch = function()
+	{
+		this.objectStore = {};
+	};
+
+	MockBrowserCouch.prototype.get = function(id, onSuccess, onError)
+	{
+		if (id in this.objectStore)
+		{
+			var object = JSON.parse(this.objectStore[uri].json);
+			onSuccess(object);
+		}
+		else
+		{
+			onError();
+		}
+	};
+	
+	bc = new MockBrowserCouch();
+	bcb = new com.qwirx.freebase.BrowserCouchBase(bc);
+	fb = new com.qwirx.freebase.Freebase(bcb);
 }
 
 </script>

@@ -96,7 +96,7 @@ com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
 		
 		opt_editarea.appendChild(editorControl);
 		
-		if (this.documentId_ && Freebase.isTableId(this.documentId_))
+		if (this.documentId_ && freebase.isTableId(this.documentId_))
 		{
 			// show all records in the table
 			editorControl.className += ' fb-docedit-datagrid';
