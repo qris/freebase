@@ -271,7 +271,15 @@ var BrowserCouch = function(opts){
         },
         false
       );
-      doc.body.appendChild(script);
+      
+      if (doc.body)
+      {
+        doc.body.appendChild(script);
+      }
+      else
+      {
+        doc.head.appendChild(script);
+      }
     }
   };
   
