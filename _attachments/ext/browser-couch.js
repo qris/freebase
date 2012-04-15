@@ -228,7 +228,7 @@ var BrowserCouch = function(opts){
           i = 0,
           lastLib = "";
   
-      if (!jQuery.isArray(libs)){
+      if (!goog.isArray(libs)){
         libs = [libs];
       }
   
@@ -574,7 +574,7 @@ var BrowserCouch = function(opts){
       if (typeof(obj) == "object") {
         var copy;
   
-        if (jQuery.isArray(obj))
+        if (goog.isArray(obj))
           copy = new Array();
         else
           copy = new Object();
@@ -781,7 +781,7 @@ var BrowserCouch = function(opts){
           
       }
     
-      if (jQuery.isArray(document)) {
+      if (goog.isArray(document)) {
         for (var i = 0; i < document.length; i++){
           putObj(document[i]);
         }
