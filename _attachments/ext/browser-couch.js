@@ -411,6 +411,13 @@ var BrowserCouch = function(opts){
     map: function STMR_map(map, dict, progress,
                            chunkSize, finished) {
       var mapDict = {};
+      
+      // null can be emitted as the key by a map function, but using
+      // it as a dictionary key converts it to the string "null",
+      // which is ambiguous if the map function ever emits a key
+      // "null" as well. So we keep null-keyed items in a separate
+      // object, mapNull.
+      var mapNull = null;
       var keys = dict.getKeys();
       var currDoc;
   
@@ -418,11 +425,26 @@ var BrowserCouch = function(opts){
         // TODO: This assumes that the key will always be
         // an indexable value. We may have to hash the value,
         // though, if it's e.g. an Object.
-        var item = mapDict[key];
-        if (!item){
-          item = mapDict[key] = {keys: [], values: []};
+        var item;
+        
+        if (key === null)
+        {
+        	item = mapNull;
+		    if (!item)
+		    {
+		    	item = mapNull = {ids: [], values: []};
+		    }
         }
-        item.keys.push(currDoc._id);
+        else
+        {
+        	item = mapDict[key];
+		    if (!item)
+		    {
+		    	item = mapDict[key] = {ids: [], values: []};
+		    }
+        }
+        
+        item.ids.push(currDoc._id);
         item.values.push(value);
       }
   
@@ -440,10 +462,16 @@ var BrowserCouch = function(opts){
   
         if (i >= keys.length) {
           var mapKeys = [];
+          if (mapNull)
+          {
+            mapKeys.push(null);
+          }
           for (name in mapDict)
+          {
             mapKeys.push(name);
+          }
           mapKeys.sort();
-          finished({dict: mapDict, keys: mapKeys});
+          finished({dict: mapDict, keys: mapKeys, nulls: mapNull});
         } else
           progress("map", i / keys.length, continueMap);
       }
@@ -456,6 +484,7 @@ var BrowserCouch = function(opts){
       var rows = [];
       var mapDict = mapResult.dict;
       var mapKeys = mapResult.keys;
+      var mapNull = mapResult.nulls;
   
       var i = 0;
   
@@ -464,11 +493,20 @@ var BrowserCouch = function(opts){
   
         do {
           var key = mapKeys[i];
-          var item = mapDict[key];
+          var item;
+          
+          if (key === null)
+          {
+            item = mapNull;
+          }
+          else
+          {
+            item = mapDict[key];
+          }
   
           var keys = [];
           for (var j = 0; j < keys.length; j++)
-            newKeys.push([key, item.keys[j]]);
+            newKeys.push([key, item.ids[j]]);
   
           rows.push({key: key,
                      value: reduce(keys, item.values)});
@@ -518,23 +556,34 @@ var BrowserCouch = function(opts){
 
     var mapKeys = mapResult.keys;
     var mapDict = mapResult.dict;
+    var mapNull = mapResult.nulls;
 
     for (var i = 0; i < mapKeys.length; i++) {
       var key = mapKeys[i];
-      var item = mapDict[key];
+      var item;
+      
+      if (key === null)
+      {
+        item = mapNull;
+      }
+      else
+      {
+        item = mapDict[key];
+      }
+      
       keyRows.push({key: key, pos: rows.length});
       var newRows = [];
-      for (var j = 0; j < item.keys.length; j++) {
-        var id = item.keys[j];
+      for (var j = 0; j < item.ids.length; j++) {
+        var id = item.ids[j];
         var value = item.values[j];
-        newRows.push({_id: id,
+        newRows.push({id: id,
                       key: key,
                       value: value});
       }
       newRows.sort(function(a, b) {
-                     if (a._id < b._id)
+                     if (a.id < b.id)
                        return -1;
-                     if (a._id > b._id)
+                     if (a.id > b.id)
                        return 1;
                      return 0;
                    });
