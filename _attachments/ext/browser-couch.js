@@ -845,8 +845,12 @@ var BrowserCouch = function(opts){
       } else{
         putObj(document);
       }
-      
-      commitToStorage(cb);
+
+      commitToStorage(
+        function BrowserDatabase_put_callback()
+        {
+          cb(document);
+        });
     };
     
 
