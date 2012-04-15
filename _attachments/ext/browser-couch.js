@@ -221,7 +221,7 @@ var BrowserCouch = function(opts){
   
   bc.ModuleLoader = {
     LIBS: {JSON: "js/ext/json2.js",
-           UUID: "js/ext/uuid.js"},
+           UUID: "uuid.js"},
   
     require: function ML_require(libs, cb) {
       var self = this,
