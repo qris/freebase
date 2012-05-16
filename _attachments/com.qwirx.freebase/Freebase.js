@@ -6,7 +6,8 @@
 goog.provide('com.qwirx.freebase');
 goog.provide('com.qwirx.freebase.Freebase');
 goog.require('com.qwirx.loader');
-goog.require('com.qwirx.freebase.DocumentEditor');
+goog.require('com.qwirx.freebase.InstanceListView');
+goog.require('com.qwirx.freebase.AutomaticFormView');
 
 goog.require('goog.events.EventTarget');
 goog.require('goog.ui.TabBar');
@@ -729,10 +730,43 @@ com.qwirx.freebase.Freebase.Gui.prototype.getEditorContainer = function()
 	return this.editArea_.getDocCell();
 };
 
-com.qwirx.freebase.Freebase.Gui.prototype.openDocument =
-	function(openedId, onSuccess)
+/**
+ * Convert an array to a hash whose values are the same strings
+ * as the keys, which is a nice property for an enumeration, and
+ * saves us having to duplicate them.
+ *
+ * @see http://stackoverflow.com/a/6672823/648162
+ */
+com.qwirx.freebase.Freebase.Gui.Enum = function(constantsList)
 {
-	var alreadyOpenEditor = this.openDocumentsById_[openedId];
+    for (var i in constantsList)
+    {
+        this[constantsList[i]] = i;
+    }
+};
+
+/*
+com.qwirx.freebase.Freebase.Gui.OpenMode = 
+	new com.qwirx.freebase.Freebase.Gui.Enum(['DATA', 'DESIGN']);
+*/
+
+com.qwirx.freebase.Freebase.Gui.prototype.openDocument =
+	function(openedId, onSuccess, onError, view)
+{
+	if (view == null)
+	{
+		if (openedId && this.fb_.isTableId(openedId))
+		{
+			view = com.qwirx.freebase.InstanceListView;
+		}
+		else
+		{
+			view = com.qwirx.freebase.AutomaticFormView;
+		}
+	}
+	
+	var key = openedId + " " + view.name;
+	var alreadyOpenEditor = this.openDocumentsById_[key];
 	
 	if (alreadyOpenEditor)
 	{
@@ -745,12 +779,12 @@ com.qwirx.freebase.Freebase.Gui.prototype.openDocument =
 		return this.fb_.get(openedId,
 			function onGetSuccess(document)
 			{
-				var editor = self.openDocumentsById_[openedId] =
-					new com.qwirx.freebase.DocumentEditor(self,
+				var editor = self.openDocumentsById_[key] =
+					new view(self,
 						self.fb_,
 						document,
-						self.editAreaDocTabs_,
-						self.getEditorContainer());
+						self.getEditorContainer(),
+						self.editAreaDocTabs_);
 				onSuccess(editor);
 			},
 			function onError(exception)
@@ -760,14 +794,40 @@ com.qwirx.freebase.Freebase.Gui.prototype.openDocument =
 	}
 };
 
+com.qwirx.freebase.Freebase.Gui.prototype.getOpenDocumentsById =
+	function(documentId)
+{
+	var results = [];
+	var searchPrefix = documentId + " ";
+	
+	goog.object.forEach(this.openDocumentsById_,
+		function(value, key)
+		{
+			if (goog.string.startsWith(key, searchPrefix))
+			{
+				results[results.length] = value;
+			}
+		});
+		
+	return results;
+};
+
 com.qwirx.freebase.Freebase.Gui.prototype.onError = function(exception)
 {
 	alert(exception);
 };
 
-com.qwirx.freebase.Freebase.Gui.prototype.onDocumentClose = function(documentEditor)
+com.qwirx.freebase.Freebase.Gui.prototype.onDocumentClose = 
+	function(documentEditor)
 {
 	var documentId = documentEditor.documentId_;
-	delete this.openDocumentsById_[documentId];
+	var key = documentId + " " + documentEditor.constructor.name;
+	if (!(key in this.openDocumentsById_))
+	{
+		throw new Error("Document close event reported for a " +
+			"document that does not appear to be open: " +
+			key);
+	}
+	delete this.openDocumentsById_[key];
 };
 

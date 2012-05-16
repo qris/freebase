@@ -818,7 +818,7 @@ function testFreebaseGuiRun()
 	assertEquals(Cat.getId(), catNode.getModel().id);
 	assertObjectEquals({}, gui.openDocumentsById_);
 	catNode.select();
-	var editor = gui.openDocumentsById_[Cat.getId()];
+	var editor = gui.getOpenDocumentsById(Cat.getId())[0];
 	assertNotNull(editor);
 	assertTrue(goog.style.isElementShown(editor.editorControl_));
 	editor.close();
@@ -831,14 +831,14 @@ function testFreebaseGuiRun()
 	var badgerNode = gui.navigator_.getChildAt(0);
 	assertEquals(Badger.getId(), badgerNode.getModel().id);
 	badgerNode.select();
-	var badgerEditor = gui.openDocumentsById_[Badger.getId()];
+	var badgerEditor = gui.getOpenDocumentsById(Badger.getId())[0];
 	assertEquals(badgerEditor.tab_, gui.editAreaDocTabs_.getSelectedTab());
 	assertTrue(goog.style.isElementShown(badgerEditor.editorControl_));
 
 	// open the cat document by selecting it from the tree, check that
 	// the badger tab is no longer active and the document is hidden
 	catNode.select();
-	var catEditor = gui.openDocumentsById_[Cat.getId()];
+	var catEditor = gui.getOpenDocumentsById(Cat.getId())[0];
 	assertEquals(catEditor.tab_, gui.editAreaDocTabs_.getSelectedTab());
 	assertEquals(Cat.getId(), catNode.getModel().id);
 	assertFalse(goog.style.isElementShown(badgerEditor.editorControl_));
@@ -1549,6 +1549,22 @@ function testBrowserCouchBase()
 	bcb = new com.qwirx.freebase.BrowserCouchBase(bc);
 	fb = new com.qwirx.freebase.Freebase(bcb);
 }
+
+/*
+function testEditModelDesign()
+{
+	var gui = new Freebase.Gui(mockFreebase);
+	gui.run(domContainer);
+	var editor = assertCallback(function(c)
+		{
+			gui.openDocument(Cat.getId(), c, null, );
+		})[0];
+	var grid = editor.grid_;
+	assertEquals('Grid should have been populated with some cats',
+		2, editor.getDataSource().getRowCount());
+	
+}
+*/
 
 </script>
 </body>
