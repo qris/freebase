@@ -1,5 +1,7 @@
 goog.provide('com.qwirx.freebase.BrowserCouchBase');
 
+goog.require('com.qwirx.freebase.NonexistentException');
+
 com.qwirx.freebase.BrowserCouchBase = function(browserCouch)
 {
 	com.qwirx.freebase.Freebase.call(this);

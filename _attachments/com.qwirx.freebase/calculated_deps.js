@@ -2,8 +2,9 @@
 goog.addDependency("../../../com.qwirx.freebase/ClosableTab.js", ['com.qwirx.freebase.ClosableTab'], ['goog.ui.Tab', 'com.qwirx.freebase.CloseButton']);
 goog.addDependency("../../../com.qwirx.freebase/calculated_deps.js", [], []);
 goog.addDependency("../../../com.qwirx.freebase/Freebase.deps.js", [], ['goog.events.EventTarget', 'goog.events.EventType', 'goog.ui.CustomButton', 'goog.ui.CustomButtonRenderer', 'goog.ui.Tab', 'goog.debug.Logger']);
-goog.addDependency("../../../com.qwirx.freebase/browsercouchbase.js", ['com.qwirx.freebase.BrowserCouchBase'], []);
+goog.addDependency("../../../com.qwirx.freebase/browsercouchbase.js", ['com.qwirx.freebase.BrowserCouchBase'], ['com.qwirx.freebase.NonexistentException']);
 goog.addDependency("../../../com.qwirx.freebase/AutomaticFormView.js", ['com.qwirx.freebase.AutomaticFormView'], []);
+goog.addDependency("../../../com.qwirx.freebase/Exceptions.js", ['com.qwirx.freebase.Exception', 'com.qwirx.freebase.DuplicateException', 'com.qwirx.freebase.ConflictException', 'com.qwirx.freebase.NonexistentException'], []);
 goog.addDependency("../../../com.qwirx.freebase/modeldesignview.js", ['com.qwirx.freebase.ModelDesignView'], []);
 goog.addDependency("../../../com.qwirx.freebase/Freebase.js", ['com.qwirx.freebase', 'com.qwirx.freebase.Freebase'], ['com.qwirx.loader', 'com.qwirx.freebase.InstanceListView', 'com.qwirx.freebase.AutomaticFormView', 'goog.events.EventTarget', 'goog.ui.TabBar', 'goog.ui.Textarea', 'goog.ui.TextareaRenderer', 'goog.ui.SplitPane', 'goog.ui.tree.TreeControl']);
 goog.addDependency("../../../com.qwirx.freebase/CloseButton.js", ['com.qwirx.freebase.CloseButton'], ['goog.ui.Control', 'goog.ui.CustomButton']);
