@@ -19,6 +19,7 @@ Based on goog.array.array_test.html from Google Closure
 	goog.require('com.qwirx.freebase.DuplicateException');
 	goog.require('com.qwirx.freebase.ConflictException');
 	goog.require('com.qwirx.freebase.NonexistentException');
+	goog.require('com.qwirx.grid.NavigableGrid');
 	
 	goog.require('goog.dom.NodeIterator');
 	goog.require('goog.testing.PropertyReplacer');
@@ -1325,7 +1326,7 @@ function initGrid(datasource)
 	domContainer.style.height = '300px';
 	domContainer.style.overflow = 'hidden';
 	
-	var grid = new com.qwirx.grid.Grid(datasource);
+	var grid = new com.qwirx.grid.NavigableGrid(datasource);
 	grid.addClassName('fb-datagrid');
 	grid.render(domContainer);
 
@@ -1527,8 +1528,26 @@ function testLargeGridDataSource()
 	grid.scrollBar_.dispatchEvent(goog.ui.Component.EventType.CHANGE);
 	assertObjectEquals({x: 0, y: 0}, grid.scrollOffset_);
 	assertObjectEquals(range(0, gridRows - 2), ds.requestedRows);	
-}
 
+	// reset for manual testing, playing and demos
+	ds.setRowCount(10000);
+	
+	// highlight the last row, scroll back to the top and simulate
+	// a click. This used to try to unhighlight an HTML table row
+	// element with a massive index, because scroll was not taken
+	// into account.
+	grid.setSelection(0, 9999, 1, 9999);
+
+	scrollbar.setValue(ds.getRowCount() - gridRows + 1); // at the top
+	assertEquals(scrollbar.getMaximum(), scrollbar.getValue());
+	var cell = grid.rows_[0].getColumns()[0].tableCell;
+	assertEquals(0,
+		cell[com.qwirx.grid.Grid.TD_ATTRIBUTE_ROW].getRowIndex());
+	sendFakeMouseEvent(goog.events.EventType.MOUSEDOWN, 0, cell);
+	assertSelection(grid, 'Selection should have changed with mousedown',
+		0, 0, 0, 0);
+		
+}
 function testBrowserCouchBase()
 {
 	var MockBrowserCouch = function()

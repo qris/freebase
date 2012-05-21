@@ -1,6 +1,7 @@
 goog.provide('com.qwirx.freebase.InstanceListView');
 
 goog.require('com.qwirx.freebase.DocumentEditor');
+goog.require('com.qwirx.freebase.NavigationBar');
 
 com.qwirx.freebase.FLASH_RENDERER = goog.ui.ControlRenderer.getCustomRenderer(
 	goog.ui.ControlRenderer, 'fb-flash');
@@ -15,7 +16,6 @@ com.qwirx.freebase.InstanceListView = function(gui, freebase, document,
 	var self = this;
 	var editorControl = this.editorControl_;
 
-	// show all records in the table
 	editorControl.className += ' fb-docedit-datagrid';
 	
 	var columnsGridInfo = [{caption: 'ID'}];
@@ -27,10 +27,14 @@ com.qwirx.freebase.InstanceListView = function(gui, freebase, document,
 	
 	var datasource = this.dataSource_ = 
 		new com.qwirx.grid.SimpleDatasource(columnsGridInfo, []);
-	var grid = this.grid_ = new com.qwirx.grid.Grid(datasource);
-	grid.addClassName('fb-datagrid');
-	grid.render(editorControl);
 	
+	this.grid_ = new com.qwirx.grid.Grid(datasource);
+	this.grid_.addClassName('fb-datagrid');
+	this.grid_.render(editorControl);
+	
+	this.nav_ = new com.qwirx.freebase.NavigationBar(datasource);
+	this.nav_.render(editorControl);
+
 	this.freebase_.view(this.documentId_, 'all',
 		function(all_results)
 		{

@@ -18,7 +18,6 @@ goog.inherits(com.qwirx.freebase.ClosableTab, goog.ui.Tab);
 
 com.qwirx.freebase.ClosableTab.prototype.createDom = function(tab)
 {
-	var self = this;
 	var element = com.qwirx.freebase.ClosableTab.superClass_.createDom.call(this, tab);
 	var closeButton = new com.qwirx.freebase.CloseButton();
 	closeButton.render(this.getElement());

@@ -59,3 +59,24 @@ table.fb-grid-data-table > tr > td
 	height: 20px;
 	position: relative;
 }
+
+.fb-nav-bar .goog-toolbar-button
+{
+	border: 2px outset white;
+	/*
+	height: 16px;
+	width: 16px;
+	background-image: url(icons.png);
+	background-repeat: no-repeat;
+	*/
+	width: 1em;
+	vertical-align: middle;
+	text-align: center;
+}
+
+.goog-toolbar
+{
+	/* Client apps may override the URL at which they serve the image. */
+	background: #fafafa url(../closure-library/closure/goog/images/toolbar-bg.png) repeat-x bottom left;
+}
+

@@ -527,7 +527,8 @@ com.qwirx.freebase.Freebase.Gui.prototype.run = function(container)
 {
 	com.qwirx.loader.loadCss('com.qwirx.freebase', 'freebase.css');
 	com.qwirx.loader.loadCss('goog.closure', 'common.css',
-		'tab.css', 'tabbar.css', 'button.css', 'custombutton.css');
+		'tab.css', 'tabbar.css', 'button.css', 'custombutton.css',
+		'toolbar.css');
 
 	goog.dom.removeChildren(container);
 	this.openDocumentsById_ = {};
