@@ -982,3 +982,10 @@ com.qwirx.grid.Grid.prototype.handleScrollEvent = function(e)
 	this.updateSelection_(true);
 };
 
+com.qwirx.grid.Grid.prototype.getDatasource = function()
+{
+	return this.dataSource_;
+};
+
+
+
