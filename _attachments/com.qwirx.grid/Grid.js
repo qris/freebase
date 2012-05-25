@@ -166,33 +166,12 @@ com.qwirx.grid.Grid.prototype.createDom = function()
 {
 	this.element_ = this.dom_.createDom('div',
 		this.getRenderer().getClassNames(this).join(' '));
+	this.element_.style.height = "100%";
 	
-	/*
-	var outerRow = this.dom_.createDom('tr', 'fb-grid-outer-tr');
-	this.element_.appendChild(outerRow);
-	
-	var dataCell = this.dom_.createDom('td', 'fb-grid-data-td');
-	outerRow.appendChild(dataCell);
-	*/
-
 	this.scrollBarOuterDiv_ = this.dom_.createDom('div',
 		'fb-grid-scroll-v');
 	this.element_.appendChild(this.scrollBarOuterDiv_);
 
-	/*
-	var scrollBarTable = this.dom_.createDom('table');
-	scrollBarOuterDiv.appendChild(scrollBarTable);
-
-	var scrollBarTr = this.dom_.createDom('tr');
-	scrollBarTable.appendChild(scrollBarTr);
-
-	var scrollBarTd = this.dom_.createDom('td');
-	scrollBarTr.appendChild(scrollBarTd);
-
-	var scrollBarInnerDiv = this.dom_.createDom('div');
-	scrollBarTd.appendChild(scrollBarInnerDiv);
-	*/
-	
 	this.dataDiv_ = this.dom_.createDom('div', 'fb-grid-data');
 	this.element_.appendChild(this.dataDiv_);
 	
@@ -255,7 +234,7 @@ com.qwirx.grid.Grid.prototype.enterDocument = function()
 		return;
 	}
 	
-	var container = this.getElement().parentElement;
+	var container = this.dataDiv_;
 	var containerPos = goog.style.getPageOffset(container);
 	var containerBorder = goog.style.getBorderBox(container);		
 	

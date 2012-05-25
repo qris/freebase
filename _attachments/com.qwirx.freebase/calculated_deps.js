@@ -49,7 +49,7 @@ goog.addDependency("../../../ext/jquery.effects.pulsate.js", [], []);
 goog.addDependency("../../../ext/MochiKit/Async.js", [], []);
 goog.addDependency("../../../ext/MochiKit/Base.js", [], []);
 goog.addDependency("../../../com.qwirx.loader/loader.js", ['com.qwirx.loader'], []);
-goog.addDependency("../../../com.qwirx.grid/NavigableGrid.js", ['com.qwirx.grid.NavigableGrid'], ['com.qwirx.grid.Grid', 'com.qwirx.grid.NavigationBar', 'goog.dom.ViewportSizeMonitor']);
+goog.addDependency("../../../com.qwirx.grid/NavigableGrid.js", ['com.qwirx.grid.NavigableGrid'], ['com.qwirx.grid.Grid', 'com.qwirx.grid.NavigationBar']);
 goog.addDependency("../../../com.qwirx.grid/Grid.js", ['com.qwirx.grid.Grid', 'com.qwirx.grid.Datasource', 'com.qwirx.grid.Datasource.Events', 'com.qwirx.grid.Datasource.RowEvent', 'com.qwirx.grid.SimpleDatasource'], ['com.qwirx.loader', 'goog.ui.Control', 'goog.ui.Slider', 'goog.editor.SeamlessField']);
 goog.addDependency("../../../com.qwirx.grid/NavigationBar.js", ['com.qwirx.grid.NavigationBar'], ['goog.ui.ToolbarButton']);
 goog.addDependency("../../alltests.js", [], []);

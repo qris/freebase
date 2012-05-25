@@ -1333,6 +1333,25 @@ function initGrid(datasource)
 	// grid should initially display the top left corner
 	assertObjectEquals({x: 0, y: 0}, grid.scrollOffset_);
 	
+	// grid container and scrolling container should fill the
+	// available space
+	assertEquals('100%', grid.getElement().style.height);
+	
+	// data div height + nav bar height should equal total height
+	assertEquals(grid.getElement().clientHeight,
+		grid.dataDiv_.clientHeight + grid.nav_.getElement().clientHeight);
+	
+	// grid should not have any rows outside the visible area
+	// of the data div
+	var rows = grid.dataTable_.children[0].children;
+	var lastRow = rows[rows.length - 1];
+	var container = grid.dataDiv_;
+	var containerPos = goog.style.getPageOffset(container);
+	var lastRowPos = goog.style.getPageOffset(lastRow);
+	var remainingSpace = (containerPos.y + container.clientHeight) -
+		(lastRowPos.y + lastRow.clientHeight);
+	assertTrue(remainingSpace > 0);
+	
 	// a click which doesn't change the row selection should not
 	// cause an error
 	assertSelection(grid, "initial state should be no selection",
