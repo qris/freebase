@@ -1,7 +1,7 @@
 goog.provide('com.qwirx.freebase.DocumentEditor');
 
 goog.require('com.qwirx.grid.Grid');
-goog.require('com.qwirx.grid.SimpleDatasource');
+goog.require('com.qwirx.data.SimpleDatasource');
 goog.require('com.qwirx.freebase.ClosableTab');
 
 com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
