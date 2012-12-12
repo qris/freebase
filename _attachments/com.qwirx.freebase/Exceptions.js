@@ -3,6 +3,14 @@ goog.provide('com.qwirx.freebase.DuplicateException');
 goog.provide('com.qwirx.freebase.ConflictException');
 goog.provide('com.qwirx.freebase.NonexistentException');
 
+/**
+	@namespace
+	@name com.qwirx.freebase
+*/
+
+/**
+	@constructor
+*/
 com.qwirx.freebase.Exception = function()
 {
 	if (Error.captureStackTrace)
@@ -11,6 +19,9 @@ com.qwirx.freebase.Exception = function()
 	}
 };
 
+/**
+	@constructor
+*/
 com.qwirx.freebase.DuplicateException = function(savingObject,
 	existingObject)
 {
@@ -29,6 +40,9 @@ com.qwirx.freebase.DuplicateException.prototype.toString = function()
 		this.existing_;
 };
 
+/**
+	@constructor
+*/
 com.qwirx.freebase.ConflictException = function(object, expectedRev,
 	actualRev)
 {
@@ -51,6 +65,9 @@ com.qwirx.freebase.ConflictException.prototype.toString = function()
 		"someone else inbetween.";
 };
 
+/**
+	@constructor
+*/
 com.qwirx.freebase.NonexistentException = function(object)
 {
 	com.qwirx.freebase.Exception.call(this);
