@@ -1,8 +1,13 @@
 goog.provide('com.qwirx.freebase.AutomaticFormView');
+goog.require('com.qwirx.freebase.DocumentEditor');
 
 com.qwirx.freebase.FLASH_RENDERER = goog.ui.ControlRenderer.getCustomRenderer(
 	goog.ui.ControlRenderer, 'fb-flash');
 
+/**
+ * Automatically generates a simple form for object editing, like
+ * a Drupal Node Edit page.
+ */
 com.qwirx.freebase.AutomaticFormView = function(gui, freebase, document,
 	editarea, opt_tabbar)
 {
