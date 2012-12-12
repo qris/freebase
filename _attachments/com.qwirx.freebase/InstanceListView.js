@@ -1,6 +1,7 @@
 goog.provide('com.qwirx.freebase.InstanceListView');
 
 goog.require('com.qwirx.freebase.DocumentEditor');
+goog.require('com.qwirx.grid.Grid');
 goog.require('com.qwirx.grid.NavigationBar');
 
 com.qwirx.freebase.FLASH_RENDERER = goog.ui.ControlRenderer.getCustomRenderer(
@@ -26,7 +27,7 @@ com.qwirx.freebase.InstanceListView = function(gui, freebase, document,
 	}
 	
 	var datasource = this.dataSource_ = 
-		new com.qwirx.grid.SimpleDatasource(columnsGridInfo, []);
+		new com.qwirx.data.SimpleDatasource(columnsGridInfo, []);
 	
 	this.grid_ = new com.qwirx.grid.Grid(datasource);
 	this.grid_.addClassName('fb-datagrid');
