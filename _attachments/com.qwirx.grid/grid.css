@@ -80,3 +80,18 @@ table.fb-grid-data-table > tr > td
 	background: #fafafa url(../closure-library/closure/goog/images/toolbar-bg.png) repeat-x bottom left;
 }
 
+.fb-docedit-datagrid .goog-toolbar
+{
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+}
+
+.fb-docedit-datagrid .goog-toolbar .fb-textfield
+{
+	font-size: 80%;
+	border: 0px none;
+	vertical-align: middle;
+	width: 4em;
+}
+
