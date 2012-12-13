@@ -4,10 +4,11 @@
  */
 
 goog.provide('com.qwirx.freebase');
-goog.provide('com.qwirx.freebase.Freebase');
-goog.require('com.qwirx.loader');
-goog.require('com.qwirx.freebase.InstanceListView');
 goog.require('com.qwirx.freebase.AutomaticFormView');
+goog.provide('com.qwirx.freebase.Freebase');
+goog.require('com.qwirx.freebase.InstanceListView');
+goog.require('com.qwirx.loader');
+goog.require('com.qwirx.util.Tree');
 
 goog.require('goog.events.EventTarget');
 goog.require('goog.ui.TabBar');
@@ -56,6 +57,9 @@ com.qwirx.freebase.FunctionStringifier = function(key, value)
 	}
 };
 
+/**
+ * @constructor
+ */
 com.qwirx.freebase.Freebase = function()
 {
 	this.app = {models: {}};
@@ -226,6 +230,12 @@ com.qwirx.freebase.Freebase.TABLE_FIELD =
 com.qwirx.freebase.Freebase.CLASS_FIELD = 
 	com.qwirx.freebase.Freebase.FREEBASE_FIELD_PREFIX + "class";
 
+/**
+ * An Event fired by Freebase at itself when a document is saved.
+ * You can add a listener for this event on a Freebase to update your
+ * GUI objects whenever an object is modified and saved.
+ * @constructor
+ */
 com.qwirx.freebase.DocumentSaved = function(document, database)
 {
 	this.type = com.qwirx.freebase.DocumentSaved.EVENT_TYPE;
@@ -576,56 +586,7 @@ com.qwirx.freebase.Freebase.Gui.prototype.construct = function()
 		});
 };
 
-/**
- * Binary search on a sorted list, to find the correct insertion point
- * to maintain sort order.
- */
-com.qwirx.freebase.binarySearch = function(countFn, compareFn)
-{
-	var left = 0;  // inclusive
-	var right = countFn();  // exclusive
-	var found;
-	
-	while (left < right)
-	{
-		var middle = (left + right) >> 1;
-		var compareResult = compareFn(middle);
-		if (compareResult > 0)
-		{
-			left = middle + 1;
-		}
-		else
-		{
-			right = middle;
-			// We are looking for the lowest index so we can't return immediately.
-			found = !compareResult;
-		}
-	}
-	
-	// left is the index if found, or the insertion point otherwise.
-	// ~left is a shorthand for -left - 1.
-	
-	return found ? left : ~left;
-};
-
-/**
- * Binary search on a sorted tree (actually any BaseNode) to find the
- * correct insertion point to maintain sort order.
- */
-com.qwirx.freebase.treeSearch = function(node, compareNodeFn, target)
-{
-	return com.qwirx.freebase.binarySearch(
-		function countFn()
-		{
-			return node.getChildCount();
-		},
-		function compareFn(atIndex)
-		{
-			return compareNodeFn(target, node.getChildAt(atIndex));
-		});
-};
-
-com.qwirx.freebase.treeLabelCompare = function(a, b)
+com.qwirx.freebase.Freebase.treeLabelCompare = function(a, b)
 {
 	var ta = (a instanceof goog.ui.tree.BaseNode) ? a.getText() : a;
 	var tb = (b instanceof goog.ui.tree.BaseNode) ? b.getText() : b;
@@ -640,8 +601,8 @@ com.qwirx.freebase.Freebase.Gui.prototype.getDocumentLabel = function(document)
 com.qwirx.freebase.Freebase.Gui.prototype.onDocumentSaved = function(event)
 {
 	var newNodeName = this.getDocumentLabel(event.getDocument());
-	var index = com.qwirx.freebase.treeSearch(this.navigator_,
-		com.qwirx.freebase.treeLabelCompare, newNodeName);
+	var index = com.qwirx.util.Tree.treeSearch(this.navigator_,
+		com.qwirx.freebase.Freebase.treeLabelCompare, newNodeName);
 
 	if (index < 0)
 	{
@@ -667,26 +628,6 @@ com.qwirx.freebase.Freebase.Gui.prototype.getEditorContainer = function()
 {
 	return this.editArea_.getDocCell();
 };
-
-/**
- * Convert an array to a hash whose values are the same strings
- * as the keys, which is a nice property for an enumeration, and
- * saves us having to duplicate them.
- *
- * @see http://stackoverflow.com/a/6672823/648162
- */
-com.qwirx.freebase.Freebase.Gui.Enum = function(constantsList)
-{
-    for (var i in constantsList)
-    {
-        this[constantsList[i]] = i;
-    }
-};
-
-/*
-com.qwirx.freebase.Freebase.Gui.OpenMode = 
-	new com.qwirx.freebase.Freebase.Gui.Enum(['DATA', 'DESIGN']);
-*/
 
 com.qwirx.freebase.Freebase.Gui.prototype.openDocument =
 	function(openedId, onSuccess, onError, view)

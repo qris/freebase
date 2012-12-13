@@ -1,129 +1,28 @@
 goog.provide('com.qwirx.grid.Grid');
-goog.provide('com.qwirx.grid.Datasource');
-goog.provide('com.qwirx.grid.Datasource.Events');
-goog.provide('com.qwirx.grid.Datasource.RowEvent');
-goog.provide('com.qwirx.grid.SimpleDatasource');
 
+goog.require('com.qwirx.data.Cursor');
 goog.require('com.qwirx.loader');
+goog.require('com.qwirx.util.Array');
+goog.require('com.qwirx.util.Enum');
 goog.require('goog.ui.Control');
 goog.require('goog.ui.Slider');
 goog.require('goog.editor.SeamlessField');
 
-var
-  /** @define {boolean} */ DEBUG = true;
+/** @define {boolean} */ com.qwirx.freebase.DEBUG = true;
  
 com.qwirx.freebase.log = function(var_args)
 {
-	if (DEBUG)
+	if (com.qwirx.freebase.DEBUG)
 	{
 		console.log.apply(console, arguments);
 	}
-};
-
-com.qwirx.grid.Datasource = goog.nullFunction;
-
-goog.inherits(com.qwirx.grid.Datasource, goog.events.EventTarget);
-
-com.qwirx.grid.Datasource.Events = {
-	ROW_COUNT_CHANGE: 'ROW_COUNT_CHANGE',
-	ROWS_INSERT: 'ROWS_INSERT',
-	ROWS_UPDATE: 'ROWS_UPDATE',
-};
-
-/**
- * A base class for events that affect specific rows of a
- * data source. The row indexes are passed as an array.
- */
- 
-com.qwirx.grid.Datasource.RowEvent = function(type, rowIndexes)
-{
-	goog.events.Event.call(this, type);
-	this.rowIndexes_ = rowIndexes;
-};
-
-goog.inherits(com.qwirx.grid.Datasource.RowEvent, goog.events.Event);
-
-com.qwirx.grid.Datasource.RowEvent.prototype.getAffectedRows =
-	function()
-{
-	return this.rowIndexes_;
-};
-
-/**
- * Binary search on a sorted tree (actually any BaseNode) to find the
- * correct insertion point to maintain sort order.
- */
-com.qwirx.grid.Datasource.prototype.binarySearch =
-	function(compareRowFn, target)
-{
-	var ds = this;
-	
-	return com.qwirx.freebase.binarySearch(
-		function countFn()
-		{
-			return ds.getRowCount();
-		},
-		function compareFn(atIndex)
-		{
-			return compareRowFn(target, ds.getRow(atIndex));
-		});
-};
-
-/**
- * A simple data source for the grid component.
- * @todo replace with goog.ds.DataNode.
- */
-
-com.qwirx.grid.SimpleDatasource = function(columns, data)
-{
-	this.columns_ = goog.array.clone(columns);
-	this.data_ = goog.array.clone(data);
-};
-
-goog.inherits(com.qwirx.grid.SimpleDatasource,
-	com.qwirx.grid.Datasource);
-
-com.qwirx.grid.SimpleDatasource.prototype.getColumns = function()
-{
-	return this.columns_;
-};
-
-com.qwirx.grid.SimpleDatasource.prototype.getRowCount = function()
-{
-	return this.data_.length;
-};
-
-com.qwirx.grid.SimpleDatasource.prototype.getRow = function(rowIndex)
-{
-	return this.data_[rowIndex];
-};
-
-com.qwirx.grid.SimpleDatasource.prototype.insertRow = 
-	function(rowIndex, newRowData)
-{
-	this.data_.splice(rowIndex, 0, newRowData);
-	this.dispatchEvent(new com.qwirx.grid.Datasource.RowEvent(
-		com.qwirx.grid.Datasource.Events.ROWS_INSERT, [rowIndex]));
-};
-
-com.qwirx.grid.SimpleDatasource.prototype.appendRow = 
-	function(newRowData)
-{
-	this.insertRow(this.data_.length, newRowData);
-};
-
-com.qwirx.grid.SimpleDatasource.prototype.updateRow = 
-	function(rowIndex, newRowData)
-{
-	this.data_.splice(rowIndex, 1, newRowData);
-	this.dispatchEvent(new com.qwirx.grid.Datasource.RowEvent(
-		com.qwirx.grid.Datasource.Events.ROWS_UPDATE, [rowIndex]));
 };
 
 /**
  * A grid component which displays data loaded from an underlying
  * data source.
  * @todo change the data source to a goog.ds.DataNode.
+ * @constructor
  */
 com.qwirx.grid.Grid = function(datasource, opt_renderer)
 {
@@ -131,17 +30,18 @@ com.qwirx.grid.Grid = function(datasource, opt_renderer)
 	goog.ui.Control.call(this, null, opt_renderer);
 	
 	this.dataSource_ = datasource;
+	this.cursor_ = new com.qwirx.data.Cursor(datasource);
 	var self = this;
 	
 	datasource.addEventListener(
-		com.qwirx.grid.Datasource.Events.ROW_COUNT_CHANGE,
-		function(e) { self.handleDataSourceRowCountChange(e); });
+		com.qwirx.data.Datasource.Events.ROW_COUNT_CHANGE,
+		this.handleDataSourceRowCountChange, false, this);
 	datasource.addEventListener(
-		com.qwirx.grid.Datasource.Events.ROWS_INSERT,
+		com.qwirx.data.Datasource.Events.ROWS_INSERT,
 		function(e) { self.handleDataSourceRowsEvent(e,
 			self.handleRowInsert); });
 	datasource.addEventListener(
-		com.qwirx.grid.Datasource.Events.ROWS_UPDATE,
+		com.qwirx.data.Datasource.Events.ROWS_UPDATE,
 		function(e) { self.handleDataSourceRowsEvent(e,
 			self.handleRowUpdate); });
 	
@@ -193,7 +93,7 @@ com.qwirx.grid.Grid.prototype.createDom = function()
 	this.dataTable_.id = goog.string.createUniqueString();
 	this.dataDiv_.appendChild(this.dataTable_);
 
-	var columns = this.dataSource_.getColumns().slice(0); // copy
+	var columns = this.dataSource_.getColumns();
 	var numCols = columns.length;
 
 	var cornerCell = this.dom_.createDom('th', {});
@@ -216,6 +116,7 @@ com.qwirx.grid.Grid.prototype.createDom = function()
 
 	this.rows_ = [];
 	this.highlightStyles_ = goog.style.installStyles('', this.element_);
+	this.currentRowStyle_ = goog.style.installStyles('', this.element_);
 	
 	this.scrollOffset_ = {x: 0, y: 0};
 };
@@ -229,14 +130,15 @@ com.qwirx.grid.Grid.prototype.enterDocument = function()
 	com.qwirx.grid.Grid.superClass_.enterDocument.call(this);
 	com.qwirx.loader.loadCss('com.qwirx.grid', 'grid.css');
 
-	if (!this.dataSource_)
+	if (!this.cursor_)
 	{
 		return;
 	}
 	
 	var container = this.dataDiv_;
 	var containerPos = goog.style.getPageOffset(container);
-	var containerBorder = goog.style.getBorderBox(container);		
+	var containerBorder = goog.style.getBorderBox(container);	
+	this.partialLastRow = false;	
 	
 	for (var i = 0; i < this.dataSource_.getRowCount(); i++)
 	{
@@ -257,6 +159,7 @@ com.qwirx.grid.Grid.prototype.enterDocument = function()
 		{
 			// This row can't be completely displayed in the
 			// container. Don't add any more rows.
+			this.partialLastRow = true;
 			break;
 		}
 		
@@ -275,14 +178,21 @@ com.qwirx.grid.Grid.prototype.enterDocument = function()
 	// until after we've done this.
 	
 	this.scrollBar_.setMaximum(this.dataSource_.getRowCount() -
-		this.getVisibleRowCount() + 1);
+		this.getFullyVisibleRowCount());
 	this.scrollBar_.setValue(this.scrollBar_.getMaximum());
 
-	var self = this;
 	this.scrollBar_.addEventListener(goog.ui.Component.EventType.CHANGE,
-		function(e) {
-			self.handleScrollEvent(e);
-	});
+		this.handleScrollEvent, /* capture */ false, this);
+	
+	/*
+	for (var eventName in com.qwirx.util.Array.withKeys('MOVE_FIRST',
+		'MOVE_BACKWARD', 'MOVE_FORWARD', 'MOVE_LAST', 'MOVE_TO'))
+	{
+	}
+	*/
+	goog.events.listen(this.cursor_, 
+		com.qwirx.data.Cursor.Events.MOVE_TO, this.onCursorMove,
+		false, this);		
 };
 
 com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE =
@@ -353,6 +263,7 @@ com.qwirx.grid.Grid.Row = function(grid, rowIndex, columns)
 	}
 	
 	this.tableRowElement_ = grid.dom_.createDom('tr', {}, cells);
+	this.tableRowElement_.id = "row_" + rowIndex;
 };
 
 /**
@@ -384,17 +295,22 @@ com.qwirx.grid.Grid.Row.prototype.getColumns = function()
 com.qwirx.grid.Grid.prototype.handleDataSourceRowCountChange = function(e)
 {
 	var rowCount = this.dataSource_.getRowCount();
-	var newVal = 0;
 	var newMax = 0;
 	
-	if (rowCount < this.getVisibleRowCount())
+	if (rowCount <= this.getFullyVisibleRowCount())
 	{
-		// set the maximum to 0 to disable scrolling
+		// Leave the maximum to 0 to disable scrolling.
 	}
 	else
 	{
-		newMax = rowCount - this.getVisibleRowCount() + 1;
-		newVal = newMax - this.scrollOffset_.y;
+		newMax = rowCount - this.getFullyVisibleRowCount();
+	}
+
+	// Changing datasource row count so that no rows are visible
+	// should however change position to keep at least one visible.
+	if (this.scrollOffset_.y >= rowCount)
+	{
+		this.scrollOffset_.y = rowCount - 1;
 	}
 
 	// if the maximum is reduced to less than the current value,
@@ -403,24 +319,7 @@ com.qwirx.grid.Grid.prototype.handleDataSourceRowCountChange = function(e)
 	this.scrollBar_.rangeModel.setMute(true);
 	this.scrollBar_.setMaximum(newMax);
 	
-	// setValue will reset the mute flag, so we can't suppress it,
-	// so let's take advantage of it to call refreshAll for us.
-	// this.scrollBar_.setValue(newVal);
-	this.scrollBar_.rangeModel.setMute(false);
-
-	if (this.scrollBar_.getValue() != newVal)
-	{
-		// triggers a refreshAll.
-		this.scrollBar_.setValue(newVal);
-	}
-	else
-	{
-		// setting the scrollbar value to the same value will not
-		// trigger a refreshAll, but we need it to show/hide rows.
-		this.refreshAll();
-	}
-	
-	this.oldSelection_ = this.drag;
+	this.prepareForSelection();
 	
 	// if the highlighted range is completely outside the new
 	// valid row range, reset it to defaults.
@@ -438,9 +337,51 @@ com.qwirx.grid.Grid.prototype.handleDataSourceRowCountChange = function(e)
 	{
 		this.drag.y1 = rowCount - 1;
 	}
+
+	// setValue will reset the mute flag, so we can't suppress it,
+	// so let's take advantage of it to call refreshAll for us.
+	// this.scrollBar_.setValue(newVal);
+	this.scrollBar_.rangeModel.setMute(false);
+	this.setScroll(this.scrollOffset_.x, this.scrollOffset_.y);
+};
+
+/**
+ * Sets the scroll position of the grid, updating the scrollbars to
+ * match.
+ * @todo currently the x value is ignored.
+ */
+com.qwirx.grid.Grid.prototype.setScroll =
+	function(x, y)
+{
+	this.scrollOffset_.y = y;
+	var newVal = this.scrollBar_.getMaximum() - y;
 	
-	this.updateSelection_(false);
-}
+	if (newVal < 0)
+	{
+		// Scrollbar is scrolled when it shouldn't be allowed.
+		// Not sure whether to leave it out of sync, or force
+		// an automatic scroll of the grid to keep them in sync.
+		// For now I'll leave them out of sync, because changing
+		// datasource row count so that grid has fewer rows
+		// should not change position.
+		newVal = 0; // doesn't correspond with actual grid scroll
+	}
+
+	if (this.scrollBar_.getValue() != newVal)
+	{
+		// triggers a refreshAll.
+		this.scrollBar_.setValue(newVal);
+	}
+	else
+	{
+		// setting the scrollbar value to the same value will not
+		// trigger a refreshAll, but we need it to show/hide rows.
+		this.refreshAll();
+		// {refreshAll} no longer updates the highlight rules for us,
+		// so we have to do that ourselves.
+		this.updateSelection_(/* force */ true);
+	}	
+};
 
 com.qwirx.grid.Grid.prototype.handleDataSourceRowsEvent =
 	function(event, handler)
@@ -497,6 +438,22 @@ com.qwirx.grid.Grid.prototype.getVisibleRowCount = function()
 	return this.rows_.length;
 };
 
+/**
+ * @return the number of table rows created to display grid data,
+ * minus one, because the last row is usually partly offscreen.
+ */
+com.qwirx.grid.Grid.prototype.getFullyVisibleRowCount = function()
+{
+	if (this.partialLastRow)
+	{
+		return this.rows_.length - 1;
+	}
+	else
+	{
+		return this.rows_.length;
+	}
+};
+
 com.qwirx.grid.Grid.prototype.getColumnCount = function()
 {
 	return this.columns_.length;
@@ -513,7 +470,7 @@ com.qwirx.grid.Grid.CellType = {
 	COLUMN_HEAD: "COLUMN_HEAD",
 	ROW_HEAD: "ROW_HEAD",
 	MIDDLE: "MIDDLE",
-	CORNER: "CORNER",
+	CORNER: "CORNER"
 };
 
 com.qwirx.grid.Grid.DragMode = {
@@ -524,53 +481,61 @@ com.qwirx.grid.Grid.DragMode = {
 	ROWS: "ROWS"
 };
 
+/**
+ * Stores the old selection state in this.oldSelection_ and
+ * prepares a new one in this.drag.
+ */
+com.qwirx.grid.Grid.prototype.prepareForSelection = function(e)
+{
+	this.oldSelection_ = goog.object.clone(this.drag);
+	if (this.drag == com.qwirx.grid.Grid.NO_SELECTION)
+	{
+		this.drag = {};
+	}
+};
+
 com.qwirx.grid.Grid.prototype.handleMouseDown = function(e)
 {
 	com.qwirx.grid.Grid.superClass_.handleMouseDown.call(this, e);
 	
-	this.oldSelection_ = goog.object.clone(this.drag);
-	
-	// Remove existing highlight from rows. Highlighted columns
-	// will be reset when createHighlightRule_() is called below,
-	// so don't waste effort doing it now.
+	var info = this.getDragInfo(e);
+	if (!info) return;
 
-	var type = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE];
-	var col = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_COL];
-	var row = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_ROW];
-	var Grid = com.qwirx.grid.Grid;
-
-	if (this.drag == Grid.NO_SELECTION)
-	{
-		this.drag = {};
-	}
+	this.cursor_.setPosition(info.row);
+	this.updateCurrentRow_();
 	
+	this.prepareForSelection();
 	this.drag.origin = e.target;
 	
-	if (type == Grid.CellType.COLUMN_HEAD)
+	// Remove existing highlight from rows. Highlighted columns
+	// will be reset when updateSelection() calls
+	// createHighlightRule_() below, so don't waste effort doing it now.
+
+	if (info.cell.type == info.cell.types.COLUMN_HEAD)
 	{
 		// clicked on a header cell
 		this.setAllowTextSelection(false);
-		this.dragMode_ = Grid.DragMode.COLUMNS;
-		this.drag.x1 = this.drag.x2 = col.getColumnIndex();
+		this.dragMode_ = info.drag.modes.COLUMNS;
+		this.drag.x1 = this.drag.x2 = info.col;
 		this.drag.y1 = 0;
 		this.drag.y2 = this.dataSource_.getRowCount() - 1;
 	}
-	else if (type == Grid.CellType.ROW_HEAD)
+	else if (info.cell.type == info.cell.types.ROW_HEAD)
 	{
 		// clicked on a header cell
 		this.setAllowTextSelection(false);
-		this.dragMode_ = Grid.DragMode.ROWS;
+		this.dragMode_ = info.drag.modes.ROWS;
 		this.drag.x1 = 0;
 		this.drag.x2 = this.getColumnCount() - 1;
-		this.drag.y1 = this.drag.y2 = row.getRowIndex();
+		this.drag.y1 = this.drag.y2 = info.row;
 	}
-	else if (type == Grid.CellType.MIDDLE)
+	else if (info.cell.type == info.cell.types.MIDDLE)
 	{
 		this.setAllowTextSelection(true);
 		this.setEditableCell(e.target);
-		this.dragMode_ = Grid.DragMode.TEXT;
-		this.drag.x1 = this.drag.x2 = col.getColumnIndex();
-		this.drag.y1 = this.drag.y2 = row.getRowIndex();
+		this.dragMode_ = info.drag.modes.TEXT;
+		this.drag.x1 = this.drag.x2 = info.col;
+		this.drag.y1 = this.drag.y2 = info.row;
 	}
 
 	this.updateSelection_(false);
@@ -603,12 +568,86 @@ com.qwirx.grid.Grid.prototype.createHighlightRule_ = function()
 	goog.style.setStyles(this.highlightStyles_, builder.toString());
 };
 
+/**
+ * Updates the CSS which applies to this row, to indicate whether
+ * it contains any highlighted cells or not. The intersection of
+ * the <code>highlight</code CSS class on the row, and the
+ * set of highlighted columns, created by the CSS rules created by
+ * {#createHighlightRule_}, tells the browser which cells should be
+ * rendered in the highlight colour.
+ */
 com.qwirx.grid.Grid.Row.prototype.setHighlighted = function(enable)
 {
 	this.grid_.getRenderer().enableClassName(this.getRowElement(),
 		'highlight', enable);
 };
 
+/**
+ * Updates the CSS which applies to this row, to indicate whether
+ * it is the currently active row, pointed to by the grid's cursor's
+ * position, or not. Only one row should be current at any time.
+ */
+com.qwirx.grid.Grid.prototype.updateCurrentRow_ = function()
+{
+	var currentDataRowIndex = this.cursor_.getPosition();
+	var currentVisibleRowIndex = currentDataRowIndex - 
+		this.scrollOffset_.y;
+	var css;
+	
+	if (currentVisibleRowIndex >= 0 && 
+		currentVisibleRowIndex < this.rows_.length)
+	{
+		css = 'table#' + this.dataTable_.id +
+			' > tr#row_' + currentVisibleRowIndex + 
+			' > th { background-color: #88f; }';
+	}
+	else
+	{
+		css = "";
+	}
+	
+	goog.style.setStyles(this.currentRowStyle_, css);
+};
+
+/**
+ * @return some useful properties used by all drag/mouse handlers,
+ * to reduce code duplication. Returns null if the event's target is
+ * not a grid cell, which probably means that you should ignore the
+ * event and return, or at least handle it differently.
+ */
+com.qwirx.grid.Grid.prototype.getDragInfo = function(event)
+{
+	// com.qwirx.freebase.log("dragging: " + e.type + ": " + e.target);
+
+	var cellType = event.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE];
+
+	if (!cellType)
+	{
+		// maybe an event for the whole table, not a cell?
+		return null;
+	}
+
+	var info = {
+		be: event.browserEvent || event,
+		cell: {
+			type: cellType,
+			types: com.qwirx.grid.Grid.CellType
+		},
+		drag: {
+			mode: this.dragMode_,
+			modes: com.qwirx.grid.Grid.DragMode
+		}
+	};
+	
+	var col = event.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_COL];
+	var row = event.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_ROW];
+	
+	info.col = col ? col.getColumnIndex() : null;
+	info.row = row ? row.getRowIndex()    : null;
+	
+	return info;
+};
+	
 /**
  * Update the selection (of cells in the grid) based on a mouse
  * movement event.
@@ -648,54 +687,41 @@ com.qwirx.grid.Grid.Row.prototype.setHighlighted = function(enable)
 com.qwirx.grid.Grid.prototype.handleDrag = function(e)
 {
 	// com.qwirx.freebase.log("dragging: " + e.type + ": " + e.target);
+	
+	var info = this.getDragInfo(e);
+	if (!info) return;
 
-	var be = e.browserEvent || e;
-
-	var cellType = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE];
-	var cellTypes = com.qwirx.grid.Grid.CellType;
-	
-	if (!cellType)
-	{
-		// maybe an event for the whole table, not a cell?
-		return;
-	}
-	
-	var dragMode = this.dragMode_;
-	var dragModes = com.qwirx.grid.Grid.DragMode;
-	var col = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_COL];
-	var row = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_ROW];
-	
-	this.oldSelection_ = goog.object.clone(this.drag);
+	this.prepareForSelection();
 
 	// compute the new x2 and y2 using the above table
-	if (dragMode == dragModes.ROWS)
+	if (info.drag.mode == info.drag.modes.ROWS)
 	{
 		this.drag.x2 = this.getColumnCount() - 1;
 	}
-	else if (cellType == cellTypes.ROW_HEAD)
+	else if (info.cell.type == info.cell.types.ROW_HEAD)
 	{
 		this.drag.x2 = this.scrollOffset_.x;
 	}
-	else if (col)
+	else if (info.col != null)
 	{
-		this.drag.x2 = col.getColumnIndex();
+		this.drag.x2 = info.col;
 	}
 	else
 	{
 		// no change to x2
 	}
 	
-	if (dragMode == dragModes.COLUMNS)
+	if (info.drag.mode == info.drag.modes.COLUMNS)
 	{
 		this.drag.y2 = this.dataSource_.getRowCount() - 1;
 	}
-	else if (cellType == cellTypes.COLUMN_HEAD)
+	else if (info.cell.type == info.cell.types.COLUMN_HEAD)
 	{
 		this.drag.y2 = this.scrollOffset_.y;
 	}
-	else if (row)
+	else if (info.row != null)
 	{
-		this.drag.y2 = row.getRowIndex();
+		this.drag.y2 = info.row;
 	}
 	else
 	{
@@ -716,7 +742,7 @@ com.qwirx.grid.Grid.prototype.handleDrag = function(e)
  */
 com.qwirx.grid.Grid.prototype.setSelection = function(x1, y1, x2, y2)
 {
-	this.oldSelection_ = goog.object.clone(this.drag);
+	this.prepareForSelection();
 	this.drag.x1 = x1;
 	this.drag.x2 = x2;
 	this.drag.y1 = y1;
@@ -748,10 +774,10 @@ com.qwirx.grid.Grid.prototype.updateSelection_ = function(force)
 			oldSel.x2 + "," + oldSel.y2 + " to " +
 			newSel.x2 + "," + newSel.y2);
 	}
-		
+	
 	// changes to y2 are handled by (un)highlighting rows.
 	
-	if (force || newSel.y1 != oldSel.y1 || newSel.y2 != oldSel.y2)
+	if (force || oldSel && (newSel.y1 != oldSel.y1 || newSel.y2 != oldSel.y2))
 	{
 		var ymin = Math.min(newSel.y1, newSel.y2);
 		var ymax = Math.max(newSel.y1, newSel.y2);
@@ -766,7 +792,7 @@ com.qwirx.grid.Grid.prototype.updateSelection_ = function(force)
 
 	// changes to x2 are handled by rewriting the highlight rule.
 
-	if (force || newSel.x1 != oldSel.x1 || newSel.x2 != oldSel.x2)
+	if (force || oldSel && (newSel.x1 != oldSel.x1 || newSel.x2 != oldSel.x2))
 	{
 		this.createHighlightRule_();
 	}
@@ -808,29 +834,27 @@ com.qwirx.grid.Grid.prototype.setEditableCell = function(newCell)
 
 com.qwirx.grid.Grid.prototype.logEvent = function(e)
 {
-	var row = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_ROW];
-	var col = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_COL];
-	var cellType = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE];
-	var cellTypes = com.qwirx.grid.Grid.CellType;
+	var info = this.getDragInfo(e);
+	var col, row;
 	
-	if (cellType == cellTypes.ROW_HEAD ||
-		cellType == cellTypes.CORNER)
+	if (info.cell.type == info.cell.types.ROW_HEAD ||
+		info.cell.type == info.cell.types.CORNER)
 	{
 		col = "H";
 	}
 	else
 	{
-		col = col.getColumnIndex();
+		col = info.col;
 	}
 	
-	if (cellType == cellTypes.COLUMN_HEAD ||
-		cellType == cellTypes.CORNER)
+	if (info.cell.type == info.cell.types.COLUMN_HEAD ||
+		info.cell.type == info.cell.types.CORNER)
 	{
 		row = "H";
 	}
 	else
 	{
-		row = row.getRowIndex();
+		row = info.row;
 	}
 	
 	com.qwirx.freebase.log("log event " + e.type + ": " + 
@@ -844,19 +868,14 @@ com.qwirx.grid.Grid.prototype.logEvent = function(e)
 com.qwirx.grid.Grid.prototype.handleMouseUp = function(e)
 {
 	com.qwirx.grid.Grid.superClass_.handleMouseUp.call(this, e);
+	
+	var info = this.getDragInfo(e);
+	if (!info) return;
 
-	var cellType = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE];
-	
-	if (!cellType)
-	{
-		// event probably triggered by the scrollbar?
-		return;
-	}
-	
 	this.logEvent(e);
 
 	if (!this.isEnabled()) return;
-	this.dragMode_ = com.qwirx.grid.Grid.DragMode.NONE;
+	this.dragMode_ = info.drag.modes.NONE;
 	this.setAllowTextSelection(true);
 };
 
@@ -864,23 +883,18 @@ com.qwirx.grid.Grid.prototype.handleMouseOver = function(e)
 {
 	com.qwirx.grid.Grid.superClass_.handleMouseOver.call(this, e);
 
-	var cellType = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE];
-	
-	if (!cellType)
-	{
-		// event probably triggered by the scrollbar?
-		return;
-	}
+	var info = this.getDragInfo(e);
+	if (!info) return;
 
 	// this.logEvent(e);
 
-	if (this.dragMode_ != com.qwirx.grid.Grid.DragMode.NONE)
+	if (info.drag.mode != info.drag.modes.NONE)
 	{
 		// entering a different cell, update selection
 		this.handleDrag(e);
 	}
 	
-	if (this.dragMode_ == com.qwirx.grid.Grid.DragMode.CELLS)
+	if (info.drag.mode == info.drag.modes.CELLS)
 	{
 		if (e.target == this.drag.origin)
 		{
@@ -888,7 +902,7 @@ com.qwirx.grid.Grid.prototype.handleMouseOver = function(e)
 			// original selection, by just re-enabling text selection.
 
 			com.qwirx.freebase.log("restored selection, switching to TEXT mode");
-			this.dragMode_ = com.qwirx.grid.Grid.DragMode.TEXT;
+			this.dragMode_ = info.drag.modes.TEXT;
 			this.setAllowTextSelection(true);
 			this.setEditableCell(e.target);
 		}
@@ -906,27 +920,35 @@ com.qwirx.grid.Grid.prototype.handleMouseOut = function(e)
 	// this.logEvent(e);
 	com.qwirx.grid.Grid.superClass_.handleMouseOut.call(this, e);
 
-	var cellType = e.target[com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE];
-	
-	if (!cellType)
-	{
-		// event probably triggered by the scrollbar?
-		return;
-	}
+	var info = this.getDragInfo(e);
+	if (!info) return;
 
-	if (this.dragMode_ == com.qwirx.grid.Grid.DragMode.TEXT &&
+	if (info.drag.mode == info.drag.modes.TEXT &&
 		e.target == this.drag.origin)
 	{
 		// leaving the cell where dragging started, disable text
 		// selection to avoid messy interaction with cell selection.
 
 		com.qwirx.freebase.log("saving selection, switching to CELLS mode");
-		this.dragMode_ = com.qwirx.grid.Grid.DragMode.CELLS;
+		this.dragMode_ = info.drag.modes.CELLS;
 		this.setAllowTextSelection(false);
 		this.setEditableCell(null);
 	}
 };
 
+/**
+ * Reloads all the data in all cells in the grid. It does not
+ * change the highlight rules. If you want that, you need to call
+ * {updateSelection_} separately. We used to do it here, because they
+ * are often called together, but that prevents decoupling and
+ * eventual replacement of {replaceAll}.
+ *
+ * @deprecated This is basically an inefficient and ugly hack.
+ * The only time you would need to call this is when scrolling
+ * by a large amount, and in general we should transfer data from
+ * already-loaded rows where possible, rather than discarding
+ * unsaved changes, and only reload newly exposed rows.
+ */
 com.qwirx.grid.Grid.prototype.refreshAll = function()
 {
 	var len = this.rows_.length;
@@ -942,7 +964,9 @@ com.qwirx.grid.Grid.prototype.refreshAll = function()
 			var columns = this.dataSource_.getRow(dataRow);
 			this.handleRowUpdate(i, columns);
 		}
-	}	
+	}
+	
+	this.updateCurrentRow_();
 };
 
 com.qwirx.grid.Grid.Row.prototype.setVisible = function(visible)
@@ -952,13 +976,13 @@ com.qwirx.grid.Grid.Row.prototype.setVisible = function(visible)
 
 com.qwirx.grid.Grid.prototype.handleScrollEvent = function(e)
 {
-	this.scrollOffset_.y = e.target.getMaximum() - e.target.getValue();
+	// calls refreshAll() for us
+	this.setScroll(this.scrollOffset_.x,
+		e.target.getMaximum() - e.target.getValue());
+
 	com.qwirx.freebase.log("scroll offset changed to " + 
 		this.scrollOffset_.y + " for " + e.target.getMaximum() + "," +
 			e.target.getValue());
-	this.refreshAll();
-	// in case highlighted rows have scrolled up or down:
-	this.updateSelection_(true);
 };
 
 com.qwirx.grid.Grid.prototype.getDatasource = function()
@@ -966,5 +990,55 @@ com.qwirx.grid.Grid.prototype.getDatasource = function()
 	return this.dataSource_;
 };
 
+/**
+ * Responds to a cursor move event by ensuring that the current
+ * position row is visible, and the data displayed is correct for
+ * the scroll position.
+ */
+com.qwirx.grid.Grid.prototype.onCursorMove = function(event)
+{
+	var events = com.qwirx.data.Cursor.Events;
+	var oldScroll = this.scrollOffset_.y;
+	var newScroll = oldScroll;
+	var firstRowVisible = oldScroll;
+	var lastRowVisible = oldScroll + this.getFullyVisibleRowCount() - 1;
+	var activeRow = event.newPosition;
+	
+	if (activeRow == com.qwirx.data.Cursor.BOF)
+	{
+		newScroll = 0;
+	}
+	else if (activeRow == com.qwirx.data.Cursor.EOF)
+	{
+		var numRows = this.dataSource_.getRowCount();
+		if (numRows != null)
+		{
+			newScroll = numRows - this.getFullyVisibleRowCount();
+		}
+	}
+	else if (activeRow < firstRowVisible)
+	{
+		newScroll += activeRow - firstRowVisible; // negative
+	}
+	else if (activeRow > lastRowVisible)
+	{
+		newScroll += activeRow - lastRowVisible; // positive
+	}
 
+	// TODO test what happens if DS has fewer rows than grid
+	// TODO test what happens when newScroll < 0
+	// TODO test what happens when newScroll > this.dataSource_.getRowCount()
+
+	this.setScroll(this.scrollOffset_.x, newScroll);
+	// calls refreshAll() for us
+};
+
+/**
+ * @return the {com.qwirx.data.Cursor} that represents the current or
+ * active record in this grid.
+ */
+com.qwirx.grid.Grid.prototype.getCursor = function()
+{
+	return this.cursor_;
+};
 

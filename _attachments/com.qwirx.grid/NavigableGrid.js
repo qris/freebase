@@ -4,9 +4,15 @@ goog.require('com.qwirx.grid.Grid');
 goog.require('com.qwirx.grid.NavigationBar');
 
 /**
+	@namespace
+	@name com.qwirx.grid
+*/
+
+/**
  * A grid component with a built-in NavigationBar toolbar at the
  * bottom, linked to the grid's DataSource, which allows record
  * navigation.
+ * @constructor
  */
 com.qwirx.grid.NavigableGrid = function(datasource, opt_renderer)
 {
@@ -26,7 +32,7 @@ com.qwirx.grid.NavigableGrid.prototype.createDom = function()
 	com.qwirx.grid.NavigableGrid.superClass_.createDom.call(this);
 	this.addClassName('fb-navigablegrid');
 		
-	this.nav_ = new com.qwirx.grid.NavigationBar(this.dataSource_);
+	this.nav_ = new com.qwirx.grid.NavigationBar(this.cursor_);
 	this.nav_.render(this.element_);
 	
 	com.qwirx.loader.loadCss('goog.closure', 'common.css',
@@ -47,5 +53,7 @@ com.qwirx.grid.NavigableGrid.prototype.enterDocument = function()
 
 	// Create the grid display rows, using the remaining space
 	com.qwirx.grid.NavigableGrid.superClass_.enterDocument.call(this);
+	
+	this.nav_.setPageSize(this.getFullyVisibleRowCount());
 };
 
