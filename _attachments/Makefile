@@ -1,7 +1,7 @@
 all: calculated_deps.js docs
 
 calculated_deps.js: .
-	closure-library/closure/bin/calcdeps.py -o deps --output_file=com.qwirx.freebase/calculated_deps.js
+	closure-library/closure/bin/calcdeps.py -o deps --output_file=calculated_deps.js
 
 JSDOC_BASE = ../../jsdoc_toolkit-2.4.0/jsdoc-toolkit
 JSDOC_APP  = $(JSDOC_BASE)/app
