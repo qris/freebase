@@ -1,3 +1,4 @@
+goog.require('com.qwirx.freebase.BrowserCouch');
 goog.require('com.qwirx.freebase.BrowserCouchBase');
 goog.require('com.qwirx.freebase.DuplicateException');
 goog.require('com.qwirx.freebase.ConflictException');
@@ -632,8 +633,8 @@ function testMockFreebaseApi()
 
 function testBrowserCouchBaseApi()
 {
-	var bc = BrowserCouch("blarg", {
-		storage: new BrowserCouch.FakeStorage()
+	var bc = com.qwirx.freebase.BrowserCouch("blarg", {
+		storage: new com.qwirx.freebase.BrowserCouch.FakeStorage()
 		});
 	var bcb = new com.qwirx.freebase.BrowserCouchBase(bc);
 	assertCallback(function f(c) { bcb.create$(Cat, c); });

@@ -1,3 +1,7 @@
+goog.provide('com.qwirx.freebase.BrowserCouch');
+
+goog.require('com.qwirx.util.UUID');
+
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
@@ -35,181 +39,14 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-// = Nest =
-//
-// This is a utility class that helps to write procedural-style code
-// (in-order flow of control) to make understanding simpler when using
-// multiple nested callbacks. Simply construct the Nest with a
-// generic parameter object (which you control) and an array of little
-// functions (scriptlets).
-//
-// The scriptlets are called in sequence, being passed the parameter
-// and the Nest, on which you should call the function next() to proceed
-// to the next entry. If you return without calling next(), then the
-// iteration finishes.
-//
-// You can call next() inside any of your callbacks and return paths,
-// renaming it if necessary to avoid scope conflicts if you use nested
-// iterators.
-//
-// When you call a function that calls a callback, you could pass a
-// scriptlet as an argument, which calls i.next(). However, you can also
-// just pass i.callback, which does this for you, like this:
-//
-// $(document).ready(new Nest({},
-//	function f1(p, i)
-//	{
-//		callJqueryFunctionThatNeedsACallback(args,
-//			// the long way around
-//			function callback(p, i2)
-//			{
-//				i2.next(); // executes f2
-//			});
-//	},
-//	function f2(p, i)
-//	{
-//		// the shortcut, which makes the callback call f3
-//		callJqueryFunctionThatNeedsACallback(args, i.callback);
-//	},
-//	function f3(p, i) { ... },
-//	// demo for passing an array instead of a callback, which calls
-//	// callJqueryFunctionThatNeedsACallback and then, from the callback, f4
-//	[callFunctionThatNeedsACallback, {}, Nest],
-//	function f3(p, i) { ... },
-// ));
-//
-// If you pass an array instead of a scriptlet, as above, the first element
-// is the object (or null for a function), the second is the method or
-// function, and the remaining elements are its arguments. You should pass
-// Nest as one of the arguments, and it will be replaced by i.callback.
-// This is ideal for calling functions that take callbacks as arguments.
-//
-// Only one argument is formal, the rest (the scriptlets) are accessed through
-// the arguments variable.
-//
-// You can control which object becomes "this" during the callbacks to the
-// scriptlets (except array scriptlets), by calling a Nest object using the
-// call() builtin rather than just (). For example:
-//
-// var n = Nest({}, function(p, i) { alert(this); });
-// n(); // alerts "null"
-// n.call(this); // alerts whatever this currently is
-// n.call("foo"); // alerts "foo"
-//
-// This is possible because the Nest makes an effort to preserve "this"
-// when it calls your scriptlets.
-
-function Nest(param)
-{
-	var nest = this;
-	nest.list = arguments;
-	nest.lastIndex = 0; // skip the first argument
-
-	// === next() ===
-	// Call this function on the Nest passed to your scriptlet to
-	// execute the next scriptlet.
-	nest.next = function Nest_next()
-	{
-		var index = nest.lastIndex + 1;
-		if (index >= nest.list.length)
-		{
-			return;
-		}
-		
-		nest.lastIndex = index;
-		var scriptlet = nest.list[index];
-	
-		if (jQuery.isArray(scriptlet))
-		{
-			// First element is the function, remaining ones are args, except
-			// the one which uses Nest that we replace with i.next
-		
-			// There is no slice() method in the Arguments object, unfortunately
-			var args = scriptlet.slice(2);
-		
-			for (var i = 1; i < args.length; i++)
-			{
-				if (args[i] == Nest)
-				{
-					args[i] = nest.callback;
-				}
-			}
-		
-			// "this" is set by the array, not by the invocation of Nest()().
-			var object = scriptlet[0];
-			var method = scriptlet[1];
-		
-			method.apply(object, args);
-		}
-		else
-		{
-			// "this" was set by the caller, so preserve it.
-			scriptlet.call(this, param, nest);
-		}
-	};
-
-	nest.callback = function Nest_callback()
-	{
-		// save the parameters passed to the callback
-		param.callbackArgs = arguments;
-		// invoke the next scriptlet
-		nest.next();
-	};
-	
-	// we don't want to execute immediately, but only when the Nest is called
-	// as a function (e.g. a $.document.ready() callback)
-	return function Nest_executor()
-	{
-		// call the first scriptlet, preserving "this", skipping the
-		// param object
-		nest.next.call(this);
-	}
-}
-
-function Apply(values, func, finished)
-{
-	var targetList = this;
-	targetList.func = func;
-	targetList.values = values;
-	targetList.finished = finished;
-	targetList.lastIndex = -1;
-	
-	targetList.callback = function Apply_callback()
-	{
-		var nextIndex = targetList.lastIndex + 1;
-		
-		if (targetList.values.length == nextIndex)
-		{
-			finished.call(targetList, targetList);
-		}
-		else
-		{
-			targetList.lastIndex = nextIndex;
-			targetList.func(values[nextIndex], targetList.callback);
-			/*
-			function()
-			{
-				targetList.callback();
-			});
-			*/
-		}
-	};
-	
-	return this.callback();
-}
-
-Array.prototype.apply = function Array_apply(func, finished)
-{
-	return Apply.call(this, this, func, finished);
-}
-
 // = BrowserCouch =
 //
 // BrowserCouch is a client side map-reduce data store, inspired by CouchDB. It
 // utilizes the browser's local storage where possible, and syncs to a CouchDB
 // server.
 
-var BrowserCouch = function(opts){
+com.qwirx.freebase.BrowserCouch = function(opts)
+{
   var bc = {};
   
   // == Utility Functions ==
@@ -862,14 +699,16 @@ var BrowserCouch = function(opts){
     // then the functionality is the same as a PUT operation,
     // however if there is no ID, then one will be created.
     //
-    self.post = function(data, cb, options){
+    self.post = function(data, cb, options)
+    {
       var _t = this;
       if (!data._id)
-        bc.ModuleLoader.require('UUID', function(){
-          data._id = new UUID().createUUID();
+      {
+          data._id = new com.qwirx.util.UUID().toString();
           _t.put(data, function(){cb(data)}, options);
-        });
-      else{  
+      }
+      else
+      {  
         _t.put(data, function(){cb(data)}, options);
       }
     }
@@ -953,10 +792,10 @@ var BrowserCouch = function(opts){
               progress,
               chunkSize,
               function(rows) {
-                options.finished(new BrowserCouch._View(rows));
+                options.finished(new com.qwirx.freebase.BrowserCouch._View(rows));
               });
           else
-            options.finished(new BrowserCouch._MapView(mapResult));
+            options.finished(new com.qwirx.freebase.BrowserCouch._MapView(mapResult));
         });
     };
     
@@ -1134,7 +973,7 @@ var BrowserCouch = function(opts){
 				_options_closure.database = this;
 				_options_closure.documents = docs;
 				
-				new Nest(
+				new com.qwirx.util.Nest(
 					_options_closure, // our context variable, p
 					function SameDomainDB_post_multiple_identify(p, nest)
 					{
@@ -1219,7 +1058,7 @@ var BrowserCouch = function(opts){
 							}
 						});
 					} /* SameDomainDB_post_multiple_send */
-				) /* Nest */ .call(this);
+				) /* com.qwirx.util.Nest */ .call(this);
 			}, // end post() method
 
 			// ==== Get Changes ====

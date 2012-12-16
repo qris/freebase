@@ -1,4 +1,6 @@
-all: calculated_deps.js docs
+all: dep docs
+
+dep: calculated_deps.js
 
 calculated_deps.js: .
 	closure-library/closure/bin/calcdeps.py -o deps --output_file=calculated_deps.js

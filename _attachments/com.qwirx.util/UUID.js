@@ -1,6 +1,9 @@
-/*
+goog.provide('com.qwirx.util.UUID');
 
-uuid.js - Version 0.3
+/**
+@fileoverview
+
+com.qwirx.util.UUID.js - Version 0.3
 JavaScript Class to create a UUID like identifier
 
 Copyright (C) 2006-2008, Erik Giberti (AF-Design), All rights reserved.
@@ -19,7 +22,7 @@ this program; if not, write to the Free Software Foundation, Inc., 59 Temple
 Place, Suite 330, Boston, MA 02111-1307 USA
 
 The latest version of this file can be downloaded from
-http://www.af-design.com/resources/javascript_uuid.php
+http://www.af-design.com/resources/javascript_com.qwirx.util.UUID.php
 
 HISTORY:
 6/5/06 	- Initial Release
@@ -37,20 +40,24 @@ KNOWN ISSUES:
 
 */
 
-// On creation of a UUID object, set it's initial value
-function UUID(){
+/**
+ * @constructor
+ * On creation of a UUID object, set it's initial value
+ */
+com.qwirx.util.UUID = function()
+{
 	this.id = this.createUUID();
-}
+};
 
 // When asked what this Object is, lie and return it's value
-UUID.prototype.valueOf = function(){ return this.id; }
-UUID.prototype.toString = function(){ return this.id; }
+com.qwirx.util.UUID.prototype.valueOf = function(){ return this.id; }
+com.qwirx.util.UUID.prototype.toString = function(){ return this.id; }
 
 //
 // INSTANCE SPECIFIC METHODS
 //
 
-UUID.prototype.createUUID = function(){
+com.qwirx.util.UUID.prototype.createUUID = function(){
 	//
 	// Loose interpretation of the specification DCE 1.1: Remote Procedure Call
 	// described at http://www.opengroup.org/onlinepubs/009629399/apdxa.htm#tagtcjh_37
@@ -61,35 +68,31 @@ UUID.prototype.createUUID = function(){
 	var dc = new Date();
 	var t = dc.getTime() - dg.getTime();
 	var h = '-';
-	var tl = UUID.getIntegerBits(t,0,31);
-	var tm = UUID.getIntegerBits(t,32,47);
-	var thv = UUID.getIntegerBits(t,48,59) + '1'; // version 1, security version is 2
-	var csar = UUID.getIntegerBits(UUID.rand(4095),0,7);
-	var csl = UUID.getIntegerBits(UUID.rand(4095),0,7);
+	var tl = this.getIntegerBits(t,0,31);
+	var tm = this.getIntegerBits(t,32,47);
+	var thv = this.getIntegerBits(t,48,59) + '1'; // version 1, security version is 2
+	var csar = this.getIntegerBits(this.rand(4095),0,7);
+	var csl = this.getIntegerBits(this.rand(4095),0,7);
 
 	// since detection of anything about the machine/browser is far to buggy, 
 	// include some more random numbers here
 	// if NIC or an IP can be obtained reliably, that should be put in
 	// here instead.
-	var n = UUID.getIntegerBits(UUID.rand(8191),0,7) + 
-			UUID.getIntegerBits(UUID.rand(8191),8,15) + 
-			UUID.getIntegerBits(UUID.rand(8191),0,7) + 
-			UUID.getIntegerBits(UUID.rand(8191),8,15) + 
-			UUID.getIntegerBits(UUID.rand(8191),0,15); // this last number is two octets long
+	var n = this.getIntegerBits(this.rand(8191),0,7) + 
+			this.getIntegerBits(this.rand(8191),8,15) + 
+			this.getIntegerBits(this.rand(8191),0,7) + 
+			this.getIntegerBits(this.rand(8191),8,15) + 
+			this.getIntegerBits(this.rand(8191),0,15); // this last number is two octets long
 	return tl + h + tm + h + thv + h + csar + csl + h + n; 
-}
+};
 
-
-//
-// GENERAL METHODS (Not instance specific)
-//
-
-
-// Pull out only certain bits from a very large integer, used to get the time
-// code information for the first part of a UUID. Will return zero's if there 
-// aren't enough bits to shift where it needs to.
-UUID.getIntegerBits = function(val,start,end){
-	var base16 = UUID.returnBase(val,16);
+/**
+ * Pull out only certain bits from a very large integer, used to get the time
+ * code information for the first part of a com.qwirx.util.UUID. Will return zero's if there 
+ * aren't enough bits to shift where it needs to.
+ */
+com.qwirx.util.UUID.prototype.getIntegerBits = function(val,start,end){
+	var base16 = this.returnBase(val,16);
 	var quadArray = new Array();
 	var quadString = '';
 	var i = 0;
@@ -101,18 +104,22 @@ UUID.getIntegerBits = function(val,start,end){
 		else quadString += quadArray[i];
 	}
 	return quadString;
-}
+};
 
-// Replaced from the original function to leverage the built in methods in
-// JavaScript. Thanks to Robert Kieffer for pointing this one out
-UUID.returnBase = function(number, base){
+/**
+ * Replaced from the original function to leverage the built in methods in
+ * JavaScript. Thanks to Robert Kieffer for pointing this one out
+ */
+com.qwirx.util.UUID.prototype.returnBase = function(number, base){
 	return (number).toString(base).toUpperCase();
-}
+};
 
-// pick a random number within a range of numbers
-// int b rand(int a); where 0 <= b <= a
-UUID.rand = function(max){
+/**
+ * Pick a random number within a range of numbers
+ * int b rand(int a); where 0 <= b <= a
+ */
+com.qwirx.util.UUID.prototype.rand = function(max){
 	return Math.floor(Math.random() * (max + 1));
-}
+};
 
 // end of UUID class file
