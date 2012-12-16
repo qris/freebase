@@ -8,11 +8,11 @@ goog.require('goog.ui.Control');
 goog.require('goog.ui.Slider');
 goog.require('goog.editor.SeamlessField');
 
-/** @define {boolean} */ com.qwirx.freebase.DEBUG = true;
+/** @define {boolean} */ com.qwirx.grid.DEBUG = true;
  
-com.qwirx.freebase.log = function(var_args)
+com.qwirx.grid.log = function(var_args)
 {
-	if (com.qwirx.freebase.DEBUG)
+	if (com.qwirx.grid.DEBUG)
 	{
 		console.log.apply(console, arguments);
 	}
@@ -195,12 +195,14 @@ com.qwirx.grid.Grid.prototype.enterDocument = function()
 		false, this);		
 };
 
+com.qwirx.grid.Grid.ATTR_PREFIX = 'com_qwirx_grid_';
+	com.qwirx.grid.Grid.ATTR_PREFIX + 'grid_cell_type';
 com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE =
-	com.qwirx.freebase.Freebase.FREEBASE_FIELD_PREFIX + 'grid_cell_type';
+	com.qwirx.grid.Grid.ATTR_PREFIX + 'grid_cell_type';
 com.qwirx.grid.Grid.TD_ATTRIBUTE_ROW = 
-	com.qwirx.freebase.Freebase.FREEBASE_FIELD_PREFIX + 'grid_row';
+	com.qwirx.grid.Grid.ATTR_PREFIX + 'grid_row';
 com.qwirx.grid.Grid.TD_ATTRIBUTE_COL = 
-	com.qwirx.freebase.Freebase.FREEBASE_FIELD_PREFIX + 'grid_col';
+	com.qwirx.grid.Grid.ATTR_PREFIX + 'grid_col';
 
 /**
  * Column is a class, not a static index, to allow renumbering and
@@ -770,7 +772,7 @@ com.qwirx.grid.Grid.prototype.updateSelection_ = function(force)
 
 	if (!force && oldSel)
 	{
-		com.qwirx.freebase.log("selection changed from " +
+		com.qwirx.grid.log("selection changed from " +
 			oldSel.x2 + "," + oldSel.y2 + " to " +
 			newSel.x2 + "," + newSel.y2);
 	}
@@ -820,13 +822,13 @@ com.qwirx.grid.Grid.prototype.setEditableCell = function(newCell)
 		this.editableCellField_ = new goog.editor.SeamlessField(newCell);
 		this.editableCellField_.makeEditable();
 		newCell.focus();
-		com.qwirx.freebase.log("set editable cell: " + newCell);
+		com.qwirx.grid.log("set editable cell: " + newCell);
 		
 		this.editableCellField_.addEventListener(
 			goog.events.EventType.MOUSEDOWN, 
 			function(e)
 			{
-				com.qwirx.freebase.log("captured: " +
+				com.qwirx.grid.log("captured: " +
 					e.type + ": " + e.target);
 			});
 	}
@@ -857,7 +859,7 @@ com.qwirx.grid.Grid.prototype.logEvent = function(e)
 		row = info.row;
 	}
 	
-	com.qwirx.freebase.log("log event " + e.type + ": " + 
+	com.qwirx.grid.log("log event " + e.type + ": " + 
 		e.target + " [x=" + col + ", y=" + row + "]");
 };
 
@@ -901,7 +903,7 @@ com.qwirx.grid.Grid.prototype.handleMouseOver = function(e)
 			// re-entering the cell where dragging started, restore the
 			// original selection, by just re-enabling text selection.
 
-			com.qwirx.freebase.log("restored selection, switching to TEXT mode");
+			com.qwirx.grid.log("restored selection, switching to TEXT mode");
 			this.dragMode_ = info.drag.modes.TEXT;
 			this.setAllowTextSelection(true);
 			this.setEditableCell(e.target);
@@ -929,7 +931,7 @@ com.qwirx.grid.Grid.prototype.handleMouseOut = function(e)
 		// leaving the cell where dragging started, disable text
 		// selection to avoid messy interaction with cell selection.
 
-		com.qwirx.freebase.log("saving selection, switching to CELLS mode");
+		com.qwirx.grid.log("saving selection, switching to CELLS mode");
 		this.dragMode_ = info.drag.modes.CELLS;
 		this.setAllowTextSelection(false);
 		this.setEditableCell(null);
@@ -980,7 +982,7 @@ com.qwirx.grid.Grid.prototype.handleScrollEvent = function(e)
 	this.setScroll(this.scrollOffset_.x,
 		e.target.getMaximum() - e.target.getValue());
 
-	com.qwirx.freebase.log("scroll offset changed to " + 
+	com.qwirx.grid.log("scroll offset changed to " + 
 		this.scrollOffset_.y + " for " + e.target.getMaximum() + "," +
 			e.target.getValue());
 };
