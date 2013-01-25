@@ -13,8 +13,9 @@ goog.require('com.qwirx.util.Enum');
 goog.require('goog.events.EventTarget');
 
 /**
-	@constructor
-	A Cursor wraps a {com.qwirx.data.Datasource} and a pointer to a
+	@class
+		
+	A Cursor wraps a com.qwirx.data.Datasource and a pointer to a
 	specific, current record. It behaves a bit like an Access Recordset.
 	
 	You can move to the first, last, next or previous record, all
@@ -71,7 +72,7 @@ goog.require('goog.events.EventTarget');
 	for (cursor.moveForward(); !cursor.isEOF(); cursor.moveForward())
 	{ ... }
 	</pre>
-		
+
 	@param {com.qwirx.data.Datasource} dataSource The data source
 	which this Cursor should wrap.
 	
@@ -125,7 +126,7 @@ com.qwirx.data.Cursor.Events = new com.qwirx.util.Enum(
  */
 com.qwirx.data.Cursor.prototype.getRowCount = function()
 {
-	return this.dataSource_.getRowCount();
+	return this.dataSource_.getCount();
 };
 
 /**
@@ -146,16 +147,27 @@ com.qwirx.data.Cursor.prototype.getPosition = function()
  * {#BOF}, {#EOF} or {#NEW}. Setting the position to any other value
  * will throw an exception.
  *
- * The record may not be retrieved immediately, depending on who's
+ * This method calls {com.qwirx.data.Cursor.prototype.maybeDiscard}
+ * before changing the position, which will throw an exception if
+ * the current record is dirty and an event handler blocks the
+ * {com.qwirx.data.Cursor.Events.BEFORE_DISCARD} event. This cancels
+ * the change in position.
+ *
+ * The new record may not be retrieved immediately, depending on who's
  * listening to this Cursor; so if the record count
  * is currently unknown, then it's possible to set the position to an
  * invalid value. Actually retrieving the record (e.g. lazily, by
  * accessing its field values) may throw an exception if the position
  * was set to an invalid value. In this case, you may wish to handle
  * the exception by resetting the position to {#EOF}.
+ *
+ * @throws {com.qwirx.data.Cursor.Events.BEFORE_DISCARD} if
+ * {com.qwirx.data.Cursor.prototype.maybeDiscard} does.
  */
 com.qwirx.data.Cursor.prototype.setPosition = function(newPosition)
 {
+	this.maybeDiscard();
+
 	var rowCount = this.getRowCount();
 	
 	if (newPosition == com.qwirx.data.Cursor.BOF ||
@@ -170,6 +182,41 @@ com.qwirx.data.Cursor.prototype.setPosition = function(newPosition)
 	{
 		throw new com.qwirx.data.IllegalMove("Invalid position: " +
 			newPosition);
+	}
+
+	if (newPosition == com.qwirx.data.Cursor.BOF ||
+		newPosition == com.qwirx.data.Cursor.EOF)
+	{
+		this.currentRecordValues_ = null;
+		this.currentRecordAsLoaded_ = null;
+	}
+	else if (newPosition == com.qwirx.data.Cursor.NEW)
+	{
+		this.currentRecordValues_ = {};
+		this.currentRecordAsLoaded_ = {};
+	}
+	else
+	{
+		this.currentRecordValues_ = {};
+		this.currentRecordAsLoaded_ = {};
+		var columns = this.dataSource_.getColumns();
+		var record;
+		
+		if (newPosition == com.qwirx.data.Cursor.NEW)
+		{
+			record = {};
+		}
+		else
+		{
+			record = this.dataSource_.get(this.position_);
+		}
+	
+		for (var i = 0; i < columns.length; i++)
+		{
+			this.currentRecordValues_[columns[i].name] =
+				this.currentRecordAsLoaded_[columns[i].name] =
+				record[columns[i].name];
+		}
 	}
 	
 	this.dispatchEvent({
@@ -228,24 +275,26 @@ com.qwirx.data.Cursor.prototype.isDirty = function()
 };
 
 /**
- * If the field values have been changed (the current record is dirty)
- * and {#save} has not been called, this fires a {#BEFORE_DISCARD}
- * event. If that event is not cancelled, a {#DISCARD} event is fired.
- * No event is sent if the record is not dirty. The current record
- * values are reset to their original values when the current record
- * was loaded. The database is not requeried in case the record has
- * changed, unless you explicitly call {#reload} (in which case you
- * don't need to call this function, because {#reload} can do it for
- * you).
+ * If the field values have not been changed (the current record is
+ * not dirty) then this function does nothing.
  *
- * @return false if a BEFORE_DISCARD event was sent and cancelled, true
- * otherwise (including if the current record is not dirty).
+ * Otherwise it fires a {com.qwirx.data.Cursor.Events.BEFORE_DISCARD}
+ * event. If that event is not cancelled, a
+ * {com.qwirx.data.Cursor.Events.DISCARD} event is fired, which cannot
+ * be cancelled. The current record values are reset to their original
+ * values when the current record was loaded. The database is not
+ * requeried in case the record has changed, unless you explicitly
+ * call {#reload} (in which case you don't need to call this function,
+ * because {#reload} can do it for you).
+ *
+ * @throws {com.qwirx.data.DiscardBlocked} if a BEFORE_DISCARD event
+ * was sent and cancelled by an event listener.
  */
 com.qwirx.data.Cursor.prototype.maybeDiscard = function()
 {
 	if (!this.isDirty())
 	{
-		return true;
+		return;
 	}
 	
 	var cancelled = !this.dispatchEvent({
@@ -254,136 +303,103 @@ com.qwirx.data.Cursor.prototype.maybeDiscard = function()
 	
 	if (cancelled)
 	{
-		return false;
+		throw new com.qwirx.data.DiscardBlocked("The cursor points " +
+			"to modified data, and the BEFORE_DISCARD event was " +
+			"cancelled, so the cursor cannot be moved.");
 	}
 	
 	this.currentRecordValues_ = this.currentRecordAsLoaded_;
-	return true;
 };
 
 /**
- * Move to the previous record, or throw an exception if we're
- * already at {#BOF}. Calls {#maybeDiscard} to check whether modified
- * field values should be discarded, and if that returns false, the 
- * move is cancelled too. Otherwise a {#MOVE_PREV} and a {#MOVE_TO}
- * event are fired.
- * 
- * If the cursor is at EOF or NEW, and the data source has an unknown
- * number of rows, we don't know which row to go back to, so we move to
- * position 0 instead. This may result in an exception being thrown when
- * you try to access the current row's data, if there are no rows in the 
- * datasource at that time. 
- */
-com.qwirx.data.Cursor.prototype.moveBackward = function(numRows)
-{
-	if (this.position_ == com.qwirx.data.Cursor.BOF)
-	{
-		throw new com.qwirx.data.IllegalMove("Currently at BOF; " +
-			"there is no previous record");
-	}
-
-	if (!(numRows > 0))
-	{
-		throw new com.qwirx.data.IllegalMove("Cannot move backward " +
-			"by " + numRows + " rows");
-	}
-
-	if (!this.maybeDiscard())
-	{
-		return false; // not moved
-	}
-
-	var newPosition;
-
-	if (this.position_ == com.qwirx.data.Cursor.EOF ||
-		this.position_ == com.qwirx.data.Cursor.NEW)
-	{
-		var rowCount = this.getRowCount();
-		if (rowCount != null)
-		{
-			newPosition = rowCount - numRows;
-		}
-		else
-		{
-			newPosition = 0;
-		}
-	}
-	else
-	{
-		newPosition = this.position_ - numRows;
-	}
-	
-	if (newPosition < 0)
-	{
-		newPosition = com.qwirx.data.Cursor.BOF;
-	}
-
-	this.dispatchEvent({
-		type: com.qwirx.data.Cursor.Events.MOVE_BACKWARD,
-		numRows: numRows,
-		newPosition: newPosition
-		});
-
-	this.setPosition(newPosition);
-};
-
-/**
- * Move forward some number of records (e.g. 1), or throw an
- * exception if we're already at {#EOF}. Calls {#maybeDiscard} to
- * check whether modified field values should be discarded, and if
- * that returns false, the move is cancelled too. Otherwise a
- * {#MOVE_FORWARD} and a {#MOVE_TO} event are fired.
+ * Move forward (if numRowsToMove > 0) or backward (if 
+ * numRowsToMove < 0) or not at all (if numRowsToMove == 0).
+ *
+ * Calls {#maybeDiscard} to check whether modified field values
+ * should be discarded, and if that throws an exception, the move is
+ * cancelled and moveRelative propagates the exception.
+ *
+ * Otherwise a {#MOVE_FORWARD} and a {#MOVE_TO} event are fired.
  * 
  * If the data source has an unknown number of rows, we may move to
  * a record position that doesn't exist. This may result in an
  * exception being thrown when you try to access the current row's data. 
  * You may wish to respond to that exception by setting the current
  * position to {#EOF} at the time.
+ *
+ * @throws {com.qwirx.data.IllegalMove} if we're already at {#EOF}.
+ * @return true if the move succeeded, false otherwise.
  */
-com.qwirx.data.Cursor.prototype.moveForward = function(numRows)
+com.qwirx.data.Cursor.prototype.moveRelative = function(numRowsToMove)
 {
-	if (this.position_ == com.qwirx.data.Cursor.EOF ||
-		this.position_ == com.qwirx.data.Cursor.NEW)
-	{
-		throw new com.qwirx.data.IllegalMove("Currently at EOF; " +
-			"there is no next record");
-	}
-	
-	if (!(numRows > 0))
-	{
-		throw new com.qwirx.data.IllegalMove("Cannot move forward by " +
-			numRows + " rows");
-	}
-
-	if (!this.maybeDiscard())
-	{
-		return false; // not moved
-	}
+	this.maybeDiscard();
 
 	var newPosition = this.position_;
+	var rowCount = this.getRowCount();
 
-	if (this.position_ == com.qwirx.data.Cursor.BOF)
+	if (numRowsToMove == 0)
 	{
-		newPosition = numRows - 1;
+		// no change
+	}
+	else if (this.position_ == com.qwirx.data.Cursor.BOF)
+	{
+		if (numRowsToMove < 0)
+		{
+			throw new com.qwirx.data.IllegalMove("Currently at BOF; " +
+				"there is no previous record");
+		}
+		else // numRowsToMove > 0
+		{
+			newPosition = numRowsToMove - 1;
+		}
+	}
+	else if (this.position_ == com.qwirx.data.Cursor.EOF ||
+		this.position_ == com.qwirx.data.Cursor.NEW)
+	{
+		if (numRowsToMove > 0)
+		{
+			throw new com.qwirx.data.IllegalMove("Currently at EOF; " +
+				"there is no next record");
+		}
+		else if (rowCount == null)
+		{
+			throw new com.qwirx.data.IllegalMove("Currently at EOF " +
+				"and row count is unknown; cannot calculate the " +
+				"new position; use moveFirst() instead");
+		}
+		else
+		{
+			newPosition = rowCount + numRowsToMove;
+		}
 	}
 	else
 	{
-		newPosition += numRows;
+		newPosition += numRowsToMove;
 	}
 	
-	var rowCount = this.getRowCount();
-	if (rowCount != null && newPosition >= rowCount)
+	if (newPosition == com.qwirx.data.Cursor.BOF ||
+		newPosition == com.qwirx.data.Cursor.EOF ||
+		newPosition == com.qwirx.data.Cursor.NEW)
+	{
+		// no adjustment necessary or possible
+	}
+	else if (newPosition < 0)
+	{
+		newPosition = com.qwirx.data.Cursor.BOF;
+	}
+	else if (rowCount != null && newPosition >= rowCount)
 	{
 		newPosition = com.qwirx.data.Cursor.EOF;
 	}
 
 	this.dispatchEvent({
 		type: com.qwirx.data.Cursor.Events.MOVE_FORWARD,
-		numRows: numRows,
+		numRows: numRowsToMove,
 		newPosition: newPosition
 		});
 
 	this.setPosition(newPosition);
+	return true;
 };
 
 /**
@@ -432,6 +448,87 @@ com.qwirx.data.Cursor.prototype.moveLast = function()
 
 /**
  * @constructor
+ * An exception thrown by {com.qwirx.data.Cursor.prototype.setFieldValue}
+ * if there is no current record, because the cursor is positioned at
+ * {com.qwirx.data.Cursor.BOF} or {com.qwirx.data.Cursor.EOF}.
+ */
+com.qwirx.data.NoCurrentRecord = function(message)
+{
+	this.message = message;
+};
+
+/**
+ * @constructor
+ * An exception thrown by {com.qwirx.data.Cursor.prototype.setFieldValue}
+ * if the specified field name is not a valid field/column for this
+ * cursor.
+ */
+com.qwirx.data.NoSuchField = function(message)
+{
+	this.message = message;
+};
+
+com.qwirx.data.Cursor.prototype.assertCurrentRecord = function()
+{
+	if (this.position_ == com.qwirx.data.Cursor.BOF ||
+		this.position_ == com.qwirx.data.Cursor.EOF)
+	{
+		throw new com.qwirx.data.NoCurrentRecord("The cursor " +
+			"is at " + this.position_ + " which is not a valid " +
+			"record, so the field values cannot be modified.");
+	}
+};
+
+com.qwirx.data.Cursor.prototype.assertValidField = function(fieldName)
+{
+	var columns = this.dataSource_.getColumns();
+	var fieldNames = [];
+	
+	for (var i = 0; i < columns.length; i++)
+	{
+		if (columns[i].name == fieldName)
+		{
+			return;
+		}
+		
+		fieldNames.push(columns[i].name);
+	}
+	
+	throw new com.qwirx.data.NoSuchField("The field " + fieldName +
+		" does not exist in this cursor. Valid fields are: " +
+		fieldNames.join(" "));
+};
+
+/**
+ * Sets the value of a field of the current record.
+ * @param {String} fieldName the name of the field to modify
+ * @param newValue the new value of the field, which can be of any
+ * type.
+ * @throws {com.qwirx.data.NoCurrentRecord} if the cursor is at
+ * {com.qwirx.data.Cursor.BOF} or {com.qwirx.data.Cursor.EOF}.
+ * @throws {com.qwirx.data.NoSuchField} if the supplied field name
+ * does not exist in the current record.
+ */
+com.qwirx.data.Cursor.prototype.setFieldValue = function(fieldName,
+	newValue)
+{
+	this.assertCurrentRecord();
+	this.assertValidField(fieldName);
+	this.currentRecordValues_[fieldName] = newValue;
+};
+
+/**
+ * @constructor
+ * A generic exception superclass for illegal or blocked cursor
+ * movement attempts.
+ */
+com.qwirx.data.CursorMovementException = function(message)
+{
+	this.message = message;
+};
+
+/**
+ * @constructor
  * An exception response to an illegal movement attempt,
  * such as moving to the previous record from BOF or the next record
  * from EOF, which is never allowed and should not be offered to the
@@ -439,6 +536,71 @@ com.qwirx.data.Cursor.prototype.moveLast = function()
  */
 com.qwirx.data.IllegalMove = function(message)
 {
-	this.message = message;
+	com.qwirx.data.CursorMovementException.call(this, message);
+};
+goog.inherits(com.qwirx.data.IllegalMove,
+	com.qwirx.data.CursorMovementException);
+
+/**
+ * @constructor
+ * An exception response to a movement attempt which is blocked by
+ * a {com.qwirx.data.Cursor.Events.BEFORE_DISCARD} event handler
+ * cancelling the event, perhaps because the user has unsaved changes
+ * that they wish not to discard yet.
+ */
+com.qwirx.data.DiscardBlocked = function(message)
+{
+	com.qwirx.data.CursorMovementException.call(this, message);
+};
+goog.inherits(com.qwirx.data.DiscardBlocked,
+	com.qwirx.data.CursorMovementException);
+
+/**
+ * @return the value of the named field when this record was loaded,
+ * as opposed to its current value.
+ * @throws {com.qwirx.data.NoCurrentRecord} if the cursor is at
+ * {com.qwirx.data.Cursor.BOF} or {com.qwirx.data.Cursor.EOF}.
+ */
+com.qwirx.data.Cursor.prototype.getLoadedValues = function(fieldName,
+	newValue)
+{
+	this.assertCurrentRecord();
+	return goog.object.clone(this.currentRecordAsLoaded_);
+};
+
+/**
+ * @return the current, possibly unsaved values of all fields in the
+ * current record.
+ * @throws {com.qwirx.data.NoCurrentRecord} if the cursor is at
+ * {com.qwirx.data.Cursor.BOF} or {com.qwirx.data.Cursor.EOF}.
+ */
+com.qwirx.data.Cursor.prototype.getCurrentValues = function(fieldName,
+	newValue)
+{
+	this.assertCurrentRecord();
+	return goog.object.clone(this.currentRecordValues_);
+};
+
+/**
+ * Write the current record to the {com.qwirx.data.Datasource}. This
+ * only makes sense when the cursor is positioned on a current record
+ * or at {com.qwirx.data.Cursor.NEW}.
+ * @throws {com.qwirx.data.NoCurrentRecord} if the cursor is at
+ * {com.qwirx.data.Cursor.BOF} or {com.qwirx.data.Cursor.EOF}.
+ */
+com.qwirx.data.Cursor.prototype.save = function()
+{
+	this.assertCurrentRecord();
+	if (this.position_ == com.qwirx.data.Cursor.NEW)
+	{
+		this.position_ = 
+			this.dataSource_.add(this.currentRecordValues_);
+	}
+	else
+	{
+		this.dataSource_.putRecord(this.position_,
+			this.currentRecordValues_);
+	}
+	return this.position_;
 };
 

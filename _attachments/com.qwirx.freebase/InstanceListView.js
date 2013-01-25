@@ -19,11 +19,12 @@ com.qwirx.freebase.InstanceListView = function(gui, freebase, document,
 
 	editorControl.className += ' fb-docedit-datagrid';
 	
-	var columnsGridInfo = [{caption: 'ID'}];
+	var columnsGridInfo = [{name: '_id', caption: 'ID'}];
 	var numCols = document.columns.length;
 	for (var i = 0; i < numCols; i++)
 	{
-		columnsGridInfo[i + 1] = {caption: document.columns[i].name};
+		columnsGridInfo[i + 1] = {name: document.columns[i].name,
+			caption: document.columns[i].name};
 	}
 	
 	var datasource = this.dataSource_ = 
@@ -44,9 +45,7 @@ com.qwirx.freebase.InstanceListView = function(gui, freebase, document,
 			for (var r = 0; r < numRows; r++)
 			{
 				var result = all_results.rows[r].value;
-				var columnCells = self.getGridColumnData(result,
-					numCols);
-				datasource.appendRow(columnCells);
+				datasource.add(result);
 			}
 		});
 };
@@ -64,10 +63,14 @@ com.qwirx.freebase.InstanceListView.prototype.getDataSource = function()
 	return this.dataSource_;
 };
 
-/**
+/*
  * Converts a document (a model object) into the cell data that should
  * be displayed in the grid for this document.
+ * @todo If still necessary, this should be an adaptor datasource
+ * between this view and the {com.qwirx.grid.Grid}. Maybe when Grid
+ * has a GridDataSource that will be easier.
  */
+ /*
 com.qwirx.freebase.InstanceListView.prototype.getGridColumnData =
 	function(document, opt_numColumns)
 {
@@ -121,11 +124,15 @@ com.qwirx.freebase.InstanceListView.prototype.getGridColumnData =
 	
 	return columnCells;
 };
+*/
 
+/**
+ * Sort comparator which sorts records in a grid by their _id.
+ */
 com.qwirx.freebase.InstanceListView.prototype.gridRowIdCompare = function(a, b)
 {
-	var ta = a[0].value;
-	var tb = b[0].value;
+	var ta = a._id;
+	var tb = b._id;
 	return goog.array.defaultCompare(ta, tb);
 };
 
@@ -138,19 +145,18 @@ com.qwirx.freebase.InstanceListView.prototype.onDocumentSaved = function(event)
 {
 	var document = event.getDocument();
 	var gridDataSource = this.dataSource_;
-	var newRowData = this.getGridColumnData(document);
-	var rowIndex = gridDataSource.binarySearch(
-		this.gridRowIdCompare, newRowData);
+	var rowIndex = gridDataSource.binarySearch(this.gridRowIdCompare,
+		document);
 	
 	if (rowIndex >= 0)
 	{
-		gridDataSource.updateRow(rowIndex, newRowData);
+		gridDataSource.replace(rowIndex, document);
 	}
 	else
 	{
 		// row should not exist yet, so newRowIndex < 0
 		rowIndex = ~rowIndex;
-		gridDataSource.insertRow(rowIndex, newRowData);
+		gridDataSource.insert(rowIndex, document);
 	}
 };
 

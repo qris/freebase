@@ -1,214 +1,21 @@
+goog.provide('com.qwirx.freebase.Freebase_test');
+
 goog.require('com.qwirx.freebase.BrowserCouch');
 goog.require('com.qwirx.freebase.BrowserCouchBase');
 goog.require('com.qwirx.freebase.DuplicateException');
 goog.require('com.qwirx.freebase.ConflictException');
+goog.require('com.qwirx.freebase.Freebase');
+goog.require('com.qwirx.freebase.Freebase.Gui');
+goog.require('com.qwirx.freebase.Model');
 goog.require('com.qwirx.freebase.NonexistentException');
 goog.require('com.qwirx.grid.NavigableGrid');
 goog.require('com.qwirx.test.FakeBrowserEvent');
 goog.require('com.qwirx.test.FakeClickEvent');
+goog.require('com.qwirx.test.assertThrows');
+goog.require('com.qwirx.test.findDifferences');
 
 goog.require('goog.dom.NodeIterator');
-
-// import Freebase, TableDocument and other classes
-com.qwirx.freebase.import(this, com.qwirx.freebase);
-
-/**
- * Determines if two items of any type match, and formulates an error message
- * if not.
- * <p>
- * Copied and pasted from goog/testing/asserts.js just to add a limit
- * to the number of differences to avoid an infinite loop when
- * comparing objects with references to different DOM nodes.
- *
- * @param {*} expected Expected argument to match.
- * @param {*} actual Argument as a result of performing the test.
- * @return {?string} Null on success, error message on failure.
- */
-goog.testing.asserts.findDifferences = function(expected, actual) {
-  var failures = [];
-  var seen1 = [];
-  var seen2 = [];
-
-  // To avoid infinite recursion when the two parameters are self-referential
-  // along the same path of properties, keep track of the object pairs already
-  // seen in this call subtree, and abort when a cycle is detected.
-  // TODO(user,user): The algorithm still does not terminate in cases
-  // with exponential recursion, e.g. a binary tree with leaf->root links.
-  // Investigate ways to solve this without significant performance loss
-  // for the common case.
-  function innerAssert(var1, var2, path) {
-  	if (failures.length > 100)
-  	{
-  		// It's already pretty borked. More information is not
-  		// going to help.
-  		return;
-  	}
-  	
-    var depth = seen1.length;
-    if (depth % 2) {
-      // Compare with midpoint of seen ("Tortoise and hare" loop detection).
-      // http://en.wikipedia.org/wiki/Cycle_detection#Tortoise_and_hare
-      // TODO(user,user): For cases with complex cycles the algorithm
-      // can take a long time to terminate, look into ways to terminate sooner
-      // without adding more than constant-time work in non-cycle cases.
-      var mid = depth >> 1;
-      // Use === to avoid cases like ['x'] == 'x', which is true.
-      var match1 = seen1[mid] === var1;
-      var match2 = seen2[mid] === var2;
-      if (match1 || match2) {
-        if (!match1 || !match2) {
-          // Asymmetric cycles, so the objects have different structure.
-          failures.push('Asymmetric cycle detected at ' + path);
-        }
-        return;
-      }
-    }
-    seen1.push(var1);
-    seen2.push(var2);
-    innerAssert_(var1, var2, path);
-    seen1.pop();
-    seen2.pop();
-  }
-
-  /**
-   * @suppress {missingProperties} The map_ property is unknown to the compiler
-   *     unless goog.structs.Map is loaded.
-   */
-  function innerAssert_(var1, var2, path) {
-    if (var1 === var2) {
-      return;
-    }
-
-    var typeOfVar1 = _trueTypeOf(var1);
-    var typeOfVar2 = _trueTypeOf(var2);
-
-    if (typeOfVar1 == typeOfVar2) {
-      var isArray = typeOfVar1 == 'Array';
-      var equalityPredicate = PRIMITIVE_EQUALITY_PREDICATES[typeOfVar1];
-      if (equalityPredicate) {
-        if (!equalityPredicate(var1, var2)) {
-          failures.push(path + ' expected ' + _displayStringForValue(var1) +
-                        ' but was ' + _displayStringForValue(var2));
-        }
-      } else if (isArray && var1.length != var2.length) {
-        failures.push(path + ' expected ' + var1.length + '-element array ' +
-                      'but got a ' + var2.length + '-element array');
-      } else {
-        var childPath = path + (isArray ? '[%s]' : (path ? '.%s' : '%s'));
-
-        // if an object has an __iterator__ property, we have no way of
-        // actually inspecting its raw properties, and JS 1.7 doesn't
-        // overload [] to make it possible for someone to generically
-        // use what the iterator returns to compare the object-managed
-        // properties. This gets us into deep poo with things like
-        // goog.structs.Map, at least on systems that support iteration.
-        if (!var1['__iterator__']) {
-          for (var prop in var1) {
-            if (isArray && goog.testing.asserts.isArrayIndexProp_(prop)) {
-              // Skip array indices for now. We'll handle them later.
-              continue;
-            }
-
-            if (prop in var2) {
-              innerAssert(var1[prop], var2[prop],
-                          childPath.replace('%s', prop));
-            } else {
-              failures.push('property ' + prop +
-                            ' not present in actual ' + (path || typeOfVar2));
-            }
-          }
-          // make sure there aren't properties in var2 that are missing
-          // from var1. if there are, then by definition they don't
-          // match.
-          for (var prop in var2) {
-            if (isArray && goog.testing.asserts.isArrayIndexProp_(prop)) {
-              // Skip array indices for now. We'll handle them later.
-              continue;
-            }
-
-            if (!(prop in var1)) {
-              failures.push('property ' + prop +
-                            ' not present in expected ' +
-                            (path || typeOfVar1));
-            }
-          }
-
-          // Handle array indices by iterating from 0 to arr.length.
-          //
-          // Although all browsers allow holes in arrays, browsers
-          // are inconsistent in what they consider a hole. For example,
-          // "[0,undefined,2]" has a hole on IE but not on Firefox.
-          //
-          // Because our style guide bans for...in iteration over arrays,
-          // we assume that most users don't care about holes in arrays,
-          // and that it is ok to say that a hole is equivalent to a slot
-          // populated with 'undefined'.
-          if (isArray) {
-            for (prop = 0; prop < var1.length; prop++) {
-              innerAssert(var1[prop], var2[prop],
-                          childPath.replace('%s', String(prop)));
-            }
-          }
-        } else {
-          // special-case for closure objects that have iterators
-          if (goog.isFunction(var1.equals)) {
-            // use the object's own equals function, assuming it accepts an
-            // object and returns a boolean
-            if (!var1.equals(var2)) {
-              failures.push('equals() returned false for ' +
-                            (path || typeOfVar1));
-            }
-          } else if (var1.map_) {
-            // assume goog.structs.Map or goog.structs.Set, where comparing
-            // their private map_ field is sufficient
-            innerAssert(var1.map_, var2.map_, childPath.replace('%s', 'map_'));
-          } else {
-            // else die, so user knows we can't do anything
-            failures.push('unable to check ' + (path || typeOfVar1) +
-                          ' for equality: it has an iterator we do not ' +
-                          'know how to handle. please add an equals method');
-          }
-        }
-      }
-    } else {
-      failures.push(path + ' expected ' + _displayStringForValue(var1) +
-                    ' but was ' + _displayStringForValue(var2));
-    }
-  }
-
-  innerAssert(expected, actual, '');
-  return failures.length == 0 ? null :
-      'Expected ' + _displayStringForValue(expected) + ' but was ' +
-      _displayStringForValue(actual) + '\n   ' + failures.join('\n   ');
-};
-
-/*
-function testFreebaseConstructor()
-{
-	var fb = new Freebase();
-	assertEquals(fb.constructor, Freebase);
-}
-*/
-
-function testTableDocumentConstructor()
-{
-	var name = 'Foobar';
-	var cols = [{name: "foo", type: String},
-		{name: "bar", type: Number}];
-	var td = new TableDocument(name, cols);
-	assertEquals(td.constructor, TableDocument);
-	assertUndefined(td._id); // assigned on save
-	assertEquals(td.name, name);
-	assertEquals(td.columns, cols);
-	
-	var all_view = "function(doc) " +
-		"{ " +
-		"if (doc." + Freebase.TABLE_FIELD + " == '" + td.name + "') { " +
-		"emit(doc._id, doc);" +
-		"} " +
-		"}";
-	assertObjectEquals(td.views.all, {map: all_view});
-}
+goog.require('goog.testing.jsunit');
 
 function MockFreebase()
 {
@@ -217,13 +24,6 @@ function MockFreebase()
 }
 
 goog.inherits(MockFreebase, com.qwirx.freebase.Freebase);
-
-/*
-MockFreebase.prototype.deepCopy =  function(object, opt_stringifier)
-{
-	return JSON.parse(JSON.stringify(object));
-};
-*/
 
 MockFreebase.prototype.get = function(documentId, onSuccess, onError)
 {
@@ -473,6 +273,9 @@ goog.dom.appendChild(document.body, domContainer);
 
 function setUp()
 {
+	// import Freebase, TableDocument and other classes
+	com.qwirx.freebase.import(this, com.qwirx.freebase);
+
 	goog.dom.removeChildren(domContainer);
 	
 	mockFreebase = new MockFreebase();
@@ -866,14 +669,14 @@ function testFreebaseGuiRun()
 
 	// data grid should have been updated
 	var ds = editor.getDataSource();
-	assertEquals(4, ds.getRowCount());
+	assertEquals(4, ds.getCount());
 
 	function assertDataSourceRow(rowIndex, modelObject)
 	{
-		var row = ds.getRow(rowIndex);
-		assertEquals(modelObject._id,  row[0].value);
-		assertEquals(modelObject.name, row[1].value);
-		assertEquals("" + modelObject.age, row[2].value);
+		var row = ds.get(rowIndex);
+		assertEquals(modelObject._id,  row._id);
+		assertEquals(modelObject.name, row.name);
+		assertEquals(modelObject.age, row.age);
 	}
 
 	function assertAllCatsData()
@@ -971,7 +774,7 @@ function assertSelection(grid, message, x1, y1, x2, y2)
 	{
 		var rowElement = grid.rows_[y].getRowElement();
 		var dataRow = y + scroll.y;
-		var shouldBeVisible = (dataRow < grid.dataSource_.getRowCount());
+		var shouldBeVisible = (dataRow < grid.dataSource_.getCount());
 		
 		assertEquals(message + ": wrong visible status for " +
 			"grid row " + y + ", data row " + dataRow,
@@ -1207,16 +1010,17 @@ function testGridInsertRowAt()
 {
 	var gui = new Freebase.Gui(mockFreebase);
 	gui.run(domContainer);
-	var editor = assertCallback(function(c) { gui.openDocument(Cat.getId(), c); })[0];
+	var editor = assertCallback(function(c)
+		{ gui.openDocument(Cat.getId(), c); })[0];
 	var grid = editor.grid_;
 	assertEquals('Grid should have been populated with some cats',
-		2, editor.getDataSource().getRowCount());
+		2, editor.getDataSource().getCount());
 	
 	// insert a row between two others
-	editor.getDataSource().insertRow(1,
-		[{value: "unidentified"}, {value: "flying"}, {value: "object"}]);
+	editor.getDataSource().insert(1, {_id: 'unidentified',
+		name: 'flying', age: 'object'});
 	assertEquals('Data source row count should have been updated',
-		3, editor.getDataSource().getRowCount());
+		3, editor.getDataSource().getCount());
 	
 	var allCats = assertCallback(function(c)
 		// { mockFreebase.listAll(true, c); })[0].rows;
@@ -1231,7 +1035,8 @@ function testGridInsertRowAt()
 	
 	function assertCellContentsAndSelection(rowIndex, contents)
 	{
-		assertEquals(contents, grid.rows_[rowIndex].getColumns()[0].value);
+		assertEquals("Wrong contents in grid cell ("+rowIndex+",0)",
+			contents, grid.rows_[rowIndex].getColumns()[0].text);
 		assertEquals(rowIndex, grid.rows_[rowIndex].getRowIndex());
 		var cell = grid.rows_[rowIndex].getColumns()[0].tableCell;
 		assertEquals(rowIndex,
@@ -1308,39 +1113,41 @@ function assertGridContents(grid, data)
 
 function testGridDataSourceEvents()
 {
-	var columns = [{caption: 'ID'}, {caption: 'Name'}];
+	var columns = [{name: 'id', caption: 'ID'},
+		{name: 'firstname', caption: 'First Name'}];
 	var data = [
-		[{value: 1}, {value: 'John'}],
-		[{value: 2}, {value: 'James'}],
-		[{value: 5}, {value: 'Peter'}],
+		{id: 1, firstname: 'John'},
+		{id: 2, firstname: 'James'},
+		{id: 5, firstname: 'Peter'},
 	];
 	var ds = new com.qwirx.data.SimpleDatasource(columns, data);
 	var grid = initGrid(ds);
 
 	assertGridContents(grid, data);
 	
-	ds.appendRow([{value: 7}, {value: 'Paul'}]);
-	data.push([{value: 7}, {value: 'Paul'}]);
+	data.push({id: 7, firstname: 'Paul'});
+	ds.add(data[data.length-1]);
 	assertGridContents(grid, data);
 	
-	ds.insertRow(1, [{value: 8}, {value: 'Duke'}]);
-	data.splice(1, 0, [{value: 8}, {value: 'Duke'}]);
+	data.splice(1, 0, {id: 8, firstname: 'Duke'});
+	ds.insert(1, data[data.length-1]);
 	assertGridContents(grid, data);
 	
-	var oldValue = data[1][1].value;
-	data[1][1].value = 'Atreides'
+	var oldValue = data[1][1];
+	data[1].firstname = 'Atreides';
 	self.assertNotEquals('The data source should contain a ' +
 		'deep copy of the data, not affected by external changed',
-		'Atreides', ds.getRow(1)[1].value);
+		'Atreides', ds.get(1).firstname);
 
-	data[1][1] = {value: 'Leto'}
+	data[1].firstname = 'Leto';
 	self.assertNotEquals('The data source should contain a ' +
 		'deep copy of the data, not affected by external changed',
-		'Leto', ds.getRow(1)[1].value);
-	data[1][1].value = oldValue;
+		'Leto', ds.get(1).firstname);
+	data[1].firstname = oldValue;
 	
-	ds.updateRow(2, [{value: 9}, {value: 'Iago'}]);
-	data.splice(2, 1, [{value: 9}, {value: 'Iago'}]);
+	var iago = {id: 9, firstname: 'Iago'};
+	ds.replace(2, iago);
+	data.splice(2, 1, iago);
 	assertGridContents(grid, data);
 }	
 
@@ -1363,7 +1170,7 @@ function random(max, seed)
 	return seed % max;
 }
 
-TestDataSource.prototype.getRow = function(rowIndex)
+TestDataSource.prototype.get = function(rowIndex)
 {
 	this.requestedRows.push(rowIndex);
 	return [
@@ -1372,7 +1179,7 @@ TestDataSource.prototype.getRow = function(rowIndex)
 	];
 };
 
-TestDataSource.prototype.getRowCount = function()
+TestDataSource.prototype.getCount = function()
 {
 	return this.rowCount;
 };
@@ -1420,7 +1227,7 @@ function testGridRespondsToDataSourceRowCountChanges()
 	assertObjectEquals({}, grid.drag);
 	assertTrue("The following tests will fail unless at least " +
 		"one row is visible",
-		ds.getRowCount() < grid.getVisibleRowCount());
+		ds.getCount() < grid.getVisibleRowCount());
 	assertEquals(0, grid.scrollBar_.getMaximum());
 	assertEquals(0, grid.scrollOffset_.x);
 	assertEquals(0, grid.scrollOffset_.y);
@@ -1520,7 +1327,7 @@ function testGridScrollAndHighlight()
 	var gridRows = grid.getVisibleRowCount();
 	assertObjectEquals(range(0, gridRows - 1), ds.requestedRows);
 	
-	var maxScroll = ds.getRowCount() - gridRows + 1;
+	var maxScroll = ds.getCount() - gridRows + 1;
 
 	var scrollbar = grid.scrollBar_;
 	assertNotNull(scrollbar);
@@ -1537,7 +1344,7 @@ function testGridScrollAndHighlight()
 	scrollbar.setValue(0); // slider is inverted, so 0 is at the bottom
 	assertObjectEquals({x: 0, y: maxScroll},
 		grid.scrollOffset_);
-	assertObjectEquals(range(maxScroll,	ds.getRowCount() - 1),
+	assertObjectEquals(range(maxScroll,	ds.getCount() - 1),
 		ds.requestedRows);
 	
 	grid.setSelection(1, 1, 2, 4);
@@ -1556,7 +1363,7 @@ function testGridScrollAndHighlight()
 	grid.setSelection(1, 1, 2, 4);
 	ds.requestedRows = [];
 	ds.setRowCount(gridRows * 2); // but the first two are offscreen
-	maxScroll = ds.getRowCount() - grid.getFullyVisibleRowCount();
+	maxScroll = ds.getCount() - grid.getFullyVisibleRowCount();
 	assertEquals("row count change should have reset scrollbar maximum",
 		maxScroll, scrollbar.getMaximum());
 	assertEquals("row count change should have adjusted scrollbar " +
@@ -1678,10 +1485,8 @@ function assertNavigationException(grid, startPosition, button, message)
 {
 	grid.nav_.getCursor().setPosition(startPosition);
 	assertEquals(startPosition, grid.nav_.getCursor().getPosition());
-
-	var exception = assertThrows(message, 
-		function() { com.qwirx.test.FakeClickEvent.send(button); });
-	goog.asserts.assertInstanceof(exception, com.qwirx.data.IllegalMove,
+	com.qwirx.test.assertThrows(com.qwirx.data.IllegalMove, 
+		function() { com.qwirx.test.FakeClickEvent.send(button); },
 		message);
 }
 
@@ -1692,7 +1497,7 @@ function testGridNavigation()
 
 	var BOF = com.qwirx.data.Cursor.BOF;
 	var EOF = com.qwirx.data.Cursor.EOF;
-	var dataRows = ds.getRowCount();
+	var dataRows = ds.getCount();
 	var gridRows = grid.getFullyVisibleRowCount();
 	var maxScroll = dataRows - gridRows;
 	var lastRecord = dataRows - 1;
@@ -1926,7 +1731,7 @@ function testEditModelDesign()
 		})[0];
 	var grid = editor.grid_;
 	assertEquals('Grid should have been populated with some cats',
-		2, editor.getDataSource().getRowCount());
+		2, editor.getDataSource().getCount());
 	
 }
 */

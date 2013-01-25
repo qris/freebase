@@ -22,6 +22,8 @@ com.qwirx.grid.log = function(var_args)
  * A grid component which displays data loaded from an underlying
  * data source.
  * @todo change the data source to a goog.ds.DataNode.
+ * @todo It would be useful to have a GridSource class that can
+ * supply columnised, formatted data on demand, maybe asynchronously.
  * @constructor
  */
 com.qwirx.grid.Grid = function(datasource, opt_renderer)
@@ -80,11 +82,11 @@ com.qwirx.grid.Grid.prototype.createDom = function()
 	this.scrollBar_ = new goog.ui.Slider;
 	this.scrollBar_.decorate(this.scrollBarOuterDiv_);
 	this.scrollBar_.setOrientation(goog.ui.Slider.Orientation.VERTICAL);
-	this.scrollBar_.setMaximum(this.dataSource_.getRowCount());
+	this.scrollBar_.setMaximum(this.dataSource_.getCount());
 
 	// Scrollbar value is inverted: the maximum value is at the top,
 	// which is where we want to be initially.
-	this.scrollBar_.setValue(this.dataSource_.getRowCount(), 0);
+	this.scrollBar_.setValue(this.dataSource_.getCount(), 0);
 
 	// NavigableGrid subclass relies on the dataTable_ property
 	// to extract our grid table and reparent it.
@@ -140,9 +142,9 @@ com.qwirx.grid.Grid.prototype.enterDocument = function()
 	var containerBorder = goog.style.getBorderBox(container);	
 	this.partialLastRow = false;	
 	
-	for (var i = 0; i < this.dataSource_.getRowCount(); i++)
+	for (var i = 0; i < this.dataSource_.getCount(); i++)
 	{
-		this.handleRowInsert(i, this.dataSource_.getRow(i));
+		this.handleRowInsert(i, this.dataSource_.get(i));
 
 		// stolen from goog.style.scrollIntoContainerView 
 		var element = this.rows_[i].getRowElement();
@@ -177,7 +179,7 @@ com.qwirx.grid.Grid.prototype.enterDocument = function()
 	// them again, so we delay setting the scroll event handler
 	// until after we've done this.
 	
-	this.scrollBar_.setMaximum(this.dataSource_.getRowCount() -
+	this.scrollBar_.setMaximum(this.dataSource_.getCount() -
 		this.getFullyVisibleRowCount());
 	this.scrollBar_.setValue(this.scrollBar_.getMaximum());
 
@@ -236,10 +238,10 @@ com.qwirx.grid.Grid.Column.prototype.getIdentityNode = function()
  * Row is a class, not a static index, to allow renumbering and
  * dynamically numbering large grids quickly.
  */
-com.qwirx.grid.Grid.Row = function(grid, rowIndex, columns)
+com.qwirx.grid.Grid.Row = function(grid, rowIndex, columnsText)
 {
 	this.grid_= grid;
-	this.columns_ = columns;
+	this.columns_ = [];
 	
 	var th = this.tableCell_ = grid.dom_.createDom('th', {}, '');
 	th[com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE] =
@@ -248,13 +250,14 @@ com.qwirx.grid.Grid.Row = function(grid, rowIndex, columns)
 
 	var cells = [th];
 	
-	var numCols = columns.length;
+	var numCols = columnsText.length;
 	for (var i = 0; i < numCols; i++)
 	{
-		var column = columns[i];
+		var column = {text: columnsText[i]};
+		this.columns_[i] = column;
 		var cssClasses = 'col_' + i;
 		var td = column.tableCell = grid.dom_.createDom('td', cssClasses,
-			column.value.toString());
+			column.text);
 			
 		td[com.qwirx.grid.Grid.TD_ATTRIBUTE_TYPE] =
 			com.qwirx.grid.Grid.CellType.MIDDLE;
@@ -296,7 +299,7 @@ com.qwirx.grid.Grid.Row.prototype.getColumns = function()
 
 com.qwirx.grid.Grid.prototype.handleDataSourceRowCountChange = function(e)
 {
-	var rowCount = this.dataSource_.getRowCount();
+	var rowCount = this.dataSource_.getCount();
 	var newMax = 0;
 	
 	if (rowCount <= this.getFullyVisibleRowCount())
@@ -392,15 +395,32 @@ com.qwirx.grid.Grid.prototype.handleDataSourceRowsEvent =
 	for (var i = 0; i < rowIndexes.length; i++)
 	{
 		handler.call(this, rowIndexes[i], 
-			this.dataSource_.getRow(rowIndexes[i]));
+			this.dataSource_.get(rowIndexes[i]));
 	}
 };
 
 com.qwirx.grid.Grid.prototype.handleRowInsert =
-	function(newRowIndex, columns)
+	function(newRowIndex, rowObject)
 {
+	var columns = this.dataSource_.getColumns();
+	var colData = [];
+	
 	var numCols = columns.length;
-	var row = new com.qwirx.grid.Grid.Row(this, newRowIndex, columns);
+	for (var i = 0; i < numCols; i++)
+	{
+		var colValue = rowObject[columns[i].name];
+		if (colValue == null || colValue == undefined)
+		{
+			colValue = "";
+		}
+		else
+		{
+			colValue = colValue.toString();
+		}
+		colData.push(colValue);
+	}
+	
+	var row = new com.qwirx.grid.Grid.Row(this, newRowIndex, colData);
 	this.rows_.splice(newRowIndex, 0, row);
 
 	goog.dom.insertChildAt(this.dataTable_, row.getRowElement(),
@@ -520,7 +540,7 @@ com.qwirx.grid.Grid.prototype.handleMouseDown = function(e)
 		this.dragMode_ = info.drag.modes.COLUMNS;
 		this.drag.x1 = this.drag.x2 = info.col;
 		this.drag.y1 = 0;
-		this.drag.y2 = this.dataSource_.getRowCount() - 1;
+		this.drag.y2 = this.dataSource_.getCount() - 1;
 	}
 	else if (info.cell.type == info.cell.types.ROW_HEAD)
 	{
@@ -715,7 +735,7 @@ com.qwirx.grid.Grid.prototype.handleDrag = function(e)
 	
 	if (info.drag.mode == info.drag.modes.COLUMNS)
 	{
-		this.drag.y2 = this.dataSource_.getRowCount() - 1;
+		this.drag.y2 = this.dataSource_.getCount() - 1;
 	}
 	else if (info.cell.type == info.cell.types.COLUMN_HEAD)
 	{
@@ -958,12 +978,12 @@ com.qwirx.grid.Grid.prototype.refreshAll = function()
 	for (var i = 0; i < len; i++)
 	{
 		var dataRow = i + this.scrollOffset_.y;
-		var visible = (dataRow < this.dataSource_.getRowCount());
+		var visible = (dataRow < this.dataSource_.getCount());
 		this.rows_[i].setVisible(visible);
 		
 		if (visible)
 		{
-			var columns = this.dataSource_.getRow(dataRow);
+			var columns = this.dataSource_.get(dataRow);
 			this.handleRowUpdate(i, columns);
 		}
 	}
@@ -1012,7 +1032,7 @@ com.qwirx.grid.Grid.prototype.onCursorMove = function(event)
 	}
 	else if (activeRow == com.qwirx.data.Cursor.EOF)
 	{
-		var numRows = this.dataSource_.getRowCount();
+		var numRows = this.dataSource_.getCount();
 		if (numRows != null)
 		{
 			newScroll = numRows - this.getFullyVisibleRowCount();
@@ -1029,7 +1049,7 @@ com.qwirx.grid.Grid.prototype.onCursorMove = function(event)
 
 	// TODO test what happens if DS has fewer rows than grid
 	// TODO test what happens when newScroll < 0
-	// TODO test what happens when newScroll > this.dataSource_.getRowCount()
+	// TODO test what happens when newScroll > this.dataSource_.getCount()
 
 	this.setScroll(this.scrollOffset_.x, newScroll);
 	// calls refreshAll() for us

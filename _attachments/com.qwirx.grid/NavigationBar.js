@@ -1,6 +1,7 @@
 goog.provide('com.qwirx.grid.NavigationBar');
 goog.provide('com.qwirx.grid.GridNavigationBar');
 
+goog.require('goog.ui.Toolbar');
 goog.require('com.qwirx.ui.ToolbarButton');
 goog.require('com.qwirx.ui.TextField');
 
@@ -87,53 +88,41 @@ com.qwirx.grid.NavigationBar.prototype.getCursor = function()
 	return this.cursor_;
 };
 
+com.qwirx.grid.NavigationBar.prototype.addButton = function(caption,
+	event_handler)
+{
+	var button = new com.qwirx.ui.ToolbarButton(caption);
+	button.render(this.getElement());
+	goog.events.listen(button, goog.ui.Component.EventType.ACTION,
+		event_handler, false, this);
+	return button;
+};
+
 com.qwirx.grid.NavigationBar.prototype.createDom = function(tab)
 {
 	var element = 
 		com.qwirx.grid.NavigationBar.superClass_.createDom.call(this,
 		tab);
 
-	this.firstButton_ = new com.qwirx.ui.ToolbarButton('\u21E4' /* left arrow to bar */);
-	this.firstButton_.render(this.getElement());
-	goog.events.listen(this.firstButton_,
-		goog.ui.Component.EventType.ACTION,
-		this.onFirstButton, false, this);
-
-	this.prevPageButton_ = new com.qwirx.ui.ToolbarButton('\u219E' /* double left arrow */);
-	this.prevPageButton_.render(this.getElement());
-	goog.events.listen(this.prevPageButton_,
-		goog.ui.Component.EventType.ACTION,
-		this.onPrevPageButton, false, this);
-
-	this.prevButton_ = new com.qwirx.ui.ToolbarButton('\u2190' /* single left arrow */);
-	this.prevButton_.render(this.getElement());
-	goog.events.listen(this.prevButton_,
-		goog.ui.Component.EventType.ACTION,
-		this.onPrevButton, false, this);
-		
+	this.firstButton_ = this.addButton('\u21E4' /* left arrow to bar */,
+		this.onFirstButton);
+	this.prevPageButton_ = this.addButton('\u219E' /* double left arrow */,
+		this.onPrevPageButton);
+	this.prevButton_ = this.addButton('\u2190' /* single left arrow */,
+		this.onPrevButton);
+	
 	this.rowNumberField_ = new com.qwirx.ui.TextField('1');
 	this.rowNumberField_.render(this.getElement());
 	goog.events.listen(this.rowNumberField_,
 		goog.ui.Component.EventType.ACTION,
 		this.onRowNumberChange, false, this);
 
-	this.nextButton_ = new com.qwirx.ui.ToolbarButton('\u2192' /* single right arrow */);
-	this.nextButton_.render(this.getElement());
-	goog.events.listen(this.nextButton_,
-		goog.ui.Component.EventType.ACTION,
-		this.onNextButton, false, this);
-
-	this.nextPageButton_ = new com.qwirx.ui.ToolbarButton('\u21A0' /* double right arrow */);
-	this.nextPageButton_.render(this.getElement());
-	goog.events.listen(this.nextPageButton_,
-		goog.ui.Component.EventType.ACTION,
-		this.onNextPageButton, false, this);
-
-	this.lastButton_ = new com.qwirx.ui.ToolbarButton('\u21E5' /* right arrow to bar */);
-	this.lastButton_.render(this.getElement());
-	goog.events.listen(this.lastButton_,
-		goog.ui.Component.EventType.ACTION,
-		this.onLastButton, false, this);
+	this.nextButton_ = this.addButton('\u2192' /* single right arrow */,
+		this.onNextButton);
+	this.nextPageButton_ = this.addButton('\u21A0' /* double right arrow */,
+		this.onNextPageButton);
+	this.lastButton_ = this.addButton('\u21E5' /* right arrow to bar */,
+		this.onLastButton);
         
 	return element;
 };
@@ -145,12 +134,12 @@ com.qwirx.grid.NavigationBar.prototype.onFirstButton = function(event)
 
 com.qwirx.grid.NavigationBar.prototype.onPrevPageButton = function(event)
 {
-	this.cursor_.moveBackward(this.pageSize_);	
+	this.cursor_.moveRelative(-this.pageSize_);	
 };
 
 com.qwirx.grid.NavigationBar.prototype.onPrevButton = function(event)
 {
-	this.cursor_.moveBackward(1);	
+	this.cursor_.moveRelative(-1);	
 };
 
 com.qwirx.grid.NavigationBar.prototype.onRowNumberChange = function(event)
@@ -160,12 +149,12 @@ com.qwirx.grid.NavigationBar.prototype.onRowNumberChange = function(event)
 
 com.qwirx.grid.NavigationBar.prototype.onNextButton = function(event)
 {
-	this.cursor_.moveForward(1);
+	this.cursor_.moveRelative(1);
 };
 
 com.qwirx.grid.NavigationBar.prototype.onNextPageButton = function(event)
 {
-	this.cursor_.moveForward(this.pageSize_);
+	this.cursor_.moveRelative(this.pageSize_);
 };
 
 com.qwirx.grid.NavigationBar.prototype.onLastButton = function(event)
