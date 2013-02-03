@@ -72,7 +72,7 @@ goog.provide('com.qwirx.util.Nest');
  * This is possible because the Nest makes an effort to preserve "this"
  * when it calls your scriptlets.
  */
-function com.qwirx.util.Nest(param)
+com.qwirx.util.Nest = function(param)
 {
 	var nest = this;
 	nest.list = arguments;
@@ -92,7 +92,7 @@ function com.qwirx.util.Nest(param)
 		nest.lastIndex = index;
 		var scriptlet = nest.list[index];
 	
-		if (jQuery.isArray(scriptlet))
+		if (goog.isArray(scriptlet))
 		{
 			// First element is the function, remaining ones are args, except
 			// the one which uses Nest that we replace with i.next
