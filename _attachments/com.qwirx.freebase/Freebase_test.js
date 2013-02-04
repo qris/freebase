@@ -114,6 +114,10 @@ MockFreebase.prototype.get_ = function(uri, autoInstantiate, onSuccess,
 
 	function emit(key, value)
 	{
+		// Note: unlike objects, views in CouchDB do apparently
+		// use "id" and not "_id" in their results, so don't change
+		// this again.
+		
 		var row = {
 			id: currentDocument._id,
 			key: key,
@@ -322,30 +326,37 @@ function assertFreebaseApi(fb)
 	var test = Model('test', fb, []);
 	
 	// deleteDoc should throw an exception because it's not saved yet
-	var exception = assertThrows("Database should reject deleting " +
-		"an object that it doesn't contain",
-		function() { fb.deleteDoc(test, function(){}); });
-	goog.asserts.assertInstanceof(exception,
-		com.qwirx.freebase.NonexistentException,
-		"Wrong type of exception was thrown by attempting " +
-		"to delete a nonexistent object");
+	com.qwirx.test.assertThrows(com.qwirx.freebase.NonexistentException,
+		function(){ fb.deleteDoc(test, function(){}); },
+		"Database should reject deleting an object that it " +
+		"doesn't contain");
 	
 	// test that Freebase.save() and Freebase.create() call the
-	// callback with the ID of the saved document, not the whole
-	// document.
-	var result = assertCallback(function(c) { fb.save(test, c); })[0];
-	assertObjectEquals(test, result);
-	
+	// callback with an array of updated document objects.
+	var result = assertCallback(function(c) { fb.create$(test, c); })[0];
+	assertObjectEquals([test], result);
+
+	// create$ for a document that already exists should throw an error
+	com.qwirx.test.assertThrows(com.qwirx.freebase.DuplicateException,
+		function(){ fb.create$(test, function(){}) },
+		'Database should reject saving a second copy of the document');
+
+	// But save() should not.
+	result = assertCallback(function(c) { fb.save(test, c); })[0];
+	assertObjectEquals([test], result);
+		
 	// deleteDoc does not really delete the document, but it sets its
 	// _deleted flag, which we interpret as allowing us to recreate
 	// the document.
-	var result = assertCallback(function f(c) {fb.deleteDoc(test, c);})[0];
+	result = assertCallback(function f(c) {fb.deleteDoc(test, c);})[0];
 	assertTrue(result._deleted);
-	var result = assertCallback(function f(c) {fb.get(test._id, c);})[0];
+	result = assertCallback(function f(c) {fb.get(test._id, c);})[0];
 	assertTrue(result._deleted);
 	
+	// So because the existing object is deleted, create$() does
+	// not fail this time.
 	result = assertCallback(function(c) { fb.create$(test, c); })[0];
-	assertObjectEquals(test, result);
+	assertObjectEquals([test], result);
 	assertCallback(function f(c) {fb.deleteDoc(test, c);});
 
 	var expectedCatDoc = Cat.toDocument();
@@ -374,19 +385,9 @@ function assertFreebaseApi(fb)
 	};
 	
 	assertCallback(function(c) { fb.create$(foo, c); });
-	var exception = assertThrows('Database should reject saving a second copy ' +
-		'of the document', function()
-		{
-			fb.create$(foo, function(){});
-		});
-	goog.asserts.assertInstanceof(exception,
-		com.qwirx.freebase.DuplicateException,
-		"Wrong type of exception was thrown by attempting " +
-		"to create a duplicate object");
-
-	assertCallback(function(c) { fb.create$(bar, c); })[0];
-	assertCallback(function(c) { fb.create$(baz, c); })[0];
-	var noNewModelsOnlyCat = {Cat: Cat};
+	assertCallback(function(c) { fb.create$(bar, c); });
+	assertCallback(function(c) { fb.create$(baz, c); });
+	var noNewModelsOnlyCat = {'Cat': Cat};
 	assertObjectEquals("Should not be any new app models at this point",
 		noNewModelsOnlyCat, fb.app.models);
 	assertCallback(function(c) { fb.create$(jobs, c); });
@@ -399,6 +400,9 @@ function assertFreebaseApi(fb)
 	assertObjectEquals([foo, bar, baz].sort(sortByProperty('_id')),
 		assertCallback(function(c) { fb.findAll('Jobs', c); })[0]);
 	
+	// Note: unlike objects, views in CouchDB do apparently
+	// use "id" and not "_id" in their results, so don't change
+	// this again.
 	result = assertCallback(function(c) { fb.view(jobs._id, 'all', c); })[0];
 	assertObjectEquals([
 			{id: foo._id, key: foo._id, value: foo},
@@ -436,8 +440,9 @@ function testMockFreebaseApi()
 
 function testBrowserCouchBaseApi()
 {
-	var bc = com.qwirx.freebase.BrowserCouch("blarg", {
-		storage: new com.qwirx.freebase.BrowserCouch.FakeStorage()
+	var bc = new com.qwirx.freebase.BrowserCouch.BrowserDatabase("blarg",
+		{
+			storage: new com.qwirx.freebase.BrowserCouch.FakeStorage()
 		});
 	var bcb = new com.qwirx.freebase.BrowserCouchBase(bc);
 	assertCallback(function f(c) { bcb.create$(Cat, c); });
@@ -646,11 +651,14 @@ function testFreebaseGuiRun()
 	var editor = assertCallback(function(c)
 		{ gui.openDocument(Cat.getId(), c); })[0];
 	
-	// create a few more cats
+	// create a few more cats, testing array save at the same time
 	var kit = new Cat({name: "Kitkat", age: 6});
-	mockFreebase.save(kit, function(){});
 	var mog = new Cat({name: "Moggy", age: 9});
-	mockFreebase.save(mog, function(){});
+	assertCallback(function(c){ mockFreebase.save([kit, mog], c); });
+	assertNotUndefined("Cat should have been assigned an ID by save()",
+		kit._id);
+	assertNotUndefined("Cat should have been assigned an ID by save()",
+		mog._id);
 	
 	// should have been added to the tree automatically, sorted by ID
 	var allCats = [old, etc, kit, mog];
