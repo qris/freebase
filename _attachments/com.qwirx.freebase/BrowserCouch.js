@@ -798,7 +798,7 @@ com.qwirx.freebase.BrowserCouch.BrowserDatabase = function(name,
 	this.options = options;
 	this.storage_class = options.storage_class ||
 		com.qwirx.freebase.BrowserCouch.LocalStorage;
-	this.storage = new this.storage_class();
+	this.storage = options.storage || new this.storage_class();
 	this.dict = new com.qwirx.freebase.BrowserCouch.Dictionary();
 	this.changes = []; //TODO - this is until I get seq working.
 	this.seq = 1;
