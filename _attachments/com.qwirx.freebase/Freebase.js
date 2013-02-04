@@ -109,6 +109,12 @@ com.qwirx.freebase.Freebase.prototype.setDocumentId = goog.abstractMethod;
 com.qwirx.freebase.Freebase.prototype.prepareObjectForSave_ = 
 	function(object)
 {
+	if (!goog.isObject(object) || goog.isArray(object))
+	{
+		throw new Error("You can only pass an object to " +
+			"prepareObjectForSave_(), not a " + goog.typeOf(object));
+	}
+	
 	var document;
 	
 	if (object.toDocument)
@@ -130,42 +136,69 @@ com.qwirx.freebase.Freebase.prototype.prepareObjectForSave_ =
 };
 
 com.qwirx.freebase.Freebase.prototype.saveOrCreate_ = 
-	function(object, failIfExists, implementation,
+	function(object_or_array, failIfExists, implementation,
 		onSuccess, onError)
 {
 	onError = onError || this.defaultOnErrorHandler_;
-
-	var document = this.prepareObjectForSave_(object);
+	
+	var objects;
+	
+	if (goog.isArray(object_or_array))
+	{
+		objects = object_or_array;
+	}
+	else
+	{
+		objects = [object_or_array];
+	}
+	
+	var currentIndex = -1;
 	var self = this;
 	
-	implementation.call(this, document,
-		function save_onSuccess(updated_document)
+	function saveOrCreateOne()
+	{
+		currentIndex++;
+		
+		if (currentIndex >= objects.length)
 		{
-			/* The implementation should have assigned _id and _rev
-			 * to the document object already, but not to the Model
-			 * (if any) which it never saw.
-			 */
-			if (object.setId)
-			{
-				object.setId(self.getDocumentId(updated_document));
-			}
-			else
-			{
-				object._id = self.getDocumentId(updated_document);
-			}
+			onSuccess(objects);
+			return;
+		}
 			
-			object._rev = updated_document._rev;
-			
-			if (document.modelName)
+		var object = objects[currentIndex];
+		var document = self.prepareObjectForSave_(object);
+		
+		implementation.call(self, document,
+			function save_onSuccess(updated_document)
 			{
-				self.app.models[document.modelName] = 
-					object.fromDocument(document, self);
-			}
+				/* The implementation should have assigned _id and _rev
+				 * to the document object already, but not to the Model
+				 * (if any) which it never saw.
+				 */
+				if (object.setId)
+				{
+					object.setId(self.getDocumentId(updated_document));
+				}
+				else
+				{
+					object._id = self.getDocumentId(updated_document);
+				}
+			
+				object._rev = updated_document._rev;
+			
+				if (document.modelName)
+				{
+					self.app.models[document.modelName] = 
+						object.fromDocument(document, self);
+				}
 
-			self.dispatchEvent(new DocumentSaved(object));
-			onSuccess(object);
-		},
-		onError);
+				self.dispatchEvent(new DocumentSaved(object));
+				saveOrCreateOne();
+			},
+			onError);
+	}
+	
+	saveOrCreateOne();
 };
 
 com.qwirx.freebase.Freebase.prototype.saveReal_ = goog.abstractMethod;
