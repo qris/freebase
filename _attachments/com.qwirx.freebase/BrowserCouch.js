@@ -1570,6 +1570,32 @@ com.qwirx.freebase.BrowserCouch.SameDomainDB.prototype.view =
 	}
 };
 
+com.qwirx.freebase.BrowserCouch.autoDetect = function(options)
+{
+	try
+	{
+		var baseUrl = window.location.protocol + "//" + window.location.host;
+		goog.net.XhrIo.send(baseUrl + "/", function(event)
+			{
+				var xhrio = event.target;
+				var options = {};
+				
+				if (xhrio.getResponseHeader('Server').indexOf('CouchDB') == 0)
+				{
+					return new com.qwirx.freebase.BrowserCouch.SameDomainDB(
+						name, baseUrl + '/' + name, options);
+				}
+			});
+	}
+	catch (e)
+	{
+		// ignore the error
+	}
+	
+	return new com.qwirx.freebase.BrowserCouch.BrowserDatabase(name,
+		options); // always works
+};
+
 com.qwirx.freebase.BrowserCouch.prototype.sync_once =
 	function(target, options)
 {
