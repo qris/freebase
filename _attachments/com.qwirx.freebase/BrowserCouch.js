@@ -525,7 +525,10 @@ com.qwirx.freebase.BrowserCouch.MapView = function(mapResult)
 		{
 			var id = item.ids[j];
 			var value = item.values[j];
-			newRows.push({_id: id, key: key, value: value});
+			// Note: unlike objects, views in CouchDB do apparently
+			// use "id" and not "_id" in their results, so don't
+			// change this again.
+			newRows.push({id: id, key: key, value: value});
 		}
 		
 		newRows.sort(function(a, b)
