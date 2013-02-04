@@ -36,8 +36,8 @@ goog.inherits(com.qwirx.freebase.DuplicateException,
 com.qwirx.freebase.DuplicateException.prototype.toString = function()
 {
 	return "Failed to create object " + this.saving_ + ": " +
-		"an object with the same ID already exists in the database: " +
-		this.existing_;
+		"an object with the same ID (" + this.saving_._id + ") " +
+		"already exists in the database: " + this.existing_;
 };
 
 /**
