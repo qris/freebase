@@ -53,7 +53,14 @@ MockFreebase.prototype.findAll =  function(designName, onSuccess, onError)
 		onError);
 };
 
-MockFreebase.prototype.listAll = function(fetchDocuments, onSuccess, onError)
+/**
+ * listAll calls the "_all_docs" view, which extracts the _id and
+ * _rev of all documents in the database, optionally including the
+ * documents themselves (if fetchDocuments is true) and passes the
+ * array of objects to the onSuccess callback.
+ */
+MockFreebase.prototype.listAll = function(fetchDocuments, onSuccess,
+	onError)
 {
 	return this.get_('_all_docs' + (fetchDocuments ? '?include_docs=true' : ''),
 		/* auto instantiate */ false, onSuccess, onError);
@@ -230,9 +237,10 @@ MockFreebase.prototype.createReal$_ = function(object, onSuccess, onError)
 	if (object._id && this.objectStore[object._id] && 
 		!this.objectStore[object._id].deleted)
 	{
-		onError(this, object,
+		onError.call(this,
 			new com.qwirx.freebase.DuplicateException(object,
-				this.objectStore[object._id]));
+				this.objectStore[object._id]),
+			object);
 	}
 	else
 	{
@@ -249,8 +257,9 @@ MockFreebase.prototype.deleteReal_ = function(object, onSuccess, onError)
 	}
 	else
 	{
-		onError(this, object,
-			new com.qwirx.freebase.NonexistentException(object));
+		onError.call(this,
+			new com.qwirx.freebase.NonexistentException(object),
+			object);
 	}
 };
 
@@ -344,7 +353,7 @@ function assertFreebaseApi(fb)
 	// But save() should not.
 	result = assertCallback(function(c) { fb.save(test, c); })[0];
 	assertObjectEquals([test], result);
-		
+
 	// deleteDoc does not really delete the document, but it sets its
 	// _deleted flag, which we interpret as allowing us to recreate
 	// the document.
@@ -446,6 +455,12 @@ function testBrowserCouchBaseApi()
 		});
 	var bcb = new com.qwirx.freebase.BrowserCouchBase(bc);
 	assertCallback(function f(c) { bcb.create$(Cat, c); });
+	
+	//var allDocs = assertCallback(function f(c)
+	//	{
+	//		bcb.listAll(false /* fetchDocuments */, c /* onSuccess */);
+	//	})[0];
+	//assertObjectEquals([Cat], allDocs);
 
 	/*	
 	old = new Cat({name: "Old Deuteronomy", age: 82});
@@ -1040,6 +1055,27 @@ function testGridInsertRowAt()
 		allCatsMap[allCats[i]._id] = allCats[i];
 	}
 	var allCatIds = goog.object.getKeys(allCatsMap).sort();
+
+	var expected_listAll_results = [{
+		id: Cat._id,
+		key: Cat._id,
+		value: Cat._rev
+	}];
+		
+	for (var i = 0; i < allCats.length; i++)
+	{
+		var row = {
+			id: allCats[i]._id,
+			key: allCats[i]._id,
+			value: allCats[i]._rev
+		};
+		expected_listAll_results.push(row);
+	}
+	var actual_listAll_results = assertCallback(function(c)
+		{ mockFreebase.listAll(false, c); })[0].rows;
+	// Do we need to sort this array by ID?
+	assertObjectEquals(expected_listAll_results,
+		actual_listAll_results);
 	
 	function assertCellContentsAndSelection(rowIndex, contents)
 	{
@@ -1719,7 +1755,7 @@ function testBrowserCouchBase()
 		}
 		else
 		{
-			onError();
+			onError.call(this, new Error("Document not found: " + id));
 		}
 	};
 	

@@ -3,6 +3,11 @@
 	<head>
 		<title>Freebase</title>
 		<link rel="stylesheet" href="style/main.css" type="text/css">
+		<script src="closure-library/closure/goog/base.js"></script>
+		<script src="calculated_deps.js"></script>
+		<script type="text/javascript">
+			goog.require('com.qwirx.loader');
+		</script>
 	</head>
 	<body style="height: 100%; margin: 0; padding: 0;">
 		<table style="width: 100%; height: 100%;">
@@ -23,64 +28,52 @@
 	like adding the isArray() method to Object's prototype.
 	-->
 	<!--<script src="vendor/couchapp/loader.js"></script>-->
-	<script src="ext/jquery-1.5.2.js"></script>
-	<script src="ext/closure/goog/base.js"></script>
-	
-	<script type="text/javascript" charset="utf-8">
-		/*
-		$.couch.app(function(app) {
-		  $("#account").evently("account", app);
-		  $("#profile").evently("profile", app);
-		  $.evently.connect("#account","#profile", ["loggedIn","loggedOut"]);
-		  $("#items").evently("items", app);
-		});
-		*/
+
+	<script type="text/javascript">
+		com.qwirx.loader.setNamespacePath('com.qwirx.freebase',
+			'.');
+		com.qwirx.loader.setNamespacePath('com.qwirx.grid',
+			'../com.qwirx.grid');
+		com.qwirx.loader.setNamespacePath('goog.closure', 
+			'../closure-library/closure/goog/css');
+		goog.require('com.qwirx.freebase.BrowserCouch');
+		goog.require('com.qwirx.freebase.BrowserCouchBase');
+		goog.require('com.qwirx.freebase.Freebase.Gui');
+		goog.require('com.qwirx.freebase.Model');
+		goog.require('com.qwirx.util.Nest');
+		goog.require('goog.net.XhrIo');
 	</script>
 
-	<script src="ext/browser-couch.js"></script>
-	<script src="src/Freebase.js"></script>
 	<script type="text/javascript" charset="utf-8">
-		$(document).ready(new Nest({},
+		var freebase, Message;
+		
+		new com.qwirx.util.Nest({},
 			function(p, i)
 			{
-				Message = new Freebase.TableDocument('messages',
-					[{name: "body", type: String}]);
-				p.testDbContents = [
-					Message.toDocument(),
+				com.qwirx.freebase.BrowserCouch.autoDetect('demo',
+					null, i.callback);
+			},
+			function(p, i)
+			{
+				p.db = p.callbackArgs[0];
+				p.freebase = new com.qwirx.freebase.BrowserCouchBase(p.db);
+
+				Message = com.qwirx.freebase.Model('Message', p.freebase,
+					[{name: "body", type: 'String'}]);
+				// Don't use create$ here, because LocalStorage or
+				// the CouchDB might already contain these documents
+				// from a previous run.
+				p.freebase.save([
+					Message,
 					new Message({_id: "monkey", body: "hello there dude"}),
 					new Message({_id: "chunky", body: "hello there dogen"})
-				];
-				
-				p.baseUrl = window.location.protocol + "//" + window.location.host;
-		
-				jQuery.getJSON(p.baseUrl + "/", undefined, i.callback);
+					], i.callback);
 			},
 			function(p, i)
 			{
-				var data = p.callbackArgs[0];
-				var options = {};
-
-				if ('couchdb' in data)
-				{
-					var dbname = window.location.pathname.substring(1,
-						window.location.pathname.indexOf("/", 1));
-					options.db_class = BrowserCouch.SameDomainDB;
-					options.url = p.baseUrl + "/" + dbname;
-				}
-
-				p.db = BrowserCouch("blarg", options);
-				p.db.post_multiple(p.testDbContents, i.callback, {replace_existing: true});
-			},
-			function(p, i)
-			{
-				BrowserCouch.ModuleLoader.require("JSON", i.callback);
-			},
-			function(p, i)
-			{
-				var fb = new Freebase(p.db);
-				fb.themeDir = "ext/jquery-ui-themes/base";
-				fb.run($("#freebase"), $);
+				var gui = new com.qwirx.freebase.Freebase.Gui(p.freebase);
+				gui.run(document.getElementById('freebase'));
 			}
-		));  // end iterator and document.ready()
+		)(); // end and execute Nest()
 	</script>
 </html>

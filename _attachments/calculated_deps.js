@@ -12,6 +12,7 @@ goog.addDependency("../../../com.qwirx.freebase/Model.js", ['com.qwirx.freebase.
 goog.addDependency("../../../com.qwirx.freebase/AutomaticFormView.js", ['com.qwirx.freebase.AutomaticFormView'], ['com.qwirx.freebase.DocumentEditor']);
 goog.addDependency("../../../com.qwirx.freebase/Exceptions.js", ['com.qwirx.freebase.Exception', 'com.qwirx.freebase.DuplicateException', 'com.qwirx.freebase.ConflictException', 'com.qwirx.freebase.NonexistentException'], []);
 goog.addDependency("../../../com.qwirx.freebase/Freebase_test.js", ['com.qwirx.freebase.Freebase_test'], ['com.qwirx.freebase.BrowserCouch', 'com.qwirx.freebase.BrowserCouchBase', 'com.qwirx.freebase.DuplicateException', 'com.qwirx.freebase.ConflictException', 'com.qwirx.freebase.Freebase', 'com.qwirx.freebase.Freebase.Gui', 'com.qwirx.freebase.Model', 'com.qwirx.freebase.NonexistentException', 'com.qwirx.grid.NavigableGrid', 'com.qwirx.test.FakeBrowserEvent', 'com.qwirx.test.FakeClickEvent', 'com.qwirx.test.assertThrows', 'com.qwirx.test.findDifferences', 'goog.dom.NodeIterator', 'goog.testing.jsunit']);
+goog.addDependency("../../../com.qwirx.freebase/BrowserCouch_test.js", ['com.qwirx.freebase.BrowserCouch_test'], ['com.qwirx.freebase.BrowserCouch', 'com.qwirx.test.assertThrows', 'goog.testing.jsunit', 'goog.asserts', 'goog.net.XhrIo']);
 goog.addDependency("../../../com.qwirx.freebase/DocumentArea.js", ['com.qwirx.freebase.DocumentArea'], ['goog.ui.Component']);
 goog.addDependency("../../../com.qwirx.freebase/modeldesignview.js", ['com.qwirx.freebase.ModelDesignView'], []);
 goog.addDependency("../../../com.qwirx.freebase/Freebase.js", ['com.qwirx.freebase.Freebase'], ['com.qwirx.freebase.AutomaticFormView', 'com.qwirx.freebase.InstanceListView', 'com.qwirx.freebase.DocumentArea', 'com.qwirx.loader', 'com.qwirx.util.Tree', 'goog.debug.Logger', 'goog.events.EventTarget', 'goog.events.EventType', 'goog.ui.CustomButton', 'goog.ui.CustomButtonRenderer', 'goog.ui.SplitPane', 'goog.ui.Tab', 'goog.ui.TabBar', 'goog.ui.Textarea', 'goog.ui.TextareaRenderer', 'goog.ui.Toolbar', 'goog.ui.tree.TreeControl']);
@@ -30,7 +31,7 @@ goog.addDependency("../../../com.qwirx.util/Nest.js", ['com.qwirx.util.Nest'], [
 goog.addDependency("../../../com.qwirx.util/Array.js", ['com.qwirx.util.Array'], []);
 goog.addDependency("../../../com.qwirx.test/findDifferences.js", ['com.qwirx.test.findDifferences'], ['goog.testing.asserts']);
 goog.addDependency("../../../com.qwirx.test/FakeBrowserEvent.js", ['com.qwirx.test.FakeBrowserEvent'], []);
-goog.addDependency("../../../com.qwirx.test/assertions.js", ['com.qwirx.test.assertThrows'], ['goog.testing.asserts']);
+goog.addDependency("../../../com.qwirx.test/assertions.js", ['com.qwirx.test.assertThrows', 'com.qwirx.test.assertInstanceof'], ['goog.testing.asserts', 'goog.debug.reflect']);
 goog.addDependency("../../../com.qwirx.test/FakeClickEvent.js", ['com.qwirx.test.FakeClickEvent'], ['com.qwirx.test.FakeBrowserEvent', 'goog.events.BrowserEvent']);
 goog.addDependency("../../../com.qwirx.jsdoc.template/publish.js", [], []);
 goog.addDependency("../../../ext/jquery.js", [], []);

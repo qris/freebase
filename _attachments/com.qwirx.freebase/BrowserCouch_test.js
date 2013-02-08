@@ -4,6 +4,7 @@ goog.require('com.qwirx.freebase.BrowserCouch');
 goog.require('com.qwirx.test.assertThrows');
 goog.require('goog.testing.jsunit');
 goog.require('goog.asserts');
+goog.require('goog.net.XhrIo');
 
 var mocked;
 
@@ -297,7 +298,30 @@ function test_samedomaindb_custom_support()
 // BrowserCouch.
 
 var BrowserCouch = com.qwirx.freebase.BrowserCouch;
-var BrowserCouchClass = com.qwirx.freebase.BrowserCouch.BrowserDatabase;
+var BrowserCouchClass;
+
+try
+{
+	var baseUrl = window.location.protocol + "//" + window.location.host;
+	goog.net.XhrIo.send(baseUrl + "/", function(event)
+		{
+			var xhrio = event.target;
+			var options = {};
+				
+			if (xhrio.getResponseHeader('Server').indexOf('CouchDB') == 0)
+			{
+				BrowserCouchClass = function(name, options)
+				{
+					BrowserCouch.SameDomainDB.call(this, name,
+						baseUrl + '/' + name, options);
+				}
+			}
+		});
+}
+catch (e)
+{
+	BrowserCouchClass = com.qwirx.freebase.BrowserCouch.BrowserDatabase;
+}
 
 function testDictionary()
 {

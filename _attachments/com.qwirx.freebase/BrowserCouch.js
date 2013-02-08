@@ -54,8 +54,8 @@ goog.require('com.qwirx.util.UUID');
  */
 com.qwirx.freebase.BrowserCouch = function(name, options)
 {
-	assert(this instanceof com.qwirx.freebase.BrowserCouch);
-	// Use the new operator to call this constructor
+	this.assert(this instanceof com.qwirx.freebase.BrowserCouch,
+		"Use the new operator to call this constructor");
 
 	this.db_name = name;
 	this.loaded = false;
@@ -80,6 +80,15 @@ com.qwirx.freebase.BrowserCouch.prototype.fireOnLoadCallbacks =
 	for (var cbi = 0; cbi < this.loadcbs.length; cbi++)
 	{
 		this.loadcbs[cbi].call(this);
+	}
+};
+
+com.qwirx.freebase.BrowserCouch.prototype.assert =
+	function(boolean_value, message)
+{
+	if(!boolean_value)
+	{
+		throw new Error("Assertion failed: " + message);
 	}
 };
 
@@ -791,8 +800,8 @@ function(obj)
 com.qwirx.freebase.BrowserCouch.BrowserDatabase = function(name,
 	options, cb)
 {
-	assert(this instanceof com.qwirx.freebase.BrowserCouch.BrowserDatabase);
-	// Use the new operator to call this constructor
+	this.assert(this instanceof com.qwirx.freebase.BrowserCouch.BrowserDatabase,
+		"Use the new operator to call this constructor");
 
 	options = options || {};
 	this.options = options;
@@ -876,11 +885,11 @@ com.qwirx.freebase.BrowserCouch.BrowserDatabase.prototype.get =
 	}
 	else if (this.dict.has(id))
 	{
-		cb(this.dict.get(id));
+		cb.call(this, this.dict.get(id));
 	}
 	else
 	{
-		cb(null);
+		cb.call(this, null);
 	}
 };
 		
@@ -1058,44 +1067,6 @@ com.qwirx.freebase.BrowserCouch.BrowserDatabase.prototype.getChanges =
 	cb.call(this, {results: this.dict.values()});
 };
 		
-// ==== functionReplacer ====
-// JSON.stringify ignores functions by default, but if there's
-// a function in the object, we want to send the JavaScript string
-// to the server, and we need a custom replacer to do that.
-//
-// In order for inheritance to work, since JSON.stringify changes
-// "this" and we want to call the same replacer recursively, this is
-// a function which constructs a closure when called like this:
-// JSON.stringify(doc, new FunctionReplacer().f);
-
-com.qwirx.freebase.BrowserCouch.FunctionReplacer = function()
-{
-	var self = this; // closure
-	
-	this.f = function(key, value)
-	{
-		if (jQuery.isFunction(value))
-		{
-			var v = value.toString();
-			return v;
-		}
-		else if (jQuery.isPlainObject(value) || jQuery.isArray(value))
-		{
-			var newObject = {};
-			jQuery.each(value,
-				function(k, v)
-				{
-					newObject[k] = self.f(k, v);
-				});
-			return newObject;
-		}
-		else
-		{
-			return value;
-		}
-	};
-};
-
 /**
  * @constructor
  * A wrapper class to provide a simple, consistent interface to
@@ -1213,6 +1184,93 @@ com.qwirx.freebase.BrowserCouch.ClosureSupport.prototype.each =
 };
 
 /**
+ * JSON.stringify ignores functions by default, but if there's
+ * a function in the object, we want to send the JavaScript string
+ * to the server, and we need a custom replacer to do that.
+ *
+ * @return an object with functions recursively converted to strings.
+ */
+com.qwirx.freebase.BrowserCouch.ClosureSupport.prototype.stringify =
+	function(key, value)
+{
+	if (goog.isFunction(value))
+	{
+		var v = value.toString();
+		return v;
+	}
+	else if (goog.isString(value))
+	{
+		return value;
+	}
+	else
+	{
+		if (goog.isObject(value))
+		{
+			for (var k in value)
+			{
+				value[k] = arguments.callee(k, value[k]);
+			}
+		}
+		
+		if (goog.isArray(value))
+		{
+			var length = value.length;
+		
+			for (var i = 0; i < value.length; i++)
+			{
+				value[i] = arguments.callee(k, value[i]);
+			}
+		}
+	
+		return value;
+	}
+};
+
+// ==== functionReplacer ====
+// JSON.stringify ignores functions by default, but if there's
+// a function in the object, we want to send the JavaScript string
+// to the server, and we need a custom replacer to do that.
+//
+// In order for inheritance to work, since JSON.stringify changes
+// "this" and we want to call the same replacer recursively, this is
+// a function which constructs a closure when called like this:
+// JSON.stringify(doc, new FunctionReplacer().f);
+
+com.qwirx.freebase.BrowserCouch.JqueryFunctionReplacer = 
+	function(key, value)
+{
+	if (jQuery.isFunction(value))
+	{
+		var v = value.toString();
+		return v;
+	}
+	else if (jQuery.isPlainObject(value) || jQuery.isArray(value))
+	{
+		var newObject = {};
+		jQuery.each(value,
+			function(k, v)
+			{
+				newObject[k] = arguments.callee(k, v);
+			});
+		return newObject;
+	}
+	else
+	{
+		return value;
+	}
+};
+
+/**
+ * Calls the <code>stringify</code> method of our <code>support</code>
+ * object. Exists only to hide this implementation detail.
+ */
+com.qwirx.freebase.BrowserCouch.prototype.stringify =
+	function(key, value)
+{
+	return this.support.stringify(key, value);
+};
+
+/**
  * @classdesc Remote Database
  * A constructor for a database wrapper for the REST interface 
  * for a remote CouchDB server. Mainly for use in the syncing.
@@ -1232,14 +1290,14 @@ com.qwirx.freebase.BrowserCouch.ClosureSupport.prototype.each =
 com.qwirx.freebase.BrowserCouch.SameDomainDB = function(name, url,
 	options, cb)
 {
-	assert(this instanceof com.qwirx.freebase.BrowserCouch.SameDomainDB);
-	// Use the new operator to call this constructor
+	this.assert(this instanceof com.qwirx.freebase.BrowserCouch.SameDomainDB,
+		"Use the new operator to call this constructor");
 	
 	options = options || {};
 	this.url = url;
 	this.seq = 0;
 	this.functionReplacer = options.functionReplacer ||
-		new com.qwirx.freebase.BrowserCouch.FunctionReplacer().f;
+		com.qwirx.freebase.BrowserCouch.FunctionReplacer;
 	com.qwirx.freebase.BrowserCouch.call(this, name, options);
 	
 	this.fireOnLoadCallbacks();
@@ -1318,7 +1376,7 @@ com.qwirx.freebase.BrowserCouch.SameDomainDB.prototype.put_or_post =
 	this.support.getJSON({
 		url: this.url + "/" + options.uri, 
 		method: method,
-		content: JSON.stringify(doc, this.functionReplacer),
+		content: JSON.stringify(doc, this.support.stringify),
 		processData: false,
 		contentType: 'application/json',
 		success: function SameDomainDB_put_or_post_success_cb(data)
@@ -1570,7 +1628,13 @@ com.qwirx.freebase.BrowserCouch.SameDomainDB.prototype.view =
 	}
 };
 
-com.qwirx.freebase.BrowserCouch.autoDetect = function(options)
+/**
+ * We can't detect the server type and return a new object immediately,
+ * so we don't return anything. The callback receives the new object
+ * as its first argument.
+ */
+com.qwirx.freebase.BrowserCouch.autoDetect = function(name, options,
+	callback)
 {
 	try
 	{
@@ -1579,21 +1643,29 @@ com.qwirx.freebase.BrowserCouch.autoDetect = function(options)
 			{
 				var xhrio = event.target;
 				var options = {};
+				var server = xhrio.getResponseHeader('Server');
 				
-				if (xhrio.getResponseHeader('Server').indexOf('CouchDB') == 0)
+				if (server.indexOf('CouchDB') == 0)
 				{
-					return new com.qwirx.freebase.BrowserCouch.SameDomainDB(
-						name, baseUrl + '/' + name, options);
+					name = window.location.pathname.split('/')[1];
+					new com.qwirx.freebase.BrowserCouch.SameDomainDB(
+						name, baseUrl + '/' + name, options, callback);
+				}
+				else
+				{
+					new com.qwirx.freebase.BrowserCouch.BrowserDatabase(
+						name, options, callback); // always works
 				}
 			});
+		return;
 	}
 	catch (e)
 	{
 		// ignore the error
 	}
 	
-	return new com.qwirx.freebase.BrowserCouch.BrowserDatabase(name,
-		options); // always works
+	new com.qwirx.freebase.BrowserCouch.BrowserDatabase(name, options,
+		callback); // always works
 };
 
 com.qwirx.freebase.BrowserCouch.prototype.sync_once =

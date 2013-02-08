@@ -5,6 +5,11 @@ goog.require('com.qwirx.freebase.Freebase');
 
 com.qwirx.freebase.BrowserCouchBase = function(browserCouch)
 {
+	if (!this instanceof com.qwirx.freebase.BrowserCouchBase)
+	{
+		this.defaultOnErrorHandler_(new Error("Use the new operator " +
+			"to call this constructor"));
+	}
 	com.qwirx.freebase.Freebase.call(this);
 	this.browserCouch_ = browserCouch;
 }
@@ -24,9 +29,17 @@ com.qwirx.freebase.BrowserCouchBase.prototype.get =
 };
 
 /**
- * findAll calls the "all" view of the named design, (e.g.
- * /_design/Foo/view/all), extracts the objects returned from the results
- * and passes the array of objects (JSON documents) to the onSuccess callback.
+ * findAll calls the "all" view of the named design, (e.g. Foo ->
+ * /_design/Foo/view/all), extracts the objects returned from the
+ * results and passes the array of objects (JSON documents) to the
+ * onSuccess callback.
+ *
+ * @param designName {string} The name of the design to list all
+ * documents for.
+ * @param onSuccess {function} The callback to call with the list
+ * of found documents.
+ * @param onError {function} The callback to call in case of any
+ * error in retrieving the documents.
  */
 com.qwirx.freebase.BrowserCouchBase.prototype.findAll = 
 	function(designName, onSuccess, onError)
@@ -48,8 +61,9 @@ com.qwirx.freebase.BrowserCouchBase.prototype.findAll =
 };
 
 /**
- * @return a list of all documents in key-value format, optionally
-  * including all properties, but without instantiating models.
+ * Generates a list of all documents in the database in key-value
+ * format, optionally including all properties, but without
+ * instantiating models. Passes this list to the onSuccess callback.
  *
  * @param fetchDocuments fetch and return all document properties,
  * not just _id and _rev.
@@ -68,7 +82,7 @@ com.qwirx.freebase.BrowserCouchBase.prototype.listAll =
 	}
 
 	var options = {
-		map: BrowserCouchBase_listAll_map,
+		map: this.redefineMapFunction(BrowserCouchBase_listAll_map),
 		finished: onSuccess,
 		onError: onError,
 	};
@@ -91,6 +105,32 @@ com.qwirx.freebase.BrowserCouchBase.JavascriptPatternError.prototype.toString =
 		"pattern: the code was " + this.code_ + " and the required " +
 		"pattern is " + this.pattern_;
 };
+
+/**
+ * Scans a map() function and redefines it to take an extra parameter,
+ * <code>emit</code>, which becomes part of the function's local 
+ * scope, allowing the function to call it.
+ *
+ * @return the redefined function.
+ *
+ * @param originalMapFunction the original map(o) function.
+ */
+com.qwirx.freebase.BrowserCouchBase.prototype.redefineMapFunction = 
+	function(originalMapFunction)
+{
+	originalMapFunction = this.browserCouch_.stringify(null,
+		originalMapFunction);
+	// http://siphon9.net/loune/2011/02/match-any-character-including-new-line-in-javascript-regexp/
+	// var mapFunctionPattern = /^function *\S+\s*\(([^),]+)\)\s*\{(.*)\}$/;
+	var mapFunctionPattern = /^function *\S*\s*\(([^),]+)\)\s*\{([^]*)\}\s*$/m;
+	var match = mapFunctionPattern.exec(originalMapFunction);
+	if (!match)
+	{
+		throw new com.qwirx.freebase.BrowserCouchBase.JavascriptPatternError(
+			"map function", originalMapFunction, mapFunctionPattern);
+	}
+	return new Function(match[1], "emit", match[2]);
+}
 
 /**
  * @return the result of executing the specified view, which will
@@ -118,15 +158,14 @@ com.qwirx.freebase.BrowserCouchBase.prototype.view =
 				onError: onError,
 			};
 			
-			var mapFunctionPattern = /^function *\(([^),]+)\) \{(.*)\}$/;
-			var match = mapFunctionPattern.exec(view.map);
-			if (!match)
+			try
 			{
-				return onError(self, designDoc,
-					new com.qwirx.freebase.BrowserCouchBase.JavascriptPatternError(
-						"map function", view.map, mapFunctionPattern));
+				options.map = self.redefineMapFunction(view.map);
 			}
-			options.map = new Function(match[1], "emit", match[2]);
+			catch (e)
+			{
+				return onError.call(self, e, designDoc);
+			}
 			
 			if (view.reduce)
 			{
@@ -192,9 +231,10 @@ com.qwirx.freebase.BrowserCouchBase.prototype.createReal$_ =
 		{
 			if (foundDoc && !foundDoc._deleted)
 			{
-				onError(self, document,
+				onError.call(self,
 					new com.qwirx.freebase.DuplicateException(document,
-						foundDoc));
+						foundDoc),
+					document);
 			}
 			else
 			{
@@ -218,9 +258,10 @@ com.qwirx.freebase.BrowserCouchBase.prototype.deleteReal_ =
 			}
 			else
 			{
-				onError(self, document,
+				onError.call(self,
 					new com.qwirx.freebase.NonexistentException(document,
-						foundDoc));
+						foundDoc),
+					 document);
 			}
 		},
 		onError);

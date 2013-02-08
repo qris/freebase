@@ -29,41 +29,6 @@ com.qwirx.freebase.import = function(target_namespace /* packages... */)
 	goog.object.extend.apply(null, arguments);
 }
 
-com.qwirx.freebase.FunctionStringifier = function(key, value)
-{
-	if (goog.isFunction(value))
-	{
-		var v = value.toString();
-		return v;
-	}
-	else if (goog.isString(value))
-	{
-		return value;
-	}
-	else
-	{
-		if (goog.isObject(value))
-		{
-			for (var k in value)
-			{
-				value[k] = arguments.callee(k, value[k]);
-			}
-		}
-		
-		if (goog.isArray(value))
-		{
-			var length = value.length;
-		
-			for (var i = 0; i < value.length; i++)
-			{
-				value[i] = arguments.callee(k, value[i]);
-			}
-		}
-	
-		return value;
-	}
-};
-
 /**
  * @constructor
  */
@@ -192,7 +157,7 @@ com.qwirx.freebase.Freebase.prototype.saveOrCreate_ =
 						object.fromDocument(document, self);
 				}
 
-				self.dispatchEvent(new DocumentSaved(object));
+				self.dispatchEvent(new com.qwirx.freebase.DocumentSaved(object));
 				saveOrCreateOne();
 			},
 			onError);
@@ -257,7 +222,7 @@ com.qwirx.freebase.Freebase.prototype.deleteDoc =
 };
 
 com.qwirx.freebase.Freebase.prototype.defaultOnErrorHandler_ = 
-	function(freebase, object, exception)
+	function(exception, object)
 {
 	throw exception;
 };
