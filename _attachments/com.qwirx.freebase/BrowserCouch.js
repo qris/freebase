@@ -194,8 +194,32 @@ com.qwirx.freebase.BrowserCouch.ModuleLoader.prototype._loadScript =
 	
 com.qwirx.freebase.BrowserCouch.SingleThreadedMapReducer = function(){};
 
+/**
+ * Apply the <code>map</code> function to each item in the dict.
+ *
+ * @param map {function} The <code>map</code> function to apply.
+ * @param dict {com.qwirx.freebase.BrowserCouch.Storage} The
+ * 	<code>Storage</code> object containing all the items to apply the
+ * 	<code>map</code> function to.
+ * @param progress {function=} A callback called every 
+ * 	<code>chunkSize</code> objects to display progress to the user,
+ *	or otherwise to give the browser a break.
+ * @param chunkSize {number=} The number of objects to process
+ * 	(apply the <code>map</code> function to) between calls to the
+ * 	<code>progress</code> callback.
+ * @param includeDocs {boolean=} True if the document(s) that
+ * 	generated each <code>item</code> should be included in the array
+ *  <code>item.docs</code>.
+ * @param finished {function} The callback to call with the resulting
+ * 	items output by the map operation. This callback receives a single
+ * 	parameter, an object with the following properties:
+ *  <code>dict</code> is the mapping of non-null emitted keys to items;
+ * 	<code>keys</code> is the array of keys in order;
+ *  <code>nulls</code> is the array of items emitted with
+ *  <code>null</code> as their key.
+ */
 com.qwirx.freebase.BrowserCouch.SingleThreadedMapReducer.prototype.map =
-	function(map, dict, progress, chunkSize, finished)
+	function(map, dict, progress, chunkSize, includeDocs, finished)
 {
 	var mapDict = {};
 
@@ -234,6 +258,12 @@ com.qwirx.freebase.BrowserCouch.SingleThreadedMapReducer.prototype.map =
 
 		item.ids.push(currDoc._id);
 		item.values.push(value);
+		
+		if (includeDocs)
+		{
+			item.docs = item.docs || [];
+			item.docs.push(currDoc);
+		}
 	}
 
 	var i = 0;
@@ -537,7 +567,18 @@ com.qwirx.freebase.BrowserCouch.MapView = function(mapResult)
 			// Note: unlike objects, views in CouchDB do apparently
 			// use "id" and not "_id" in their results, so don't
 			// change this again.
-			newRows.push({id: id, key: key, value: value});
+			var row = {
+				id: item.ids[j],
+				key: key,
+				value: item.values[j]
+			};
+			
+			if ('docs' in item)
+			{
+				row.doc = item.docs[j];
+			}
+			
+			newRows.push(row);
 		}
 		
 		newRows.sort(function(a, b)
@@ -1017,7 +1058,10 @@ com.qwirx.freebase.BrowserCouch.BrowserDatabase.prototype.DEFAULT_UI_BREATHE_TIM
  * is used instead.
  * @param options.mapReducer A Map-Reduce engine, by default uses
  * {com.qwirx.freebase.BrowserCouch.SingleThreadedMapReducer}.
- * @param options.reduce The reduce function (optional).
+ * @param options.reduce {function=} The reduce function (optional).
+ * @param options.includeDocs {boolean=} True if you want the actual
+ * matched documents included in each item as a <code>doc</code>
+ * property.
  */
 com.qwirx.freebase.BrowserCouch.BrowserDatabase.prototype.view =
 	function(options)
@@ -1030,16 +1074,17 @@ com.qwirx.freebase.BrowserCouch.BrowserDatabase.prototype.view =
 		
 	// Maximum number of items to process before giving the UI a chance
 	// to breathe.
-	var chunkSize = options.chunkSize || this.DEFAULT_CHUNK_SIZE;
-
+	var chunkSize  = options.chunkSize  || this.DEFAULT_CHUNK_SIZE;
 	var mapReducer = options.mapReducer || this.mapReducer;
+	var progress   = options.progress   || this.progress;
 	var self = this;
 
 	mapReducer.map(
 		options.map,
 		this.dict,
-		this.progress,
+		progress,
 		chunkSize,
+		options.includeDocs,
 		function(mapResult)
 		{
 			if (options.reduce)
@@ -1047,7 +1092,7 @@ com.qwirx.freebase.BrowserCouch.BrowserDatabase.prototype.view =
 				mapReducer.reduce(
 					options.reduce,
 					mapResult,
-					self.progress,
+					progress,
 					chunkSize,
 					function(rows)
 					{

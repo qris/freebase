@@ -366,8 +366,10 @@ function assertFreebaseApi(fb)
 	// not fail this time.
 	result = assertCallback(function(c) { fb.create$(test, c); })[0];
 	assertObjectEquals([test], result);
-	assertCallback(function f(c) {fb.deleteDoc(test, c);});
+	result = assertCallback(function f(c) {fb.deleteDoc(test, c);})[0];
+	test = result;
 
+	assertCallback(function f(c) { fb.create$(Cat, c); });
 	var expectedCatDoc = Cat.toDocument();
 	var actualCatDoc = assertCallback(
 		function(c) { fb.get(Cat.getId(), c); })[0];
@@ -383,8 +385,8 @@ function assertFreebaseApi(fb)
 	var foo = {_id: 'foo', job: 'Foo'};
 	var bar = {job: 'Bar'};
 	var baz = {job: 'Basil'};
-	var jobs = {
-		_id: '_design/Jobs',
+	var Job = {
+		_id: '_design/Job',
 		views: {
 			all:  {map: function(o) { if (o.job) { emit(o._id, o); } }.toString()},
 			name: {map: function(o) { if (o.job) { emit(o.job, o); } }.toString()},
@@ -399,37 +401,73 @@ function assertFreebaseApi(fb)
 	var noNewModelsOnlyCat = {'Cat': Cat};
 	assertObjectEquals("Should not be any new app models at this point",
 		noNewModelsOnlyCat, fb.app.models);
-	assertCallback(function(c) { fb.create$(jobs, c); });
-	assertObjectEquals("Should still be no models (jobs is not really a model)",
+	assertCallback(function(c) { fb.create$(Job, c); });
+	assertObjectEquals("Should still be no models (Job is not really a model)",
 		noNewModelsOnlyCat, fb.app.models);
 	assertObjectEquals(foo, 
 		assertCallback(function(c) { fb.get(foo._id, c) })[0]);
 	
-	// returns all three objects, because jobs.views.map.all doesn't discriminate
-	assertObjectEquals([foo, bar, baz].sort(sortByProperty('_id')),
-		assertCallback(function(c) { fb.findAll('Jobs', c); })[0]);
+	// returns all three objects, because Job.views.map.all doesn't discriminate
+	var jobs = [foo, bar, baz];
+	assertObjectEquals(jobs.sort(sortByProperty('_id')),
+		assertCallback(function(c) { fb.findAll('Job', c); })[0]);
+
+	// Test that listAll returns the expected results
+	var expected_docs_in_db = [test, Job, Cat, foo, bar, baz];
+	var expected_listAll_results = [];
+	for (var i = 0; i < expected_docs_in_db.length; i++)
+	{
+		var row = {
+			id: expected_docs_in_db[i]._id,
+			key: expected_docs_in_db[i]._id,
+			value: expected_docs_in_db[i]._rev
+		};
+		expected_listAll_results.push(row);
+	}
+	expected_listAll_results.sort(sortByProperty('id'));
+	var actual_listAll_results = assertCallback(function(c)
+		{ fb.listAll(false, c); })[0].rows;
+	assertObjectEquals(expected_listAll_results,
+		actual_listAll_results);
+	
+	// Test that listAll(true) includes the documents
+	// assertEquals(Cat._id, actual_listAll_results[0]._id);
+	var catIndex = null;
+	for (i = 0; i < expected_listAll_results.length; i++)
+	{
+		if (expected_listAll_results[i].id == Cat._id)
+		{
+			catIndex = i;
+			break;
+		}
+	}
+	assertNotNull("Cat not found in list", catIndex);
+	var actual_listAll_results = assertCallback(function(c)
+		{ fb.listAll(true, c); })[0].rows;
+	assertObjectEquals(Cat.toDocument(),
+		actual_listAll_results[catIndex].doc);
 	
 	// Note: unlike objects, views in CouchDB do apparently
 	// use "id" and not "_id" in their results, so don't change
 	// this again.
-	result = assertCallback(function(c) { fb.view(jobs._id, 'all', c); })[0];
+	result = assertCallback(function(c) { fb.view(Job._id, 'all', c); })[0];
 	assertObjectEquals([
 			{id: foo._id, key: foo._id, value: foo},
 			{id: bar._id, key: bar._id, value: bar},
 			{id: baz._id, key: baz._id, value: baz}
 		].sort(sortByProperty('key')),
 		result.rows);
-	result = assertCallback(function(c) { fb.view(jobs._id, 'name', c); })[0];
+	result = assertCallback(function(c) { fb.view(Job._id, 'name', c); })[0];
 	assertObjectEquals([
 			{id: foo._id, key: foo.job, value: foo},
 			{id: bar._id, key: bar.job, value: bar},
 			{id: baz._id, key: baz.job, value: baz}
 		].sort(sortByProperty('key')),
 		result.rows);
-	result = assertCallback(function(c) { fb.view(jobs._id, 'foo', c); })[0];
+	result = assertCallback(function(c) { fb.view(Job._id, 'foo', c); })[0];
 	assertObjectEquals([{id: foo._id, key: null, value: foo}],
 		result.rows);
-	result = assertCallback(function(c) { fb.view(jobs._id, 'bar', c); })[0];
+	result = assertCallback(function(c) { fb.view(Job._id, 'bar', c); })[0];
 	assertObjectEquals([{id: bar._id, key: bar._id, value: null}],
 		result.rows);
 }
@@ -444,7 +482,7 @@ function testMockFreebaseApi()
 		'database by setUp()', expectedCatDoc, 
 		mockFreebase.objectStore[Cat.getId()].json);
 
-	assertFreebaseApi(mockFreebase);
+	assertFreebaseApi(new MockFreebase());
 }
 
 function testBrowserCouchBaseApi()
@@ -454,21 +492,6 @@ function testBrowserCouchBaseApi()
 			storage: new com.qwirx.freebase.BrowserCouch.FakeStorage()
 		});
 	var bcb = new com.qwirx.freebase.BrowserCouchBase(bc);
-	assertCallback(function f(c) { bcb.create$(Cat, c); });
-	
-	//var allDocs = assertCallback(function f(c)
-	//	{
-	//		bcb.listAll(false /* fetchDocuments */, c /* onSuccess */);
-	//	})[0];
-	//assertObjectEquals([Cat], allDocs);
-
-	/*	
-	old = new Cat({name: "Old Deuteronomy", age: 82});
-	assertCallback(function f(c) { fb.create$(old, c); });
-	
-	etc = new Cat({name: "Etcetera", age: 0});
-	assertCallback(function f(c) { fb.create$(etc, c); });
-	*/
 	
 	assertFreebaseApi(bcb);
 }
@@ -1056,27 +1079,6 @@ function testGridInsertRowAt()
 	}
 	var allCatIds = goog.object.getKeys(allCatsMap).sort();
 
-	var expected_listAll_results = [{
-		id: Cat._id,
-		key: Cat._id,
-		value: Cat._rev
-	}];
-		
-	for (var i = 0; i < allCats.length; i++)
-	{
-		var row = {
-			id: allCats[i]._id,
-			key: allCats[i]._id,
-			value: allCats[i]._rev
-		};
-		expected_listAll_results.push(row);
-	}
-	var actual_listAll_results = assertCallback(function(c)
-		{ mockFreebase.listAll(false, c); })[0].rows;
-	// Do we need to sort this array by ID?
-	assertObjectEquals(expected_listAll_results,
-		actual_listAll_results);
-	
 	function assertCellContentsAndSelection(rowIndex, contents)
 	{
 		assertEquals("Wrong contents in grid cell ("+rowIndex+",0)",

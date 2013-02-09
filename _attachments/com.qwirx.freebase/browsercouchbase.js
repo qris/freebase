@@ -65,8 +65,9 @@ com.qwirx.freebase.BrowserCouchBase.prototype.findAll =
  * format, optionally including all properties, but without
  * instantiating models. Passes this list to the onSuccess callback.
  *
- * @param fetchDocuments fetch and return all document properties,
- * not just _id and _rev.
+ * @param fetchDocuments {boolean} fetch and return all document
+ * properties, not just <code>_id</code> and <code>_rev</code (as
+ * <code>key</code> and <code>value</code> respectively).
  *
  * @param onSuccess callback on success, called with the list of
  * documents as its only parameter.
@@ -85,6 +86,7 @@ com.qwirx.freebase.BrowserCouchBase.prototype.listAll =
 		map: this.redefineMapFunction(BrowserCouchBase_listAll_map),
 		finished: onSuccess,
 		onError: onError,
+		includeDocs: fetchDocuments,
 	};
 	
 	this.browserCouch_.view(options);
