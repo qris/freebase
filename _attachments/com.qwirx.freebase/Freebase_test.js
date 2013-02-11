@@ -404,8 +404,22 @@ function assertFreebaseApi(fb)
 	assertCallback(function(c) { fb.create$(Job, c); });
 	assertObjectEquals("Should still be no models (Job is not really a model)",
 		noNewModelsOnlyCat, fb.app.models);
-	assertObjectEquals(foo, 
-		assertCallback(function(c) { fb.get(foo._id, c) })[0]);
+	var foo2 = assertCallback(function(c) { fb.get(foo._id, c) })[0];
+	assertObjectEquals(foo, foo2);
+
+	// Getting a model instance should instantiate the model class
+	// automatically.
+	result = assertCallback(function(c) { fb.create$(etc, c); })[0][0];
+	assertObjectEquals(etc, result);
+	var etc2 = assertCallback(function(c) { fb.get(etc._id, c); })[0];
+	goog.asserts.assertInstanceof(etc2, fb.app.models.Cat);
+	goog.asserts.assertInstanceof(etc2, com.qwirx.freebase.ModelBase);
+	assertObjectEquals(etc, etc2);
+	
+	// But getting something that's not a model should just return
+	// a plain object.
+	assertFalse(foo2 instanceof com.qwirx.freebase.ModelBase);
+	assertEquals("Object", foo2.constructor.name);
 	
 	// returns all three objects, because Job.views.map.all doesn't discriminate
 	var jobs = [foo, bar, baz];
@@ -413,7 +427,7 @@ function assertFreebaseApi(fb)
 		assertCallback(function(c) { fb.findAll('Job', c); })[0]);
 
 	// Test that listAll returns the expected results
-	var expected_docs_in_db = [test, Job, Cat, foo, bar, baz];
+	var expected_docs_in_db = [test, Job, Cat, foo, bar, baz, etc];
 	var expected_listAll_results = [];
 	for (var i = 0; i < expected_docs_in_db.length; i++)
 	{
@@ -469,7 +483,7 @@ function assertFreebaseApi(fb)
 		result.rows);
 	result = assertCallback(function(c) { fb.view(Job._id, 'bar', c); })[0];
 	assertObjectEquals([{id: bar._id, key: bar._id, value: null}],
-		result.rows);
+		result.rows);	
 }
 
 function testMockFreebaseApi()

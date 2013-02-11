@@ -18,14 +18,33 @@ goog.inherits(com.qwirx.freebase.BrowserCouchBase,
 	com.qwirx.freebase.Freebase);
 
 /**
- * @return a particular document, instantiated as a model.
+ * @return a particular document, instantiated as a model object (of
+ * a model class) if the model class is known to this Freebase.
+ *
+ * @param documentId {string} The ID of the document to retrieve.
+ * @param onSuccess {function} Callback called with the retrieved
+ * document (model object or JSON object) as its first parameter.
+ * @param onError {function} Callback called if the database retrieval
+ * fails for any reason.
  */
 com.qwirx.freebase.BrowserCouchBase.prototype.get = 
 	function(documentId, onSuccess, onError)
 {
 	onError = onError || this.defaultOnErrorHandler_;
+	var self = this;
 
-	this.browserCouch_.get(documentId, onSuccess, onError);
+	this.browserCouch_.get(documentId,
+		function(document)
+		{
+			var object = document;
+			
+			if (object)
+			{
+				object = self.instantiateModel_(document);
+			}
+			
+			onSuccess.call(self, object);
+		}, onError);
 };
 
 /**

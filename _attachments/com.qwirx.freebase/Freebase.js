@@ -39,6 +39,16 @@ com.qwirx.freebase.Freebase = function()
 
 goog.inherits(com.qwirx.freebase.Freebase, goog.events.EventTarget);
 
+/**
+ * Converts a document into an instance of a model, if the model
+ * is known to this Freebase database. If not, the same document
+ * (JSON) object is returned.
+ *
+ * All documents returned by a Freebase database should be passed
+ * through instantiateModel_ unless otherwise specified in their
+ * documentation. This allows you to treat them as real objects,
+ * call their specific methods, etc.
+ */
 com.qwirx.freebase.Freebase.prototype.instantiateModel_ = 
 	function(object)
 {
