@@ -541,7 +541,7 @@ com.qwirx.ui.TextField.Renderer.prototype.createDom = function(textfield) {
 
 
 /**
- * Overrides {@link com.qwirx.ui.TextField.Renderer#canDecorate} by returning true only
+ * Overrides {@link goog.ui.ControlRenderer#canDecorate} by returning true only
  * if the element is an HTML textarea.
  * @param {Element} element Element to decorate.
  * @return {boolean} Whether the renderer can decorate the element.
@@ -577,7 +577,7 @@ com.qwirx.ui.TextField.Renderer.prototype.setFocusable = goog.nullFunction;
 
 /**
  * Textareas also expose the DISABLED state in the HTML textarea's
- * {@code disabled} attribute.
+ * <code>disabled</code> attribute.
  * @override
  */
 com.qwirx.ui.TextField.Renderer.prototype.setState = function(textfield, state,
