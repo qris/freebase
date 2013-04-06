@@ -34,7 +34,7 @@ com.qwirx.freebase.InstanceListView = function(gui, freebase, document,
 	this.grid_.addClassName('fb-datagrid');
 	this.grid_.render(editorControl);
 	
-	this.nav_ = new com.qwirx.grid.NavigationBar(datasource);
+	this.nav_ = new com.qwirx.grid.NavigationBar(this.grid_.getCursor());
 	this.nav_.render(editorControl);
 
 	this.freebase_.view(this.documentId_, 'all',
