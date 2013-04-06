@@ -4,11 +4,20 @@ goog.provide('com.qwirx.grid.GridNavigationBar');
 goog.require('goog.ui.Toolbar');
 goog.require('com.qwirx.ui.ToolbarButton');
 goog.require('com.qwirx.ui.TextField');
+goog.require('com.qwirx.util.Exception');
 
 /**
  * A GUI component that can be placed at the bottom of a data viewer
  * component and used to navigate through the recordset, similar to
  * the arrows at the bottom of a form or datagrid in Access.
+ * @param {com.qwirx.data.Cursor} cursor The cursor which this
+ *   NavigationBar's buttons will send messages to.
+ * @param {goog.ui.ControlRenderer=} opt_renderer The renderer which
+ *   this NavigationBar will use to render itself into the DOM.
+ *   If not specified, defaults to
+ *   {@link com.qwirx.grid.NavigationBar.Renderer}.
+ * @param {goog.dom.DomHelper=} opt_domHelper The DOM Helper which
+ *   this NavigationBar will use to insert itself into a page's DOM.
  * @constructor
  */
 com.qwirx.grid.NavigationBar = function(cursor, opt_renderer,
@@ -19,14 +28,33 @@ com.qwirx.grid.NavigationBar = function(cursor, opt_renderer,
 		com.qwirx.grid.NavigationBar.Renderer,
 		/* opt_orientation = */ goog.ui.Container.Orientation.HORIZONTAL,
 		opt_domHelper);
-		
+	
+	if (!(cursor instanceof com.qwirx.data.Cursor))
+	{
+		throw new com.qwirx.grid.NavigationBar.InvalidCursor(cursor);
+	}
+	
 	this.cursor_ = cursor;
 	
 	goog.events.listen(cursor, com.qwirx.data.Cursor.Events.MOVE_TO,
 		com.qwirx.grid.NavigationBar.prototype.onCursorMove, false, this);		
 };
-
 goog.inherits(com.qwirx.grid.NavigationBar, goog.ui.Toolbar);
+
+/**
+ * @constructor
+ * An exception thrown by {@link com.qwirx.grid.NavigationBar}
+ * when the supplied <code>cursor_</code> argument is not a 
+ * {@link com.qwirx.data.Cursor} object.
+ */
+com.qwirx.grid.NavigationBar.InvalidCursor = function(cursor)
+{
+	com.qwirx.util.Exception.call(this, "NavigationBar constructed " +
+		"with an invalid cursor: " + cursor);
+	this.cursor = cursor;
+};
+goog.inherits(com.qwirx.grid.NavigationBar.InvalidCursor,
+	com.qwirx.util.Exception);
 
 /**
  * Override the prototype in {goog.ui.Container.prototype.handleMouseDown}
