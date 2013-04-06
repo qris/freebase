@@ -20,9 +20,20 @@ assert(com.qwirx.freebase.Freebase.Gui.OpenMode.DESIGN == 'DESIGN');
  */
 com.qwirx.util.Enum = function(/* varargs */)
 {
-    for (var i in arguments)
+	var values;
+	
+	if (arguments.length == 1 && goog.isArray(arguments[0]))
+	{
+		values = arguments[0];
+	}
+	else
+	{
+		values = arguments;
+	}
+	
+    for (var i = 0; i < values.length; i++)
     {
-        this[arguments[i]] = arguments[i];
+        this[values[i]] = values[i];
     }
 };
 
