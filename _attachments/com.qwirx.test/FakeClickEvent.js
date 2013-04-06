@@ -109,4 +109,3 @@ com.qwirx.test.FakeClickEvent.send = function(target)
 			control.isActive());
 	}
 };
-

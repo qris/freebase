@@ -52,8 +52,56 @@ com.qwirx.test.FakeBrowserEvent.send = function(type, target, opt_button)
 		});
 	}
 	
-	goog.events.dispatchEvent(target, event);
+	try
+	{
+		goog.events.dispatchEvent(target, event);
+	}
+	catch (e)
+	{
+		throw new com.qwirx.test.FakeBrowserEvent.UnexpectedExceptionThrown(e);
+	}
 };
+
+goog.require('com.qwirx.util.Exception');
+com.qwirx.test.FakeBrowserEvent.UnexpectedExceptionThrown = function(exception)
+{
+	com.qwirx.util.Exception.call(this, "An exception was thrown " +
+		"by a browser event handler, which is forbidden: " +
+		exception.message);
+	this.exception = exception;
+	this.stack = exception.stack;
+};
+goog.inherits(com.qwirx.test.FakeBrowserEvent.UnexpectedExceptionThrown,
+	com.qwirx.util.Exception);
+
+/*
+ * @returns a function's name.  If it has a (nonstandard) name
+ * property, use it. Otherwise, convert the function to a string 
+ * and extract the name from that. Returns an empty string for 
+ * unnamed functions like itself.
+ * @see "Closure, The Definitive Guide", chapter 9 section 4,
+ * "Augmenting Classes."
+ */
+/*
+com.qwirx.test.FakeBrowserEvent.UnexpectedExceptionThrown.prototype.getName =
+	function(f)
+{
+	if (f.constructor.name)
+	{
+		return f.constructor.name;
+	}
+	
+	var cons = f.constructor.toString();
+	var m = cons.match(/function\s*([^(]*)\(/);
+	if (m)
+	{
+		return m[1];
+	}
+	
+	return "anonymous function";
+};
+
+*/
 
 com.qwirx.test.FakeBrowserEvent.mouseDown = function(target)
 {
