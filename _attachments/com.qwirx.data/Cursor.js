@@ -524,8 +524,11 @@ com.qwirx.data.Cursor.prototype.setFieldValue = function(fieldName,
  */
 com.qwirx.data.CursorMovementException = function(message)
 {
-	this.message = message;
+	com.qwirx.util.Exception.call(this, message);
 };
+goog.require('com.qwirx.util.Exception');
+goog.inherits(com.qwirx.data.CursorMovementException,
+	com.qwirx.util.Exception);
 
 /**
  * @constructor
