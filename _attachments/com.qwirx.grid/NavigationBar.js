@@ -155,19 +155,61 @@ com.qwirx.grid.NavigationBar.prototype.createDom = function(tab)
 	return element;
 };
 
+com.qwirx.grid.NavigationBar.prototype.sendEventOnException =
+	function(source, callback /* var_args */)
+{
+	try
+	{
+		callback.apply(this, Array.prototype.slice.call(arguments, 1));
+	}
+	catch (exception)
+	{
+		event = new com.qwirx.util.ExceptionEvent(exception, source);
+		var ret = goog.events.dispatchEvent(source /* toolbar button */,
+			event);
+
+		// From goog.events.dispatchEvent comments:
+		// If anyone called preventDefault on the event object (or
+		// if any of the handlers returns false) this will also return
+		// false. If there are no handlers, or if all handlers return
+		// true, this returns true.
+		//
+		// A true return value indicates that no handler intercepted
+		// the exception event, so rethrow it to help with debugging.
+		if (ret)
+		{
+			if (exception.message)
+			{
+				exception.message += " (a com.qwirx.util.ExceptionEvent " +
+					"was thrown, but nothing handled it.)";
+			}
+			throw exception;
+		}
+	}
+};
+
 com.qwirx.grid.NavigationBar.prototype.onFirstButton = function(event)
 {
-	this.cursor_.moveFirst();	
+	this.sendEventOnException(event.target, function()
+	{
+		this.cursor_.moveFirst();
+	});
 };
 
 com.qwirx.grid.NavigationBar.prototype.onPrevPageButton = function(event)
 {
-	this.cursor_.moveRelative(-this.pageSize_);	
+	this.sendEventOnException(event.target, function()
+	{
+		this.cursor_.moveRelative(-this.pageSize_);
+	});
 };
 
 com.qwirx.grid.NavigationBar.prototype.onPrevButton = function(event)
 {
-	this.cursor_.moveRelative(-1);	
+	this.sendEventOnException(event.target, function()
+	{
+		this.cursor_.moveRelative(-1);
+	});
 };
 
 com.qwirx.grid.NavigationBar.prototype.onRowNumberChange = function(event)
@@ -177,23 +219,36 @@ com.qwirx.grid.NavigationBar.prototype.onRowNumberChange = function(event)
 
 com.qwirx.grid.NavigationBar.prototype.onNextButton = function(event)
 {
-	this.cursor_.moveRelative(1);
+	this.sendEventOnException(event.target, function()
+	{
+		this.cursor_.moveRelative(1);
+	});
 };
 
 com.qwirx.grid.NavigationBar.prototype.onNextPageButton = function(event)
 {
-	this.cursor_.moveRelative(this.pageSize_);
+	this.sendEventOnException(event.target, function()
+	{
+		this.cursor_.moveRelative(this.pageSize_);
+	});
 };
 
 com.qwirx.grid.NavigationBar.prototype.onLastButton = function(event)
 {
-	this.cursor_.moveLast();
+	this.sendEventOnException(event.target, function()
+	{
+		this.cursor_.moveLast();
+	});
 };
 
 /**
  * Responds to events fired by the cursor underlying this
  * {com.qwirx.grid.NavigationBar} by updating the position box
  * value and enabling or disabling navigation buttons.
+ * <p>
+ * This is a component event, not a browser event, so it will always
+ * be dispatched by code that can handle any exceptions appropriately,
+ * and doesn't need to catch and convert them to events.
  * @private
  */
 com.qwirx.grid.NavigationBar.prototype.onCursorMove = function(event)

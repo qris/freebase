@@ -1541,11 +1541,40 @@ function assertNavigateGrid(grid, startPosition, button,
 	assertEquals(css, grid.currentRowStyle_.textContent);
 }
 
+function assertEvent(target, type, throwing_callback, opt_message,
+	opt_continue_if_exception_not_thrown)
+{
+	goog.asserts.assertString(type, "You should pass the event's " +
+		".type property to assertEvent(), not a class constructor.");
+	
+	var thrown = null;
+	goog.events.listenOnce(target, type,
+		function(event)
+		{
+			thrown = event;
+			return false; // handle the event
+		});
+	throwing_callback();
+	
+	if (!opt_continue_if_exception_not_thrown)
+	{
+		var message = opt_message ? (opt_message + ": ") : "";
+		message += "Expected " + type + " event was not thrown at " + target;
+		assertNotNull(message, thrown);
+	}
+	
+	return thrown;
+}
+
 function assertNavigationException(grid, startPosition, button, message)
 {
 	grid.nav_.getCursor().setPosition(startPosition);
 	assertEquals(startPosition, grid.nav_.getCursor().getPosition());
-	com.qwirx.test.assertThrows(com.qwirx.data.IllegalMove, 
+	// Browser event handlers should NOT throw exceptions, because
+	// nothing can intercept them and handle them properly. They should
+	// throw a {@link com.qwirx.util.ExceptionEvent} at themselves
+	// instead.
+	assertEvent(button, com.qwirx.util.ExceptionEvent.EVENT_TYPE,
 		function() { com.qwirx.test.FakeClickEvent.send(button); },
 		message);
 }
@@ -1722,21 +1751,22 @@ function testGridNavigationButtonsInterceptMouseEvents()
 		}
 		else
 		{
-			try
-			{
-				com.qwirx.test.FakeBrowserEvent.mouseDown(button.getElement());
-				com.qwirx.test.FakeBrowserEvent.mouseUp(button.getElement());
-			}
-			catch (e)
-			{
-				if (e instanceof com.qwirx.data.IllegalMove)
+			var event = assertEvent(button,
+				com.qwirx.util.ExceptionEvent.EVENT_TYPE,
+				function()
 				{
-					// ignore the exception
-				}
-				else
-				{
-					throw e;
-				}
+					com.qwirx.test.FakeClickEvent.send(button);
+				},
+				"The grid navigation button did not intercept the event",
+				true /* opt_continue_if_exception_not_thrown */);
+			
+			// If an event was thrown at all, it must be an ExceptionEvent
+			// and contain the right kind of exception.
+			if (event)
+			{
+				var exception = event.getException();
+				goog.asserts.assertInstanceof(exception,
+					com.qwirx.data.IllegalMove);
 			}
 		}
 		
