@@ -1,8 +1,3 @@
-/*
- * Google Closure is required for everything. Load it first. And then
- * goog.events.EventType, goog.events.EventTarget.
- */
-
 goog.provide('com.qwirx.freebase.Freebase');
 
 goog.require('com.qwirx.freebase.AutomaticFormView');
