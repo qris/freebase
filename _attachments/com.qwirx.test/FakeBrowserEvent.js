@@ -31,30 +31,18 @@ com.qwirx.test.FakeBrowserEvent.send = function(type, target, opt_button)
 			"that are in the DOM tree");
 	}
 	
-	// patch a fake getParentEventTarget() method into the DOM elements
-	// so that dispatchEvent works with them just like handleBrowserEvent().
-	for (var parent = target; parent; parent = parent.getParentEventTarget())
-	{
-		parent.getParentEventTarget = com.qwirx.test.FakeBrowserEvent.fakeGetParentEventTarget;
-	}
-	
-	var event;
-	
 	if (type instanceof goog.events.Event)
 	{
 		event = type;
 	}
 	else
 	{
-		event = new goog.events.BrowserEvent({
-			type: type,
-			button: opt_button || 0,
-		});
+		event = new goog.testing.events.Event(type, target, opt_button);
 	}
 	
 	try
 	{
-		goog.events.dispatchEvent(target, event);
+		return goog.testing.events.fireBrowserEvent(event);
 	}
 	catch (e)
 	{
