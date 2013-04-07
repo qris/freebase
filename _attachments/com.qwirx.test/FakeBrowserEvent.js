@@ -1,5 +1,7 @@
 goog.provide('com.qwirx.test.FakeBrowserEvent');
 
+goog.require('goog.testing.events.Event');
+
 /**
  * Fake getParentEventTarget() method patched into DOM elements so that
  * dispatchEvent() works on them.
@@ -17,7 +19,7 @@ com.qwirx.test.FakeBrowserEvent.fakeGetParentEventTarget = function()
 	}
 };
 
-com.qwirx.test.FakeBrowserEvent.send = function(type, target, opt_button)
+com.qwirx.test.FakeBrowserEvent.wrap = function(target, callback)
 {
 	if (target.getElement)
 	{
@@ -31,18 +33,9 @@ com.qwirx.test.FakeBrowserEvent.send = function(type, target, opt_button)
 			"that are in the DOM tree");
 	}
 	
-	if (type instanceof goog.events.Event)
-	{
-		event = type;
-	}
-	else
-	{
-		event = new goog.testing.events.Event(type, target, opt_button);
-	}
-	
 	try
 	{
-		return goog.testing.events.fireBrowserEvent(event);
+		return callback(target);
 	}
 	catch (e)
 	{
@@ -50,6 +43,22 @@ com.qwirx.test.FakeBrowserEvent.send = function(type, target, opt_button)
 	}
 };
 
+com.qwirx.test.FakeBrowserEvent.send = function(type, target, opt_button)
+{
+	com.qwirx.test.FakeBrowserEvent.wrap(target, function(new_target) {
+		if (type instanceof goog.events.Event)
+		{
+			event = type;
+		}
+		else
+		{
+			event = new goog.testing.events.Event(type, new_target, opt_button);
+		}
+		
+		return goog.testing.events.fireBrowserEvent(event);
+	});
+};
+	
 goog.require('com.qwirx.util.Exception');
 com.qwirx.test.FakeBrowserEvent.UnexpectedExceptionThrown = function(exception)
 {
@@ -91,16 +100,23 @@ com.qwirx.test.FakeBrowserEvent.UnexpectedExceptionThrown.prototype.getName =
 
 */
 
-com.qwirx.test.FakeBrowserEvent.mouseDown = function(target)
+com.qwirx.test.FakeBrowserEvent.mouseDown = function(target, opt_button,
+	opt_coords, opt_eventProperties)
 {
-	com.qwirx.test.FakeBrowserEvent.send(goog.events.EventType.MOUSEDOWN,
-		target);
+	com.qwirx.test.FakeBrowserEvent.wrap(target, function(new_target) {
+		goog.testing.events.fireMouseDownEvent(new_target, opt_button,
+			opt_coords, opt_eventProperties);
+	});
+
 };
 
-com.qwirx.test.FakeBrowserEvent.mouseUp = function(target)
+com.qwirx.test.FakeBrowserEvent.mouseUp = function(target, opt_button,
+	opt_coords, opt_eventProperties)
 {
-	com.qwirx.test.FakeBrowserEvent.send(goog.events.EventType.MOUSEUP,
-		target);
+	com.qwirx.test.FakeBrowserEvent.wrap(target, function(new_target) {
+		goog.testing.events.fireMouseUpEvent(new_target, opt_button,
+			opt_coords, opt_eventProperties);
+	});
 };
 
 com.qwirx.test.FakeBrowserEvent.mouseMove = function(target)

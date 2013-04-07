@@ -90,9 +90,7 @@ com.qwirx.test.FakeClickEvent.send = function(target)
 			control.isActive());
 	}
 	
-	var event = new com.qwirx.test.FakeClickEvent(
-		goog.events.EventType.MOUSEDOWN, element);
-	com.qwirx.test.FakeBrowserEvent.send(event, element);
+	com.qwirx.test.FakeBrowserEvent.mouseDown(element);
 
 	if (control)
 	{
@@ -100,8 +98,7 @@ com.qwirx.test.FakeClickEvent.send = function(target)
 			control.isActive());
 	}
 
-	event = new com.qwirx.test.FakeClickEvent(goog.events.EventType.MOUSEUP, target);
-	com.qwirx.test.FakeBrowserEvent.send(event, element);
+	com.qwirx.test.FakeBrowserEvent.mouseUp(element);
 
 	if (control)
 	{
