@@ -4,3 +4,6 @@
 [submodule "_attachments/com.qwirx.util"]
 	path = _attachments/com.qwirx.util
 	url = https://github.com/qris/com.qwirx.util.git
+[submodule "_attachments/com.qwirx.ui"]
+	path = _attachments/com.qwirx.ui
+	url = https://github.com/qris/com.qwirx.ui.git
