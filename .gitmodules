@@ -1,3 +1,6 @@
 [submodule "_attachments/closure-library"]
 	path = _attachments/closure-library
 	url = https://code.google.com/p/closure-library
+[submodule "_attachments/com.qwirx.util"]
+	path = _attachments/com.qwirx.util
+	url = https://github.com/qris/com.qwirx.util.git
