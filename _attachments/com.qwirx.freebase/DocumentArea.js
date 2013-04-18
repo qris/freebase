@@ -121,8 +121,8 @@ com.qwirx.freebase.DocumentArea.prototype.onEditorClosed = function(event)
 {
 	var editor = event.target;
 	var tab = this.documentTabMap_[goog.getUid(editor)];
-	this.tabs_.removeChild(tab);
-	this.removeChild(editor, true);
+	this.tabs_.removeChild(tab, true /* opt_unrender */);
+	this.removeChild(editor, true /* opt_unrender */);
 };
 
 /**

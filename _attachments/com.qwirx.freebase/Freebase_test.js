@@ -600,6 +600,35 @@ function assertTreeContents(tree, freebase, optional_comment)
 	}
 }
 
+function assertOpenTabs(gui, expected_editors)
+{
+	var tabs = gui.editArea_.tabs_;
+	var actual_editors = [];
+	var actual_titles = [];
+	var actual_tabs = [];
+	
+	for (var i = 0; i < tabs.getChildCount(); i++)
+	{
+		var tab = tabs.getChildAt(i);
+		actual_tabs.push(tab);
+		var editor = tab.getModel();
+		actual_editors.push(editor);
+		actual_titles.push(editor.getTabTitle());
+	}
+	
+	var expected_titles = [];
+	for (var i = 0; i < expected_editors.length; i++)
+	{
+		var editor = expected_editors[i];
+		expected_titles.push(editor.getTabTitle());
+	}
+	
+	assertObjectEquals("Open tab titles", expected_titles, actual_titles);
+	assertObjectEquals("Open editors with tabs", expected_editors,
+		actual_editors);
+	return actual_tabs;
+}
+
 function testFreebaseGuiRun()
 {
 	var gui = new Freebase.Gui(mockFreebase);
@@ -615,6 +644,7 @@ function testFreebaseGuiRun()
 	assertTreeContents(gui.navigator_, mockFreebase, "Tree should " +
 		"have been initialised at construction to show the initial " +
 		"database contents");
+	assertOpenTabs(gui, []);
 	
 	assertEquals('age', etc.constructor.columns[1].name);
 	var Badger = Model('Badger', mockFreebase,
@@ -636,15 +666,27 @@ function testFreebaseGuiRun()
 	var catNode = gui.navigator_.getChildAt(1);
 	assertEquals(Cat.getId(), catNode.getModel().id);
 	assertObjectEquals({}, gui.openDocumentsById_);
+	assertOpenTabs(gui, []);
 	catNode.select();
 	var editor = gui.getOpenDocumentsById(Cat.getId())[0];
 	assertNotNull(editor);
 	assertTrue(goog.style.isElementShown(editor.getElement()));
+	var tabs = assertOpenTabs(gui, [editor]);
+	
 	editor.close();
 	assertObjectEquals({}, gui.openDocumentsById_);
 	assertFalse('Editor grid should have been removed from the ' +
 		'editor container on close',
 		goog.dom.contains(gui.getEditorContainer(), editor.getElement()));
+	assertOpenTabs(gui, []);
+	// make sure the tab is undrendered too - that doesn't destroy the element
+	// assertNull("tab element should have been unrendered",
+	//	tabs[0].getElement());
+	assertNull("tab element should have been removed from tab bar",
+		tabs[0].getParent());
+	assertFalse("tab element should have been unrendered",
+		goog.dom.contains(gui.editArea_.tabs_.getElement(),
+			tabs[0].getElement()));
 
 	// open the badger document by selecting it from the tree	
 	var badgerNode = gui.navigator_.getChildAt(0);
@@ -654,6 +696,7 @@ function testFreebaseGuiRun()
 	var tabs = gui.editArea_.tabs_;
 	assertEquals(badgerEditor, tabs.getSelectedTab().getModel());
 	assertTrue(goog.style.isElementShown(badgerEditor.getElement()));
+	assertOpenTabs(gui, [badgerEditor]);
 
 	// open the cat document by selecting it from the tree, check that
 	// the badger tab is no longer active and the document is hidden
@@ -663,16 +706,20 @@ function testFreebaseGuiRun()
 	assertEquals(Cat.getId(), catNode.getModel().id);
 	assertFalse(goog.style.isElementShown(badgerEditor.getElement()));
 	assertTrue(goog.style.isElementShown(catEditor.getElement()));
+	assertOpenTabs(gui, [badgerEditor, catEditor]);
 	
 	// switch docs by opening badger again
 	badgerNode.select();
 	assertEquals(badgerEditor, tabs.getSelectedTab().getModel());
 	assertTrue(goog.style.isElementShown(badgerEditor.getElement()));
 	assertFalse(goog.style.isElementShown(catEditor.getElement()));
+	assertOpenTabs(gui, [badgerEditor, catEditor]);
 	
 	badgerEditor.close(); // close inactive tab
 	catEditor.close(); // close active tab
 	assertObjectEquals({}, gui.openDocumentsById_);
+	assertOpenTabs(gui, []);
+	
 	var expectedListeners = [goog.events.getListener(mockFreebase,
 		DocumentSaved.EVENT_TYPE, gui.onDocumentSaved, false, gui)];
 	goog.object.extend(expectedListeners,
@@ -684,6 +731,14 @@ function testFreebaseGuiRun()
 	// open the Cat document, showing a list of Cats
 	var editor = com.qwirx.test.assertCallback(function(c)
 		{ gui.openDocument(Cat.getId(), c); })[0];
+	assertOpenTabs(gui, [editor]);
+	/*
+	assertEquals("There should be only 2 rows visible on screen", 2,
+		editor.grid_.getVisibleRowCount());
+	*/
+	// And that test will fail unless two rows fit onto the screen.
+	// But you'd need a pretty crazy font size for two rows plus a header
+	// and tab bar to exceed 400px.
 	
 	// create a few more cats, testing array save at the same time
 	var kit = new Cat({name: "Kitkat", age: 6});
@@ -712,6 +767,7 @@ function testFreebaseGuiRun()
 	// data grid should have been updated
 	var ds = editor.getDataSource();
 	assertEquals(4, ds.getCount());
+	assertEquals(4, ds.getCount());
 
 	function assertDataSourceRow(rowIndex, modelObject)
 	{
@@ -728,7 +784,7 @@ function testFreebaseGuiRun()
 			var expectedCat = allCatsMap[allCatIds[i]];
 			assertDataSourceRow(i, expectedCat);
 		}
-	}		
+	}
 	
 	// happy birthday Etcetera! Who knows?
 	etc.age = 1;
@@ -738,15 +794,20 @@ function testFreebaseGuiRun()
 	// close and reopen the Cat editor, check that it works when
 	// documents already exist at open time
 	editor.close();
+	assertOpenTabs(gui, []);
 	editor = com.qwirx.test.assertCallback(function(c)	
 		{ gui.openDocument(Cat.getId(), c); })[0];
 	assertAllCatsData();
+	assertOpenTabs(gui, [editor]);
 	
 	// try opening a document
 	editor.close();
+	assertOpenTabs(gui, []);
 	editor = com.qwirx.test.assertCallback(function(c) { gui.openDocument(etc._id, c); })[0];
 	assertEquals('com_qwirx_freebase_AutomaticFormView',
 		editor.getElement().className);
+	assertOpenTabs(gui, [editor]);
+	
 	var flash = editor.autoFormFlash_;
 	assertFalse(flash.isVisible());
 	var table = editor.autoFormTable_;
