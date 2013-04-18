@@ -10,3 +10,6 @@
 [submodule "_attachments/com.qwirx.test"]
 	path = _attachments/com.qwirx.test
 	url = https://github.com/qris/com.qwirx.test.git
+[submodule "_attachments/com.qwirx.grid"]
+	path = _attachments/com.qwirx.grid
+	url = https://github.com/qris/com.qwirx.grid.git
