@@ -1,23 +1,21 @@
 goog.provide('com.qwirx.freebase.InstanceListView');
 
+goog.require('com.qwirx.data.SimpleDatasource');
 goog.require('com.qwirx.freebase.DocumentEditor');
 goog.require('com.qwirx.grid.Grid');
 goog.require('com.qwirx.grid.NavigationBar');
+goog.require('com.qwirx.ui.Renderer');
 
-com.qwirx.freebase.FLASH_RENDERER = goog.ui.ControlRenderer.getCustomRenderer(
-	goog.ui.ControlRenderer, 'fb-flash');
+com.qwirx.freebase.InstanceListView.RENDERER =
+	new com.qwirx.ui.Renderer(['fb-edit-area-doc-div', 'fb-docedit-datagrid']);
 
 com.qwirx.freebase.InstanceListView = function(gui, freebase, document,
-	editarea, opt_tabbar)
+	opt_domHelper, opt_renderer)
 {
-	com.qwirx.freebase.DocumentEditor.call(this, gui, freebase,
-		document, editarea, opt_tabbar);
+	goog.base(this, gui, freebase, document, opt_domHelper,
+		opt_renderer || com.qwirx.freebase.InstanceListView.RENDERER);
 
 	var document = this.document_;
-	var self = this;
-	var editorControl = this.editorControl_;
-
-	editorControl.className += ' fb-docedit-datagrid';
 	
 	var columnsGridInfo = [{name: '_id', caption: 'ID'}];
 	var numCols = document.columns.length;
@@ -27,15 +25,26 @@ com.qwirx.freebase.InstanceListView = function(gui, freebase, document,
 			caption: document.columns[i].name};
 	}
 	
-	var datasource = this.dataSource_ = 
-		new com.qwirx.data.SimpleDatasource(columnsGridInfo, []);
+	this.dataSource_ = 	new com.qwirx.data.SimpleDatasource(columnsGridInfo,
+		[]);
 	
-	this.grid_ = new com.qwirx.grid.Grid(datasource);
+	this.grid_ = new com.qwirx.grid.Grid(this.dataSource_);
 	this.grid_.addClassName('fb-datagrid');
-	this.grid_.render(editorControl);
 	
 	this.nav_ = new com.qwirx.grid.NavigationBar(this.grid_.getCursor());
-	this.nav_.render(editorControl);
+};
+
+goog.inherits(com.qwirx.freebase.InstanceListView,
+	com.qwirx.freebase.DocumentEditor);
+
+com.qwirx.freebase.InstanceListView.prototype.createDom = function()
+{
+	goog.base(this, 'createDom');
+	
+	this.addChild(this.grid_, true);
+	this.addChild(this.nav_, true);
+	
+	var datasource = this.dataSource_;
 
 	this.freebase_.view(this.documentId_, 'all',
 		function(all_results)
@@ -49,9 +58,6 @@ com.qwirx.freebase.InstanceListView = function(gui, freebase, document,
 			}
 		});
 };
-
-goog.inherits(com.qwirx.freebase.InstanceListView,
-	com.qwirx.freebase.DocumentEditor);
 
 com.qwirx.freebase.InstanceListView.prototype.getDataGrid = function()
 {

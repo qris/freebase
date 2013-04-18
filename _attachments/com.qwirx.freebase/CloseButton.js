@@ -12,7 +12,7 @@ com.qwirx.freebase.CloseButton = function(opt_renderer, opt_domHelper)
 	var domHelper = opt_domHelper || goog.dom.getDomHelper();
 	var closeIconElement = domHelper.createDom('span',
 		'fb-tab-close-icon', '');
-	goog.ui.CustomButton.call(this, closeIconElement,
+	goog.base(this, closeIconElement,
 		opt_renderer || com.qwirx.freebase.CLOSE_BUTTON_RENDERER,
 		opt_domHelper);
 	this.addClassName('fb-tab-close-button');
@@ -28,7 +28,7 @@ goog.inherits(com.qwirx.freebase.CloseButton, goog.ui.CustomButton);
  */
 com.qwirx.freebase.CloseButton.prototype.handleMouseDown = function(e)
 {
-	com.qwirx.freebase.CloseButton.superClass_.handleMouseDown.call(this, e);
+	goog.base(this, 'handleMouseDown', e);
 	e.stopPropagation();
 };
 

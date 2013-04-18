@@ -37,16 +37,12 @@
 	padding: 0;
 }
 
-.fb-edit-area-doc-div
-{
-}
-
 div.fb-docedit-datagrid
 {
 	padding: 0;
 }
 
-div.fb-docedit-autoform
+.com_qwirx_freebase_AutomaticFormView
 {
 	background-color: white;
 	padding: 1em;

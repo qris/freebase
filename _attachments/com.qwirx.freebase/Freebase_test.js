@@ -16,6 +16,7 @@ goog.require('com.qwirx.test.findDifferences');
 
 goog.require('goog.dom.NodeIterator');
 goog.require('goog.testing.jsunit');
+goog.require('goog.testing.MockControl');
 
 function MockFreebase()
 {
@@ -29,6 +30,14 @@ MockFreebase.prototype.get = function(documentId, onSuccess, onError)
 {
 	return this.get_(documentId, /* auto instantiate */ true, onSuccess,
 		onError);
+};
+
+MockFreebase.prototype.defaultOnErrorHandler_ =
+	function(exception, object)
+{
+	this.exception = exception;
+	this.exceptionObject = object;
+	throw exception;
 };
 
 /**
@@ -281,8 +290,11 @@ MockFreebase.prototype.attachEvent = function()
 
 var mockFreebase;
 var domContainer = goog.dom.createDom(goog.dom.TagName.DIV,
-	{'style': 'background-color: #eee; width: 50%; float: right;'});
+	{'style': 'background-color: #eee; width: 50%; height: 400px; ' +
+	'float: right;'});
 goog.dom.appendChild(document.body, domContainer);
+
+var mockController;
 
 function setUp()
 {
@@ -300,30 +312,13 @@ function setUp()
 	mockFreebase.save(old, function(){});
 	etc = new Cat({name: "Etcetera", age: 0});
 	mockFreebase.save(etc, function(){});
+	
+	mockController = new goog.testing.MockControl();
 }
 
-/**
- * Pass a block of code that takes a callback function c as its only
- * parameter, and passes that to the async method. If c is not called,
- * the assertion fails. Note that it assumes that the async method
- * will call the callback synchronously, in the same thread, e.g.
- * because it has been mocked to do so! So it's not a fully async test.
- */
-function assertCallback(f)
+function tearDown()
 {
-	var calledBack = false;
-	var result;
-	
-	function c()
-	{
-		calledBack = true;
-		result = arguments;
-	}
-	
-	f(c);
-	
-	assertTrue("Callback was not called as expected", calledBack);
-	return result;
+	mockController.$tearDown();
 }
 
 function assertFreebaseApi(fb)
@@ -342,7 +337,7 @@ function assertFreebaseApi(fb)
 	
 	// test that Freebase.save() and Freebase.create() call the
 	// callback with an array of updated document objects.
-	var result = assertCallback(function(c) { fb.create$(test, c); })[0];
+	var result = com.qwirx.test.assertCallback(function(c) { fb.create$(test, c); })[0];
 	assertObjectEquals([test], result);
 
 	// create$ for a document that already exists should throw an error
@@ -351,27 +346,27 @@ function assertFreebaseApi(fb)
 		'Database should reject saving a second copy of the document');
 
 	// But save() should not.
-	result = assertCallback(function(c) { fb.save(test, c); })[0];
+	result = com.qwirx.test.assertCallback(function(c) { fb.save(test, c); })[0];
 	assertObjectEquals([test], result);
 
 	// deleteDoc does not really delete the document, but it sets its
 	// _deleted flag, which we interpret as allowing us to recreate
 	// the document.
-	result = assertCallback(function f(c) {fb.deleteDoc(test, c);})[0];
+	result = com.qwirx.test.assertCallback(function f(c) {fb.deleteDoc(test, c);})[0];
 	assertTrue(result._deleted);
-	result = assertCallback(function f(c) {fb.get(test._id, c);})[0];
+	result = com.qwirx.test.assertCallback(function f(c) {fb.get(test._id, c);})[0];
 	assertTrue(result._deleted);
 	
 	// So because the existing object is deleted, create$() does
 	// not fail this time.
-	result = assertCallback(function(c) { fb.create$(test, c); })[0];
+	result = com.qwirx.test.assertCallback(function(c) { fb.create$(test, c); })[0];
 	assertObjectEquals([test], result);
-	result = assertCallback(function f(c) {fb.deleteDoc(test, c);})[0];
+	result = com.qwirx.test.assertCallback(function f(c) {fb.deleteDoc(test, c);})[0];
 	test = result;
 
-	assertCallback(function f(c) { fb.create$(Cat, c); });
+	com.qwirx.test.assertCallback(function f(c) { fb.create$(Cat, c); });
 	var expectedCatDoc = Cat.toDocument();
-	var actualCatDoc = assertCallback(
+	var actualCatDoc = com.qwirx.test.assertCallback(
 		function(c) { fb.get(Cat.getId(), c); })[0];
 	expectedCatDoc._rev = actualCatDoc._rev;
 	expectedCatDoc = JSON.stringify(expectedCatDoc);
@@ -395,23 +390,23 @@ function assertFreebaseApi(fb)
 		}
 	};
 	
-	assertCallback(function(c) { fb.create$(foo, c); });
-	assertCallback(function(c) { fb.create$(bar, c); });
-	assertCallback(function(c) { fb.create$(baz, c); });
+	com.qwirx.test.assertCallback(function(c) { fb.create$(foo, c); });
+	com.qwirx.test.assertCallback(function(c) { fb.create$(bar, c); });
+	com.qwirx.test.assertCallback(function(c) { fb.create$(baz, c); });
 	var noNewModelsOnlyCat = {'Cat': Cat};
 	assertObjectEquals("Should not be any new app models at this point",
 		noNewModelsOnlyCat, fb.app.models);
-	assertCallback(function(c) { fb.create$(Job, c); });
+	com.qwirx.test.assertCallback(function(c) { fb.create$(Job, c); });
 	assertObjectEquals("Should still be no models (Job is not really a model)",
 		noNewModelsOnlyCat, fb.app.models);
-	var foo2 = assertCallback(function(c) { fb.get(foo._id, c) })[0];
+	var foo2 = com.qwirx.test.assertCallback(function(c) { fb.get(foo._id, c) })[0];
 	assertObjectEquals(foo, foo2);
 
 	// Getting a model instance should instantiate the model class
 	// automatically.
-	result = assertCallback(function(c) { fb.create$(etc, c); })[0][0];
+	result = com.qwirx.test.assertCallback(function(c) { fb.create$(etc, c); })[0][0];
 	assertObjectEquals(etc, result);
-	var etc2 = assertCallback(function(c) { fb.get(etc._id, c); })[0];
+	var etc2 = com.qwirx.test.assertCallback(function(c) { fb.get(etc._id, c); })[0];
 	goog.asserts.assertInstanceof(etc2, fb.app.models.Cat);
 	goog.asserts.assertInstanceof(etc2, com.qwirx.freebase.ModelBase);
 	assertObjectEquals(etc, etc2);
@@ -424,7 +419,7 @@ function assertFreebaseApi(fb)
 	// returns all three objects, because Job.views.map.all doesn't discriminate
 	var jobs = [foo, bar, baz];
 	assertObjectEquals(jobs.sort(sortByProperty('_id')),
-		assertCallback(function(c) { fb.findAll('Job', c); })[0]);
+		com.qwirx.test.assertCallback(function(c) { fb.findAll('Job', c); })[0]);
 
 	// Test that listAll returns the expected results
 	var expected_docs_in_db = [test, Job, Cat, foo, bar, baz, etc];
@@ -439,7 +434,7 @@ function assertFreebaseApi(fb)
 		expected_listAll_results.push(row);
 	}
 	expected_listAll_results.sort(sortByProperty('id'));
-	var actual_listAll_results = assertCallback(function(c)
+	var actual_listAll_results = com.qwirx.test.assertCallback(function(c)
 		{ fb.listAll(false, c); })[0].rows;
 	assertObjectEquals(expected_listAll_results,
 		actual_listAll_results);
@@ -456,7 +451,7 @@ function assertFreebaseApi(fb)
 		}
 	}
 	assertNotNull("Cat not found in list", catIndex);
-	var actual_listAll_results = assertCallback(function(c)
+	var actual_listAll_results = com.qwirx.test.assertCallback(function(c)
 		{ fb.listAll(true, c); })[0].rows;
 	assertObjectEquals(Cat.toDocument(),
 		actual_listAll_results[catIndex].doc);
@@ -464,24 +459,24 @@ function assertFreebaseApi(fb)
 	// Note: unlike objects, views in CouchDB do apparently
 	// use "id" and not "_id" in their results, so don't change
 	// this again.
-	result = assertCallback(function(c) { fb.view(Job._id, 'all', c); })[0];
+	result = com.qwirx.test.assertCallback(function(c) { fb.view(Job._id, 'all', c); })[0];
 	assertObjectEquals([
 			{id: foo._id, key: foo._id, value: foo},
 			{id: bar._id, key: bar._id, value: bar},
 			{id: baz._id, key: baz._id, value: baz}
 		].sort(sortByProperty('key')),
 		result.rows);
-	result = assertCallback(function(c) { fb.view(Job._id, 'name', c); })[0];
+	result = com.qwirx.test.assertCallback(function(c) { fb.view(Job._id, 'name', c); })[0];
 	assertObjectEquals([
 			{id: foo._id, key: foo.job, value: foo},
 			{id: bar._id, key: bar.job, value: bar},
 			{id: baz._id, key: baz.job, value: baz}
 		].sort(sortByProperty('key')),
 		result.rows);
-	result = assertCallback(function(c) { fb.view(Job._id, 'foo', c); })[0];
+	result = com.qwirx.test.assertCallback(function(c) { fb.view(Job._id, 'foo', c); })[0];
 	assertObjectEquals([{id: foo._id, key: null, value: foo}],
 		result.rows);
-	result = assertCallback(function(c) { fb.view(Job._id, 'bar', c); })[0];
+	result = com.qwirx.test.assertCallback(function(c) { fb.view(Job._id, 'bar', c); })[0];
 	assertObjectEquals([{id: bar._id, key: bar._id, value: null}],
 		result.rows);	
 }
@@ -608,26 +603,12 @@ function assertTreeContents(tree, freebase, optional_comment)
 function testFreebaseGuiRun()
 {
 	var gui = new Freebase.Gui(mockFreebase);
-	gui.run(domContainer);
+	gui.render(domContainer);
 	
 	assertObjectEquals('Should be only one DocumentSaved listener now',
 		[goog.events.getListener(mockFreebase,
 			DocumentSaved.EVENT_TYPE, gui.onDocumentSaved, false, gui)],
 		goog.events.listenerTree_[DocumentSaved.EVENT_TYPE][false][goog.getUid(mockFreebase)]);
-	
-	var i = new goog.dom.NodeIterator(domContainer);
-	assertEquals(domContainer, i.next());
-	assertEquals(gui.splitter_.getElement(), i.next());
-	assertEquals(goog.ui.SplitPane.FIRST_CONTAINER_CLASS_NAME_,
-		i.next().className);
-	assertEquals(gui.navigator_.getElement(), i.next());
-	i.skipTag();
-	assertEquals(goog.ui.SplitPane.SECOND_CONTAINER_CLASS_NAME_,
-		i.next().className);
-	assertEquals(gui.editArea_.getElement(), i.next());
-	i.skipTag();
-	var e = assertThrows(i.next);
-	assertEquals(goog.iter.StopIteration, e);
 	
 	assertEquals(goog.ui.tree.TreeControl, gui.navigator_.constructor);
 	assertTrue(gui.navigator_ instanceof goog.ui.tree.TreeControl);	
@@ -658,35 +639,36 @@ function testFreebaseGuiRun()
 	catNode.select();
 	var editor = gui.getOpenDocumentsById(Cat.getId())[0];
 	assertNotNull(editor);
-	assertTrue(goog.style.isElementShown(editor.editorControl_));
+	assertTrue(goog.style.isElementShown(editor.getElement()));
 	editor.close();
 	assertObjectEquals({}, gui.openDocumentsById_);
 	assertFalse('Editor grid should have been removed from the ' +
 		'editor container on close',
-		goog.dom.contains(gui.getEditorContainer(), editor.editorControl_));
+		goog.dom.contains(gui.getEditorContainer(), editor.getElement()));
 
 	// open the badger document by selecting it from the tree	
 	var badgerNode = gui.navigator_.getChildAt(0);
 	assertEquals(Badger.getId(), badgerNode.getModel().id);
 	badgerNode.select();
 	var badgerEditor = gui.getOpenDocumentsById(Badger.getId())[0];
-	assertEquals(badgerEditor.tab_, gui.editAreaDocTabs_.getSelectedTab());
-	assertTrue(goog.style.isElementShown(badgerEditor.editorControl_));
+	var tabs = gui.editArea_.tabs_;
+	assertEquals(badgerEditor, tabs.getSelectedTab().getModel());
+	assertTrue(goog.style.isElementShown(badgerEditor.getElement()));
 
 	// open the cat document by selecting it from the tree, check that
 	// the badger tab is no longer active and the document is hidden
 	catNode.select();
 	var catEditor = gui.getOpenDocumentsById(Cat.getId())[0];
-	assertEquals(catEditor.tab_, gui.editAreaDocTabs_.getSelectedTab());
+	assertEquals(catEditor, tabs.getSelectedTab().getModel());
 	assertEquals(Cat.getId(), catNode.getModel().id);
-	assertFalse(goog.style.isElementShown(badgerEditor.editorControl_));
-	assertTrue(goog.style.isElementShown(catEditor.editorControl_));
+	assertFalse(goog.style.isElementShown(badgerEditor.getElement()));
+	assertTrue(goog.style.isElementShown(catEditor.getElement()));
 	
 	// switch docs by opening badger again
 	badgerNode.select();
-	assertEquals(badgerEditor.tab_, gui.editAreaDocTabs_.getSelectedTab());
-	assertTrue(goog.style.isElementShown(badgerEditor.editorControl_));
-	assertFalse(goog.style.isElementShown(catEditor.editorControl_));
+	assertEquals(badgerEditor, tabs.getSelectedTab().getModel());
+	assertTrue(goog.style.isElementShown(badgerEditor.getElement()));
+	assertFalse(goog.style.isElementShown(catEditor.getElement()));
 	
 	badgerEditor.close(); // close inactive tab
 	catEditor.close(); // close active tab
@@ -700,13 +682,13 @@ function testFreebaseGuiRun()
 		goog.events.listenerTree_[DocumentSaved.EVENT_TYPE][false][goog.getUid(mockFreebase)]);
 	
 	// open the Cat document, showing a list of Cats
-	var editor = assertCallback(function(c)
+	var editor = com.qwirx.test.assertCallback(function(c)
 		{ gui.openDocument(Cat.getId(), c); })[0];
 	
 	// create a few more cats, testing array save at the same time
 	var kit = new Cat({name: "Kitkat", age: 6});
 	var mog = new Cat({name: "Moggy", age: 9});
-	assertCallback(function(c){ mockFreebase.save([kit, mog], c); });
+	com.qwirx.test.assertCallback(function(c){ mockFreebase.save([kit, mog], c); });
 	assertNotUndefined("Cat should have been assigned an ID by save()",
 		kit._id);
 	assertNotUndefined("Cat should have been assigned an ID by save()",
@@ -756,15 +738,15 @@ function testFreebaseGuiRun()
 	// close and reopen the Cat editor, check that it works when
 	// documents already exist at open time
 	editor.close();
-	editor = assertCallback(function(c)	
+	editor = com.qwirx.test.assertCallback(function(c)	
 		{ gui.openDocument(Cat.getId(), c); })[0];
 	assertAllCatsData();
 	
 	// try opening a document
 	editor.close();
-	editor = assertCallback(function(c) { gui.openDocument(etc._id, c); })[0];
-	assertEquals('fb-edit-area-doc-div fb-docedit-autoform',
-		editor.editorControl_.className);
+	editor = com.qwirx.test.assertCallback(function(c) { gui.openDocument(etc._id, c); })[0];
+	assertEquals('com_qwirx_freebase_AutomaticFormView',
+		editor.getElement().className);
 	var flash = editor.autoFormFlash_;
 	assertFalse(flash.isVisible());
 	var table = editor.autoFormTable_;
@@ -784,7 +766,7 @@ function testFreebaseGuiRun()
 	assertEquals('Document saved.', editor.autoFormFlash_.getContent());
 	assertTrue(editor.autoFormFlash_.isVisible());
 	
-	var etc2 = assertCallback(function(c) { mockFreebase.get(etc._id, c); })[0];
+	var etc2 = com.qwirx.test.assertCallback(function(c) { mockFreebase.get(etc._id, c); })[0];
 	assertEquals(2, etc2.age);
 	assertEquals('Anonymouse', etc2.name);
 	assertFalse(etc2._rev == etc._rev);
@@ -799,7 +781,7 @@ function testFreebaseGuiRun()
 	assertEquals('Document saved.', editor.autoFormFlash_.getContent());
 	assertTrue(editor.autoFormFlash_.isVisible());
 	
-	etc2 = assertCallback(function(c) { mockFreebase.get(etc._id, c); })[0];
+	etc2 = com.qwirx.test.assertCallback(function(c) { mockFreebase.get(etc._id, c); })[0];
 	assertEquals(3, etc2.age);
 	assertEquals('Sylvester', etc2.name);
 	assertFalse(etc2._rev == etc._rev);
@@ -820,9 +802,9 @@ function assertSelection(grid, message, x1, y1, x2, y2)
 function assertGetGrid()
 {
 	var gui = new Freebase.Gui(mockFreebase);
-	gui.run(domContainer);
+	gui.render(domContainer);
 
-	var editor = assertCallback(function(c) { gui.openDocument(Cat.getId(), c); })[0];
+	var editor = com.qwirx.test.assertCallback(function(c) { gui.openDocument(Cat.getId(), c); })[0];
 	
 	var grid = editor.grid_;
 	assertEquals('Grid should have been populated with some cats',
@@ -836,8 +818,8 @@ function assertGetGrid()
 function testGridInsertRowAt()
 {
 	var gui = new Freebase.Gui(mockFreebase);
-	gui.run(domContainer);
-	var editor = assertCallback(function(c)
+	gui.render(domContainer);
+	var editor = com.qwirx.test.assertCallback(function(c)
 		{ gui.openDocument(Cat.getId(), c); })[0];
 	var grid = editor.grid_;
 	assertEquals('Grid should have been populated with some cats',
@@ -849,7 +831,7 @@ function testGridInsertRowAt()
 	assertEquals('Data source row count should have been updated',
 		3, editor.getDataSource().getCount());
 	
-	var allCats = assertCallback(function(c)
+	var allCats = com.qwirx.test.assertCallback(function(c)
 		// { mockFreebase.listAll(true, c); })[0].rows;
 		{ mockFreebase.findAll(Cat.modelName, c); })[0];
 	
@@ -910,7 +892,7 @@ function testEditModelDesign()
 {
 	var gui = new Freebase.Gui(mockFreebase);
 	gui.run(domContainer);
-	var editor = assertCallback(function(c)
+	var editor = com.qwirx.test.assertCallback(function(c)
 		{
 			gui.openDocument(Cat.getId(), c, null, );
 		})[0];
@@ -920,3 +902,64 @@ function testEditModelDesign()
 	
 }
 */
+/**
+ * If components don't have their
+ * {@link goog.ui.events.EventTarget#getParentEventTarget()} set properly,
+ * then ExceptionEvents won't propagate up the component tree and won't
+ * be handled by the Freebase GUI.
+ */
+
+function test_freebase_components_set_parent_event_targets()
+{
+	var gui = new Freebase.Gui(mockFreebase);
+	gui.render(domContainer); // without a render(), the parent will never
+	// enterDocument(), and its children won't be added to it.
+
+	var layout = gui.layout_;
+	assertEquals(gui, layout.getParentEventTarget());
+	
+	var splitter = gui.splitter_;
+	assertEquals(layout, splitter.getParentEventTarget());
+	
+	var navigator = gui.navigator_;
+	assertEquals(splitter, navigator.getParentEventTarget());
+	
+	var editArea = gui.editArea_;
+	assertEquals(splitter, editArea.getParentEventTarget());
+	assertTrue("The tab cell should be added to the DocumentArea",
+		goog.dom.contains(editArea.getElement(), editArea.getTabsCell()));
+	
+	var tabs = editArea.tabs_;
+	assertEquals(editArea, tabs.getParent());
+	assertEquals(editArea, tabs.getParentEventTarget());
+	assertTrue("The tab bar should be added to the tab cell",
+		goog.dom.contains(editArea.getTabsCell(), tabs.getElement()));
+	
+	var editor = com.qwirx.test.assertCallback(function(c)
+		{ gui.openDocument(Cat.getId(), c); })[0];
+	assertNotNull(editor);
+	assertEquals(editor, gui.getOpenDocumentsById(Cat.getId())[0]);
+	assertEquals(editArea, editor.getParentEventTarget());
+}
+
+function test_freebase_handles_exceptionevents()
+{
+	var exception = new com.qwirx.util.Exception('This is a Whee');
+
+	var gui = new Freebase.Gui(mockFreebase);
+	var mock_alert = mockController.createGlobalFunctionMock('alert');
+	mock_alert('An unexpected error occurred: ' + exception.message);
+	mock_alert.$replay();
+
+	var event = new com.qwirx.util.ExceptionEvent(exception, gui);
+	var ret = goog.events.dispatchEvent(gui, event);
+
+	/*
+    // var expectation = new goog.testing.MockExpectation('alert');
+    assertEquals('', expectation.getErrorMessage());
+    assertTrue(mock_alert.$verifyCall(expectation, 'alert', ['foo']));
+
+    expectation.argumentList = ['An unexpected error occurred: ' +
+		exception.message];
+	*/
+}

@@ -8,29 +8,44 @@ com.qwirx.freebase.FLASH_RENDERER = goog.ui.ControlRenderer.getCustomRenderer(
  * Automatically generates a simple form for object editing, like
  * a Drupal Node Edit page.
  */
+
 com.qwirx.freebase.AutomaticFormView = function(gui, freebase, document,
-	editarea, opt_tabbar)
+	opt_domHelper, opt_renderer)
 {
-	com.qwirx.freebase.DocumentEditor.call(this, gui, freebase,
-		document, editarea, opt_tabbar);
+	var renderer = opt_renderer || com.qwirx.freebase.AutomaticFormView.RENDERER;
 
-	var editorControl = this.editorControl_;
-
-	// auto-render something usable
-	editorControl.className += ' fb-docedit-autoform';
+	goog.base(this, gui, freebase, document, opt_domHelper, renderer);
+	
+	var dom = this.getDomHelper();
+	
+	this.autoFormFlash_ = new goog.ui.Control('',
+		com.qwirx.freebase.FLASH_RENDERER, dom);
+	this.autoFormTable_ = dom.createDom('table', 'fb-doc-auto');
+	
 	var controls = this.autoFormControls_ = {};
 	this.autoFormFixedCells_ = {}
+	
+	this.submitButton_ = new goog.ui.CustomButton('Save');
+	goog.events.listen(this.submitButton_, goog.ui.Component.EventType.ACTION,
+		this.onSaveClicked, false, this);
+};
 
-	var dom = goog.dom.getDomHelper();
+goog.inherits(com.qwirx.freebase.AutomaticFormView,
+	com.qwirx.freebase.DocumentEditor);
+
+com.qwirx.freebase.AutomaticFormView.RENDERER =
+	new com.qwirx.ui.Renderer(['com_qwirx_freebase_AutomaticFormView']);
+
+com.qwirx.freebase.AutomaticFormView.prototype.createDom = function()
+{
+	goog.base(this, 'createDom');
 	
-	var flash = this.autoFormFlash_ = new goog.ui.Control('',
-		com.qwirx.freebase.FLASH_RENDERER, dom);
-	flash.render(editorControl);
+	// auto-render something usable
+	var dom = this.getDomHelper();
+	
+	var flash = this.autoFormFlash_;
+	this.addChild(flash, true /* render */);
 	flash.setVisible(false);
-	
-	var table = this.autoFormTable_ = dom.createDom('table',
-		'fb-doc-auto');
-	editorControl.appendChild(table);
 	
 	var fields = goog.object.getKeys(this.document_).sort();
 	var l = fields.length;
@@ -40,15 +55,11 @@ com.qwirx.freebase.AutomaticFormView = function(gui, freebase, document,
 		var fieldName = fields[i];
 		this.createAutoFormRow_(fieldName);
 	}
-	
-	var submit = this.submitButton_ = new goog.ui.CustomButton('Save');
-	submit.render(editorControl);
-	goog.events.listen(submit, goog.ui.Component.EventType.ACTION,
-		this.onSaveClicked, false, this);
-};
 
-goog.inherits(com.qwirx.freebase.AutomaticFormView,
-	com.qwirx.freebase.DocumentEditor);
+	this.getElement().appendChild(this.autoFormTable_);
+	
+	this.addChild(this.submitButton_, true /* render */);
+};
 
 com.qwirx.freebase.AutomaticFormView.prototype.createAutoFormRow_ =
 	function(fieldName)
@@ -58,7 +69,7 @@ com.qwirx.freebase.AutomaticFormView.prototype.createAutoFormRow_ =
 	var table = this.autoFormTable_;
 	var formControls = this.autoFormControls_;
 	var inputAttribs = {value: document[fieldName]};
-	var dom = goog.dom.getDomHelper();
+	var dom = this.getDomHelper();
 	var tr;
 
 	if (!document.hasOwnProperty(fieldName))
@@ -72,7 +83,7 @@ com.qwirx.freebase.AutomaticFormView.prototype.createAutoFormRow_ =
 		inputAttribs.type = 'hidden';
 		var input = formControls[fieldName] = dom.createDom('input',
 			inputAttribs);
-		editorControl.appendChild(input);
+		this.getElement().appendChild(input);
 		
 		tr = dom.createDom('tr', 'fb-row');
 

@@ -1,17 +1,20 @@
 goog.provide('com.qwirx.freebase.DocumentEditor');
 
-goog.require('com.qwirx.grid.Grid');
-goog.require('com.qwirx.data.SimpleDatasource');
 goog.require('com.qwirx.freebase.ClosableTab');
+goog.require('com.qwirx.ui.Renderer');
+goog.require('goog.ui.Component');
 
 com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
-	editarea, opt_tabbar)
+	opt_domHelper, opt_renderer)
 {
+	goog.ui.Component.call(this, opt_domHelper);
+	
+	this.renderer_ = opt_renderer || com.qwirx.freebase.DocumentEditor.RENDERER;
+
 	this.gui_ = gui;
 	this.freebase_ = freebase;
 	this.document_ = document;
 	this.documentId_ = (document ? document._id : null);
-	this.editArea_ = editarea;
 	var self = this;
 
 	// Register a DocumentSaved event listener to update ourselves
@@ -21,61 +24,35 @@ com.qwirx.freebase.DocumentEditor = function(gui, freebase, document,
 		com.qwirx.freebase.DocumentSaved.EVENT_TYPE,
 		this.onDocumentSaved, false, this);
 	
-	var editorControl = this.editorControl_ = goog.dom.createDom('div',
-		'fb-edit-area-doc-div');
-	
-	editarea.appendChild(editorControl);
-	
 	// Subclasses should fill the editorControl with some controls :)
-
-	// TODO: document editors shouldn't construct their own tabbar
-	// tab; that should be done by whoever constructed the tabbar,
-	// if there is one, e.g. Freebase.Gui.
-	
-	if (opt_tabbar)
-	{
-		this.tabBar_ = opt_tabbar;
-		var title = this.documentId_ || "Untitled";
-		var tab = this.tab_ = new com.qwirx.freebase.ClosableTab(title);
-		tab.setModel(this);
-		gui.editAreaDocTabs_.addChild(tab, true /* render now */);
-		gui.editAreaDocTabs_.setSelectedTab(tab);
-		
-		goog.events.listen(tab, goog.ui.Component.EventType.SELECT,
-			this.onTabSelect, false, this);
-		goog.events.listen(tab, goog.ui.Component.EventType.UNSELECT,
-			this.onTabUnselect, false, this);
-		goog.events.listen(tab, goog.ui.Component.EventType.CLOSE,
-			this.onTabClose, false, this);
-	} // have tabbar
 }; // DocumentEditor() constructor
 
-com.qwirx.freebase.DocumentEditor.EDIT_AREA_RENDERER =
-	goog.ui.ControlRenderer.getCustomRenderer(goog.ui.ControlRenderer,
-		'fb-edit-area-doc-div');
+goog.inherits(com.qwirx.freebase.DocumentEditor, goog.ui.Component);
+
+com.qwirx.freebase.DocumentEditor.RENDERER =
+	new com.qwirx.ui.Renderer(['fb-edit-area-doc-div']);
+
+com.qwirx.freebase.DocumentEditor.prototype.createDom = function()
+{
+	var elem = this.renderer_.createDom(this);
+	elem.style.height = "100%";
+	elem.style.width = "100%";
+	this.setElementInternal(elem);
+};
 
 com.qwirx.freebase.DocumentEditor.prototype.activate = function()
 {
-	if (this.tab_)
-	{
-		this.tabBar_.setSelectedTab(this.tab_);
-	}
+	this.getParentEventTarget().activate(this);
 };
 
 com.qwirx.freebase.DocumentEditor.prototype.onTabSelect = function(event)
 {
-	if (this.editorControl_)
-	{
-		goog.style.showElement(this.editorControl_, true);
-	}
+	goog.style.showElement(this.getElement(), true);
 };
 
 com.qwirx.freebase.DocumentEditor.prototype.onTabUnselect = function(event)
 {
-	if (this.editorControl_)
-	{
-		goog.style.showElement(this.editorControl_, false);
-	}
+	goog.style.showElement(this.getElement(), false);
 };
 
 com.qwirx.freebase.DocumentEditor.prototype.onTabClose = function(event)
@@ -85,24 +62,13 @@ com.qwirx.freebase.DocumentEditor.prototype.onTabClose = function(event)
 
 com.qwirx.freebase.DocumentEditor.prototype.close = function()
 {
-	if (this.tab_)
-	{
-		this.tabBar_.removeChild(this.tab_, true);
-	}
-	
-	if (this.editArea_)
-	{
-		goog.dom.removeNode(this.editorControl_);
-	}
+	this.dispatchEvent(new com.qwirx.freebase.EditorClosed());	
 
-	goog.events.unlisten(this.freebase_,
+	goog.asserts.assert(goog.events.unlisten(this.freebase_,
 		com.qwirx.freebase.DocumentSaved.EVENT_TYPE,
-		this.onDocumentSaved, false, this);
-	
-	if (this.gui_)
-	{
-		this.gui_.onDocumentClose(this);
-	}
+		this.onDocumentSaved, false, this),
+		"com.qwirx.freebase.DocumentEditor should have been listening " +
+		"for DocumentSaved events, but was not.");
 };
 
 /**
@@ -114,3 +80,60 @@ com.qwirx.freebase.DocumentEditor.prototype.onDocumentSaved = function(event)
 {
 };
 
+/**
+ * @return the title (string) which will be used by 
+ * {@link com.qwirx.freebase.DocumentArea} for the tab that activates
+ * or closes this document.
+ */
+com.qwirx.freebase.DocumentEditor.prototype.getTabTitle = function()
+{
+	return this.documentId_ || "Untitled";
+};
+
+com.qwirx.freebase.DocumentEvent = function(type, document)
+{
+	goog.base(this, type);
+	this.document_ = document;
+}
+
+goog.inherits(com.qwirx.freebase.DocumentEvent, goog.events.Event);
+
+com.qwirx.freebase.DocumentEvent.prototype.getDocument = function()
+{
+	return this.document_;
+}
+
+goog.provide('com.qwirx.freebase.DocumentSaved');
+/**
+ * An Event fired by a document editor at itself when a document is saved.
+ * You can add a listener for this event on a Freebase to update your
+ * GUI objects whenever an object is modified and saved.
+ * @constructor
+ */
+com.qwirx.freebase.DocumentSaved = function(document)
+{
+	goog.base(this, com.qwirx.freebase.DocumentSaved.EVENT_TYPE, document);
+}
+
+goog.inherits(com.qwirx.freebase.DocumentSaved,
+	com.qwirx.freebase.DocumentEvent);
+
+com.qwirx.freebase.DocumentSaved.EVENT_TYPE =
+	'com.qwirx.freebase.DocumentSaved';
+
+goog.provide('com.qwirx.freebase.EditorClosed');
+/**
+ * An Event fired by a document editor at itself when a document is closed.
+ * You can add a listener for this event on a Freebase to update your
+ * GUI objects whenever an object is modified and saved.
+ * @constructor
+ */
+com.qwirx.freebase.EditorClosed = function(document)
+{
+	goog.base(this, com.qwirx.freebase.EditorClosed.EVENT_TYPE, document);
+}
+
+goog.inherits(com.qwirx.freebase.EditorClosed, goog.events.Event);
+
+com.qwirx.freebase.EditorClosed.EVENT_TYPE =
+	'com.qwirx.freebase.EditorClosed';

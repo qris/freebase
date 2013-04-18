@@ -240,25 +240,4 @@ com.qwirx.freebase.Freebase.TABLE_FIELD =
 com.qwirx.freebase.Freebase.CLASS_FIELD = 
 	com.qwirx.freebase.Freebase.FREEBASE_FIELD_PREFIX + "class";
 
-/**
- * An Event fired by Freebase at itself when a document is saved.
- * You can add a listener for this event on a Freebase to update your
- * GUI objects whenever an object is modified and saved.
- * @constructor
- */
-com.qwirx.freebase.DocumentSaved = function(document, database)
-{
-	this.type = com.qwirx.freebase.DocumentSaved.EVENT_TYPE;
-	this.document_ = document;
-	this.database_ = database;
-}
-
-goog.inherits(com.qwirx.freebase.DocumentSaved, goog.events.Event);
-
-com.qwirx.freebase.DocumentSaved.EVENT_TYPE = 'DocumentSaved';
-
-com.qwirx.freebase.DocumentSaved.prototype.getDocument = function()
-{
-	return this.document_;
-}
 

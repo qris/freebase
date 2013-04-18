@@ -9,17 +9,7 @@
 			goog.require('com.qwirx.loader');
 		</script>
 	</head>
-	<body style="height: 100%; margin: 0; padding: 0;">
-		<table style="width: 100%; height: 100%;">
-			<tr>
-				<td>
-					<h1>Freebase</h1>
-				</td>
-			</tr>
-			<tr style="height: 100%;">
-				<td id="freebase" style="clear: both; border: 3px solid #ecc; height: 100%;"></td>
-			</tr>
-		</table>
+	<body id="freebase" style="height: 100%; margin: 0; padding: 0;">
 	</body>
 
 	<!--
@@ -42,6 +32,7 @@
 		goog.require('com.qwirx.freebase.Model');
 		goog.require('com.qwirx.util.Nest');
 		goog.require('goog.net.XhrIo');
+		goog.require('goog.dom.ViewportSizeMonitor');
 	</script>
 
 	<script type="text/javascript" charset="utf-8">
@@ -72,7 +63,13 @@
 			function(p, i)
 			{
 				var gui = new com.qwirx.freebase.Freebase.Gui(p.freebase);
-				gui.run(document.getElementById('freebase'));
+				gui.render(document.getElementById('freebase'));
+				
+				var vsm = new goog.dom.ViewportSizeMonitor();
+				goog.events.listen(vsm, goog.events.EventType.RESIZE,
+					function(e) {
+						gui.setSize(vsm.getSize());
+					});
 			}
 		)(); // end and execute Nest()
 	</script>
