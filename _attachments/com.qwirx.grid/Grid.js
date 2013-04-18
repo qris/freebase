@@ -522,9 +522,12 @@ com.qwirx.grid.Grid.prototype.handleMouseDown = function(e)
 	
 	var info = this.getDragInfo(e);
 	if (!info) return;
-
-	this.cursor_.setPosition(info.row);
-	this.updateCurrentRow_();
+	
+	if (this.cursor_.getPosition() != info.row)
+	{
+		this.cursor_.setPosition(info.row);
+		this.updateCurrentRow_();
+	}
 	
 	this.prepareForSelection();
 	this.drag.origin = e.target;
@@ -1063,4 +1066,28 @@ com.qwirx.grid.Grid.prototype.getCursor = function()
 {
 	return this.cursor_;
 };
+
+/**
+ * Returns the contents of the displayed cell. Intended to help test
+ * components that load data into grids, as this is not really a sensible
+ * API for extracting data from the underlying datasource!
+ * @param {number} x The column number in the grid, offset in the datasource
+ * by the horizontal scroll position.
+ * @param {number} y The row number in the grid, offset in the datasource
+ * by the vertical scroll position.
+ * @return an object containing at least two keys, <code>tableCell</code>,
+ * the DOM element of the table cell for the specified grid position,
+ * and <code>text</code>, the textual content of that cell.
+ */
+com.qwirx.grid.Grid.prototype.getCell = function(x, y)
+{
+	if (x == -1 && y == -1)
+	{
+		return undefined;
+	}
+	else
+	{
+		return this.rows_[y].getColumns()[x];
+	}
+}
 
