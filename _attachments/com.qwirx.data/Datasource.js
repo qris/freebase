@@ -217,7 +217,7 @@ com.qwirx.data.SimpleDatasource.prototype.replace =
  * {com.qwirx.data.Datasource.Events.ROWS_DELETE} and 
  * [rowIndex] as the event data.
  *
- * @param {number} rowIndex The row index to replace/overwrite.
+ * @param {number} rowIndex The row index to remove.
  * {com.qwirx.data.SimpleDatasource.prototype.getRow}(rowIndex) will
  * return the row that was previously at rowIndex + 1, and so on.
  *
