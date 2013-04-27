@@ -19,3 +19,8 @@ JSDOC_PROPS = "-Djsdoc.dir=$(JSDOC_BASE)"
 docs:
 	java $(JSDOC_PROPS) -jar "$(JSDOC_BASE)/jsrun.jar" "$(JSDOC_APP)/run.js" \
 		-t="$(JSDOC_TMPL)" -d="$(JSDOC_DEST)" com.qwirx.*
+
+.PHONY: tests
+tests:
+	echo 'var _allTests = [$(shell find com.qwirx.* -name '*_test.html' \
+		| sed -e 's/\(.*\)/"\1",/')];' > tests.js
