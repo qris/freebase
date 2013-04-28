@@ -407,13 +407,16 @@ function testViewMap_async()
 			map: map,
 			finished: function(result)
 			{
+				// Note: unlike objects, views in CouchDB do apparently
+				// use "id" and not "_id" in their results, so changed 
+				// BrowserCouch tests to match. Don't change this back!
 				var expected = {
-					rows:[{"_id":"chunky","key":"dogen","value":1},
-						 {"_id":"monkey","key":"dude","value":1},
-						 {"_id":"chunky","key":"hello","value":1},
-						 {"_id":"monkey","key":"hello","value":1},
-						 {"_id":"chunky","key":"there","value":1},
-						 {"_id":"monkey","key":"there","value":1}]
+					rows:[{"id":"chunky","key":"dogen","value":1},
+						 {"id":"monkey","key":"dude","value":1},
+						 {"id":"chunky","key":"hello","value":1},
+						 {"id":"monkey","key":"hello","value":1},
+						 {"id":"chunky","key":"there","value":1},
+						 {"id":"monkey","key":"there","value":1}]
 				};
 				self.assertEqual(JSON.stringify(expected.rows),
 					JSON.stringify(result.rows));
