@@ -316,6 +316,10 @@ try
 						baseUrl + '/' + name, options);
 				}
 			}
+			else
+			{
+				BrowserCouchClass = com.qwirx.freebase.BrowserCouch.BrowserDatabase;
+			}
 		});
 }
 catch (e)
