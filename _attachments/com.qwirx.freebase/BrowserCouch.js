@@ -1113,9 +1113,9 @@ com.qwirx.freebase.BrowserCouch.BrowserDatabase.prototype.getChanges =
 };
 		
 /**
- * @constructor
  * A wrapper class to provide a simple, consistent interface to
  * AJAX support using Google Closure.
+ * @constructor
  */
 com.qwirx.freebase.BrowserCouch.ClosureSupport = function() {};
 /**
@@ -1771,7 +1771,7 @@ com.qwirx.freebase.BrowserCouch.prototype.sync_once =
  * @param {com.qwirx.freebase.BrowserCouch.Database} source The other
  *	database to replicate.
  * @param {Object=} options Replication options:
- * @param {function=(Object)} options.update A callback which is called
+ * @param {function(Object)=} options.update A callback which is called
  *	whenever a document in the <code>source</code> database has been
  *	modified, passing the modified document as the only argument.
  * @param {boolean} options.continuous If present and true, an

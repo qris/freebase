@@ -81,9 +81,8 @@ com.qwirx.freebase.DocumentEditor.prototype.onDocumentSaved = function(event)
 };
 
 /**
- * @return the title (string) which will be used by 
- * {@link com.qwirx.freebase.DocumentArea} for the tab that activates
- * or closes this document.
+ * @return the title (string) which will be used by DocumentArea for the 
+ * tab that activates or closes this document.
  */
 com.qwirx.freebase.DocumentEditor.prototype.getTabTitle = function()
 {
