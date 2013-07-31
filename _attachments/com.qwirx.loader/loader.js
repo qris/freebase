@@ -38,8 +38,6 @@ com.qwirx.loader.loadCss('com.qwirx.freebase', 'freebase.css');
 	@name com.qwirx.loader	
 */
 
-/**
-*/
 goog.provide('com.qwirx.loader');
 
 /**
