@@ -9,8 +9,9 @@ goog.provide('com.qwirx.freebase.NonexistentException');
 */
 
 /**
-	@constructor
-*/
+ * The base class for exceptions thrown by Freebase.
+ * @constructor
+ */
 com.qwirx.freebase.Exception = function()
 {
 	if (Error.captureStackTrace)
@@ -20,8 +21,10 @@ com.qwirx.freebase.Exception = function()
 };
 
 /**
-	@constructor
-*/
+ * Thrown when an attempt was made to create an object which already exists
+ * in the database, or another object with the same ID as an existing one.
+ * @constructor
+ */
 com.qwirx.freebase.DuplicateException = function(savingObject,
 	existingObject)
 {
@@ -41,8 +44,17 @@ com.qwirx.freebase.DuplicateException.prototype.toString = function()
 };
 
 /**
-	@constructor
-*/
+ * Thrown when conflicting changes to an object (from different sources) 
+ * are detected.
+ * 
+ * <p>The object to be saved must have the same revision number 
+ * as the one already in the database, but it has a different revision 
+ * number instead, which probably means that the one in the database was 
+ * modified by someone else inbetween.
+ * 
+ * @constructor
+ * @name com.qwirx.freebase.ConflictException
+ */
 com.qwirx.freebase.ConflictException = function(object, expectedRev,
 	actualRev)
 {
@@ -66,8 +78,10 @@ com.qwirx.freebase.ConflictException.prototype.toString = function()
 };
 
 /**
-	@constructor
-*/
+ * Thrown when Freebase fails to delete an object (as requested) because it
+ * doesn't exist in the database.
+ * @constructor
+ */
 com.qwirx.freebase.NonexistentException = function(object)
 {
 	com.qwirx.freebase.Exception.call(this);
