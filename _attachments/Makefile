@@ -9,7 +9,7 @@ calculated_deps.js: .
 JSDOC_BASE = ../../jsdoc_toolkit-2.4.0/jsdoc-toolkit
 JSDOC_APP  = $(JSDOC_BASE)/app
 # JSDOC_TMPL = $(JSDOC_BASE)/templates/jsdoc
-JSDOC_TMPL = jsdoc/templates/default
+JSDOC_TMPL = templates/default
 JSDOC_DEST = jsdocs
 
 JSDOC_PROPS = "-Djsdoc.dir=$(JSDOC_BASE)"
@@ -17,7 +17,8 @@ JSDOC_PROPS = "-Djsdoc.dir=$(JSDOC_BASE)"
 
 .PHONY: docs
 docs:
-	./jsdoc/jsdoc -t "$(JSDOC_TMPL)" -d "$(JSDOC_DEST)" com.qwirx.*
+	./jsdoc/jsdoc -c jsdoc.conf.json -t "$(JSDOC_TMPL)" -d "$(JSDOC_DEST)" \
+		$(shell pwd)/com.qwirx.*
 
 .PHONY: tests
 tests:
